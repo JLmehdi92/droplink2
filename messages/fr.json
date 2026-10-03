@@ -970,7 +970,7 @@
     "logoRetirer": "Retirer",
     "logoEnvoi": "Envoi en cours…",
     "depotTitre": "Choisir une image",
-    "depotFormats": "PNG, JPG ou WebP · {n} Ko au plus",
+    "depotFormats": "PNG, JPG ou WebP · Max {n} Ko",
     "logoErreur": {
       "type": "Ce format n'est pas accepté. Choisissez un PNG, un JPG ou un WebP.",
       "taille": "Cette image est trop lourde.",

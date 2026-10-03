@@ -376,7 +376,10 @@ kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; 
 .compteurs--4 .compteur-app:nth-child(4) { border-right: 0; }
 .compteur-app[data-alerte] .compteur-app__valeur { color: var(--erreur-encre); }
 .barre-liste { display: flex; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--filet); }
-.vues-liste { position: relative; display: flex; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+/* `min-width: 0` : enfant flex de `.barre-liste`, la rangée s'élargissait à son contenu au lieu
+   de DÉFILER — à 390 px, « Données » et « Support » des Paramètres étaient coupés par la page,
+   hors d'atteinte (mesuré le 03/10/2026). Le défilement est voulu : fondus de bord, vue gardée en vue. */
+.vues-liste { position: relative; display: flex; gap: 18px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .vues-liste button { flex: none; height: 38px; font-size: 13.5px; font-weight: 500; color: var(--corps); transition: color 120ms var(--ease); }
 .vues-liste button[aria-selected="true"] { color: var(--encre); }
 @media (hover: hover) and (pointer: fine) { .vues-liste button:hover { color: var(--encre); } }
@@ -584,6 +587,9 @@ kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; 
   .outils-tete { width: 100%; }
   .outils-tete .deroulant:first-child { flex: 1; }
   .outils-tete .deroulant:first-child .bouton-outil { width: 100%; }
+  /* Le bouton de période fait 248 px à 390, son formulaire 280 : ancré à droite, il sortait
+     de 16 px par la gauche (sonde, menus ouverts, 03/10/2026). */
+  .outils-tete .deroulant:first-child .pop { left: 0; right: auto; transform-origin: 0 0; }
   .compteurs--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .compteurs--4 .compteur-app:nth-child(2) { border-right: 0 !important; }
   .compteurs--4 .compteur-app:nth-child(n+3) { border-top: 1px solid var(--filet); }
@@ -681,7 +687,11 @@ kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; 
 .aide-envois .ic { flex: none; width: 14px; height: 14px; margin-top: 2px; }
 
 .rangee--envoi .rangee__corps, .rangee--envoi.rangee--tete { grid-template-columns: 22px 116px 64px minmax(76px, 1fr) 96px 150px 78px 160px minmax(170px, 1.3fr) 76px; }
-.col-numero { font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+/* `min-width: 0` + `overflow-wrap: anywhere` : un numéro de 15 caractères (« DLKMESURE0002CN »)
+   débordait de sa colonne de 116 px et RECOUVRAIT la référence de la commande (mesuré à
+   1690 px, 03/10/2026) ; ceux d'UPS en font 18. Il passe à la ligne, entier — un numéro de
+   suivi coupé d'une ellipse ne servirait plus à rien. */
+.col-numero { min-width: 0; overflow-wrap: anywhere; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 .col-ref a { font-size: 13px; font-weight: 500; color: var(--corps); font-variant-numeric: tabular-nums; }
 @media (hover: hover) and (pointer: fine) { .col-ref a:hover { color: var(--accent-texte); text-decoration: underline; text-underline-offset: 3px; } }
 .col-client-envoi { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1061,11 +1071,11 @@ a.action-ligne { color: var(--corps); }
 }
 .reglages__panneau { display: flex; flex-direction: column; gap: 16px; max-width: 820px; }
 .reglages__panneau[hidden] { display: none; }
-/* Ajouts du produit : les onglets sont des liens (l'état est dans l'URL), les
-   étapes de la double authentification sont des formulaires sous le bloc, un
-   message d'échec de lecture se dit dans la couleur d'erreur, une ligne absente
-   du plan est barrée. */
-.reglages__onglets .vues-liste a { gap: 8px; }
+/* Ajouts du produit : les étapes de la double authentification sont des formulaires
+   sous le bloc, un message d'échec de lecture se dit dans la couleur d'erreur, une
+   ligne absente du plan est barrée. (Les onglets-liens prennent l'écart de 10 px de la
+   maquette : un `gap: 8px` posé ici, de même spécificité et plus bas, l'écrasait au
+   bureau — soustraction du 03/10/2026.) */
 .etape-r--bloc { padding-top: 18px; border-top: 1px dashed var(--filet-appuye); }
 .aide-r[data-ton="erreur"], .revocation-r small[data-ton="erreur"] { color: var(--erreur-encre); }
 .revocation-r { display: grid; justify-items: end; gap: 4px; flex: none; }
@@ -1166,7 +1176,14 @@ a.action-ligne { color: var(--corps); }
    tablette en paysage dépasse 1 020 px sans avoir de souris. */
 @media (pointer: coarse) {
   .bloc-r .bouton-app, .bouton-texte-r { height: 44px; }
-  .reglages__onglets .vues-liste a, .reglages__onglets .vues-liste__trait { height: 44px; }
+  .reglages__onglets .vues-liste a { height: 44px; }
+}
+/* ⚠️ LE TRAIT NE PREND 44 PX QUE DANS LA COLONNE (≥ 1 100 px), où il est le fond pâle de
+   l'onglet choisi. Sous 1 100 px il est la barre NOIRE de 2 px sous un onglet horizontal :
+   à 44 px, il masquait l'onglet actif d'un pavé noir, sur tout téléphone (mesuré à 390 px,
+   03/10/2026). */
+@media (pointer: coarse) and (min-width: 1100px) {
+  .reglages__onglets .vues-liste__trait { height: 44px; }
 }
 @media (max-width: 1020px) {
   .bloc-r .bouton-app, .bouton-texte-r { height: 44px; }
@@ -1757,8 +1774,12 @@ a.action-ligne { color: var(--corps); }
   .ed-echec { left: 12px; right: 12px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); max-width: none; }
 }
 
+/* Les liens de TOUT fil d'Ariane, pas seulement celui de la fiche : « Paramètres » de Passer
+   au Pro mesurait 22 px de haut à 390 px (03/10/2026). La marge négative garde la mise en page. */
+@media (max-width: 900px), (pointer: coarse) {
+  .v4-fil a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -11px; }
+}
 @media (max-width: 900px) {
-  .fiche .v4-fil a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -11px; }
   .ed-champ input, .ed-champ select { height: 46px; font-size: 16px; }
   .ed-lien { min-height: 44px; }
 }
@@ -2101,7 +2122,9 @@ a.action-ligne { color: var(--corps); }
 .onb-carte:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--ombre-carte); }
 .onb-carte:has(input:checked) .onb-carte__icone { background: var(--teinte); color: var(--accent-texte); }
 .onb-carte:has(input:checked) .onb-carte__coche { opacity: 1; transform: none; }
-.onb-carte:has(input:focus-visible) { box-shadow: var(--focus); }
+/* La radio est transparente : son contour ne se voit pas, la CARTE porte donc le contour d'accent
+   (revue a11y ECC du 03/10/2026, WCAG 2.4.7 — le halo seul faisait ~1,3:1). */
+.onb-carte:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: var(--focus); }
 .onb-carte:active { transform: scale(.985); }
 @media (hover: hover) and (pointer: fine) { .onb-carte:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--filet-appuye)); } }
 .onb__apercu { display: grid; justify-items: center; gap: 16px; }
@@ -2599,7 +2622,7 @@ a.notifp__bouton { text-decoration: none; }
 .plan-groupe a b { font-size: 14px; font-weight: 600; color: var(--encre); }
 .plan-groupe a small { font-size: 12.5px; color: var(--corps); }
 .plan-groupe a .ic { width: 15px; height: 15px; flex: none; color: var(--sourdine); transition: transform 160ms cubic-bezier(.4,0,.2,1), color 160ms cubic-bezier(.4,0,.2,1); }
-.plan-groupe a:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(91,75,245,.22); }
+.plan-groupe a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(91,75,245,.22); }
 @media (hover: hover) and (pointer: fine) {
   .plan-groupe a:hover { background: var(--creux); }
   .plan-groupe a:hover .ic { transform: translateX(3px); color: var(--accent-texte); }
@@ -2626,7 +2649,9 @@ a.notifp__bouton { text-decoration: none; }
   text-decoration: none; cursor: pointer; box-shadow: var(--ombre-xs); transition: box-shadow 160ms cubic-bezier(.4,0,.2,1), transform 160ms cubic-bezier(.4,0,.2,1); }
 .etat__bouton .ic { width: 17px; height: 17px; stroke-width: 1.9; }
 .etat__bouton:active { transform: scale(.98); }
-.etat__bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(91, 75, 245, .22); }
+/* Le contour d'accent RESTE (revue a11y ECC du 03/10/2026, WCAG 2.4.7) : le halo seul de la
+   maquette faisait ~1,3:1 sur blanc, et cette règle de couche écrasait le contour de `socle.css`. */
+.etat__bouton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(91, 75, 245, .22); }
 @media (hover: hover) and (pointer: fine) { .etat__bouton:hover { box-shadow: var(--ombre-md); } }
 .etat__ref { margin-top: 20px; font-size: 13px; color: var(--sourdine); font-variant-numeric: tabular-nums; }
 /* « Réessayer » : la flèche fait son tour, une fois, pendant que l'écran repart */
@@ -2667,7 +2692,7 @@ a.notifp__bouton { text-decoration: none; }
 .errc__bouton { margin-top: 28px; display: inline-flex; align-items: center; min-height: 44px; padding-inline: 24px; border: 0; border-radius: 16px;
   background: var(--accent); color: var(--sur-accent); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background-color 160ms cubic-bezier(.4,0,.2,1), transform 160ms cubic-bezier(.4,0,.2,1); }
 .errc__bouton:active { transform: scale(.98); }
-.errc__bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(91, 75, 245, .22); }
+.errc__bouton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(91, 75, 245, .22); }
 .errc__bouton[aria-busy="true"] { opacity: .72; }
 @media (hover: hover) and (pointer: fine) { .errc__bouton:hover { background: var(--accent-survol); } }
 
@@ -2726,7 +2751,9 @@ img.compte__avatar { object-fit: cover; }
 .compte__lien { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px; padding: 0 10px; border-radius: 7px; font-size: 13.5px; color: var(--encre); text-align: left; }
 .compte__lien svg { width: 15px; height: 15px; flex: none; color: var(--corps); }
 @media (hover: hover) and (pointer: fine) { .compte__lien:hover { background: color-mix(in srgb, var(--encre) 5%, transparent); } }
-@media (pointer: coarse), (max-width: 1020px) { .compte__lien { min-height: 44px; } }
+/* `.compte__menu a` (0,1,1) battait `.compte__lien` (0,1,0) : « Paramètres » restait à 36 px
+   sous le doigt (mesuré à 390 px, 03/10/2026). La règle tactile porte donc les deux. */
+@media (pointer: coarse), (max-width: 1020px) { .compte__lien, .compte__menu a { min-height: 44px; } }
 /* le sélecteur de langue du produit, au dessin des contrôles discrets de l'en-tête */
 .langue { position: relative; flex: none; }
 .langue > summary { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 10px; border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--corps); cursor: pointer; list-style: none; transition: background-color 160ms var(--ease), color 160ms var(--ease); }

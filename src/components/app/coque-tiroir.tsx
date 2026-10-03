@@ -174,7 +174,9 @@ export function CoqueTiroir({
       voile.classList.remove("est-tire");
       barre.style.transform = "";
       voile.style.opacity = "";
-      if (dx < -barre.offsetWidth * 0.32 || vitesse < -0.45) setOuvert(false);
+      // Le focus revient au bouton, comme pour Échap et le voile : il était sur un lien du
+      // tiroir, que la fermeture masque — il tombait sur le `body` (parcours du 03/10/2026).
+      if (dx < -barre.offsetWidth * 0.32 || vitesse < -0.45) poser(false, { rendreFocus: true });
     };
     barre.addEventListener("pointerdown", appui);
     barre.addEventListener("pointermove", glisse);
@@ -186,7 +188,7 @@ export function CoqueTiroir({
       barre.removeEventListener("pointerup", lache);
       barre.removeEventListener("pointercancel", lache);
     };
-  }, []);
+  }, [poser]);
 
   return (
     <ContexteTiroir.Provider value={{ ouvert, poser, libelles }}>

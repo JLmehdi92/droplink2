@@ -276,8 +276,12 @@ export async function lireCompte(
  */
 export const FAMILLES_JOURNAL = ["suspension", "consultation", "parametre"] as const;
 
-/** Fenêtres proposées, en jours. `0` vaut « depuis le début ». */
-export const FENETRES_JOURNAL = [7, 30, 0] as const;
+/**
+ * Fenêtres proposées, en jours. `0` vaut « depuis le début », et vient EN PREMIER : c'est
+ * la fenêtre par défaut, et l'ordre de la maquette (`admin-journal.html`, soustraction du
+ * 03/10/2026).
+ */
+export const FENETRES_JOURNAL = [0, 7, 30] as const;
 
 export const ParametresJournal = z.object({
   famille: z.enum(FAMILLES_JOURNAL).or(z.literal("")).catch(""),
