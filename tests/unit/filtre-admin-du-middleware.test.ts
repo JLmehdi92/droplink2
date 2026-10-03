@@ -85,6 +85,61 @@ describe("Le filtre admin du middleware", () => {
     }
   });
 
+  test("il reconnaît un chemin ENCODÉ, que le routeur de Next décode avant de servir l'admin", () => {
+    /*
+     * ⚠️ DÉFAUT MESURÉ LE 04/10/2026 (revue de sécurité ECC, puis serveur réel) : le
+     * middleware lit le chemin ENCODÉ. `/fr/%61dmin` échappait au filtre, Next le décodait
+     * et servait la route admin : aucune donnée (exigerAdmin fait autorité), mais une 404
+     * de 9 532 octets titrée « DropLink — … » là où une route inexistante rend
+     * « Cette page n'existe pas » — la surface redevenait énumérable.
+     */
+    for (const chemin of [
+      "/fr/%61dmin",
+      "/fr/%61dmin/comptes",
+      "/%66r/admin",
+      "/FR/%41dmin",
+      "/fr/adm%69n/journal",
+      "/%61dmin",
+      "/fr%2Fadmin",
+      // Revue ECC du correctif : barres doublées et double encodage — on ne parie ni sur la
+      // normalisation des barres par Next, ni sur le nombre de décodages qu'il fait (L-029).
+      "/fr//admin",
+      "//admin",
+      "/%2Fadmin",
+      "/fr/%2561dmin",
+    ]) {
+      expect(viseAdmin(chemin), `${chemin} échappe au filtre`).toBe(true);
+    }
+  });
+
+  test("la BORNE des trois décodages est figée, dans les deux sens", () => {
+    // Stable au TROISIÈME décodage : il est testé, donc reconnu.
+    expect(viseAdmin("/fr/%252561dmin")).toBe(true);
+    // Encore changeant après trois décodages : refus par défaut.
+    expect(viseAdmin("/fr/%25252561dmin")).toBe(true);
+    expect(viseAdmin("/fr/%2525252561dmin")).toBe(true);
+    // CONTRE-TEST : stable au troisième décodage et NON admin — reste hors du filtre. Une
+    // borne ramenée à deux décodages le ferait passer pour l'admin, et ce test rougirait.
+    expect(viseAdmin("/fr/%252561dministration")).toBe(false);
+  });
+
+  test("un % littéral encodé est refusé par défaut — le coût est écrit, pas découvert", () => {
+    // `50%25-promo` → `50%-promo`, indécodable : traité comme l'admin. Aucun chemin servi
+    // par ce matcher n'en porte (voir le commentaire de `viseAdmin`).
+    expect(viseAdmin("/fr/blog/50%25-promo")).toBe(true);
+  });
+
+  test("un encodage INVALIDE est traité comme l'admin : refus par défaut", () => {
+    // Un chemin qu'on ne sait pas décoder ne peut pas être déclaré sûr.
+    expect(viseAdmin("/fr/%E0%A4%A")).toBe(true);
+  });
+
+  test("CONTRE-TEST : un chemin encodé qui ne vise PAS l'admin reste hors du filtre", () => {
+    for (const chemin of ["/fr/%61dministration", "/fr/commandes%2F1", "/fr/caf%C3%A9", "/p/%61dmin"]) {
+      expect(viseAdmin(chemin), `${chemin} est pris pour une route admin`).toBe(false);
+    }
+  });
+
   test("⚠️ un sous-tag de quatre lettres N'EST PAS reconnu — le fait est mesuré, pas supposé", () => {
     /*
      * Ce contrôle NE DEMANDE PAS de corriger le motif : il fige la limite pour

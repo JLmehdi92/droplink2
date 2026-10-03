@@ -74,7 +74,15 @@ export function redirigerVers(chemin: string, statut: 303 | 307 = 307): NextResp
    * redirection ouverte le 01/09/2026 ; construire les redirections à la main
    * remet ce risque sur la table, donc on le referme ici, une fois.
    */
-  const sur = chemin.startsWith("/") && !chemin.startsWith("//") ? chemin : "/";
+  /*
+   * ⚠️ ET NI BARRE INVERSE NI CARACTÈRE DE CONTRÔLE (revue de sécurité ECC du 04/10/2026) :
+   * les navigateurs lisent `\` comme `/`, et retirent tabulations et retours à la ligne
+   * d'une URL — `/\exemple-mal.tld` ou `/<tab>/exemple-mal.tld` franchissaient le contrôle
+   * ci-dessus et devenaient `//exemple-mal.tld`. Aucun appelant ne passe de valeur brute
+   * aujourd'hui : la garde ne doit pas tenir à cette absence (L-029).
+   */
+  const sur =
+    chemin.startsWith("/") && !chemin.startsWith("//") && !/[\\\u0000-\u001f\u007f]/.test(chemin) ? chemin : "/";
 
   return new NextResponse(null, { status: statut, headers: { location: sur } });
 }

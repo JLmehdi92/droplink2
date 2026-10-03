@@ -188,6 +188,9 @@ describe("redirigerVers refuse de sortir du domaine", () => {
     expect(r.headers.get("location")).toBe("/fr/connexion?erreur=lien");
     expect(r.status).toBe(307);
     expect(redirigerVers("/fr/commandes", 303).status).toBe(303);
+    // Un accent ENCODÉ dans la requête reste un chemin légitime (la garde du 04/10/2026
+    // refuse les caractères de contrôle, pas l'encodage).
+    expect(redirigerVers("/fr/commandes?q=caf%C3%A9").headers.get("location")).toBe("/fr/commandes?q=caf%C3%A9");
   });
 
   test("aucune forme ne fait sortir du domaine", async () => {
@@ -199,6 +202,16 @@ describe("redirigerVers refuse de sortir du domaine", () => {
       "http://exemple-mal.tld",
       "fr/commandes", // sans `/` initial : résolu relativement, imprévisible
       "",
+      // ⚠️ AJOUTÉS LE 04/10/2026 (revue de sécurité ECC) : les navigateurs lisent `\` comme
+      // `/`, et retirent tabulations et retours à la ligne d'une URL — ces formes
+      // franchissaient le contrôle « commence par / mais pas par // » et partaient ailleurs.
+      "/\\exemple-mal.tld",
+      "/\t/exemple-mal.tld",
+      "/\n/exemple-mal.tld",
+      "/\r\n/exemple-mal.tld",
+      "/\u0000/exemple-mal.tld",
+      "/\u001f/exemple-mal.tld",
+      "/\u007f/exemple-mal.tld",
     ];
     for (const chemin of hostiles) {
       const lieu = redirigerVers(chemin).headers.get("location");

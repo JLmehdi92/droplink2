@@ -25,6 +25,17 @@ const TRENTE_JOURS_S = 30 * 24 * 60 * 60;
 const SEPARATEUR = ".";
 
 /**
+ * Faut-il retenir cet appareil ? SEULEMENT à la connexion ordinaire (aucune `suite`), case
+ * cochée. Ni la réinitialisation, ni le retour à l'administration : l'interface n'y montre
+ * pas la case, et l'action doit EXÉCUTER cette règle plutôt que s'en remettre à l'interface
+ * — un POST forgé posait la preuve sur le chemin admin (revue de sécurité ECC du
+ * 04/10/2026 ; aucune élévation, l'administration exige aal2 en base).
+ */
+export function retenirAppareil(souvenir: string | undefined, suite: string | undefined): boolean {
+  return souvenir === "on" && suite === undefined;
+}
+
+/**
  * Demande une preuve d'appareil fiable et la pose en cookie. À N'APPELER
  * qu'après un second facteur réellement validé (session `aal2`) : la base refuse
  * d'émettre sinon.

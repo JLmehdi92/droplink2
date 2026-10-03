@@ -1,3 +1,5 @@
+const MOTIF_ADMIN = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?admin(?:\/|$)/i;
+
 /**
  * « CE CHEMIN VISE-T-IL LA SURFACE ADMIN ? »
  *
@@ -34,7 +36,37 @@
  * franchir le filtre. Ils ne mènent nulle part aujourd'hui — mais une
  * protection qui tient à ce qu'une redirection ait lieu D'ABORD n'est pas une
  * protection.
+ *
+ * ⚠️ LE CHEMIN EST TESTÉ BRUT ET DÉCODÉ (revue de sécurité ECC du 04/10/2026, mesuré sur
+ * un serveur réel). Le middleware reçoit le chemin ENCODÉ : `/fr/%61dmin` échappait au
+ * filtre, puis le routeur de Next le DÉCODAIT et servait la route admin. Aucune donnée ne
+ * sortait (`exigerAdmin()` fait autorité), mais la 404 n'était plus vide : 9 532 octets
+ * titrés « DropLink — … » contre « Cette page n'existe pas » pour une route inventée — la
+ * surface redevenait énumérable, et chaque requête coûtait la garde complète en base.
+ *
+ * UN CHEMIN INDÉCODABLE EST TRAITÉ COMME L'ADMIN : on ne déclare pas sûr ce qu'on ne sait
+ * pas lire (refus par défaut, comme le plafond de débit de cette surface).
+ *
+ * ET L'ON NE PARIE PAS SUR LE ROUTEUR (relecture ECC du correctif, même jour) : les barres
+ * doublées sont ramenées à une seule (`/fr//admin`), et le chemin est décodé jusqu'à
+ * stabilité (`%2561` → `%61` → `a`) : le brut et chacun de ses TROIS décodages au plus
+ * sont testés. Un chemin encore changeant après trois décodages est traité comme l'admin.
+ * Ce refus par défaut touche aussi un `%` littéral encodé (`50%25-promo`) : aucun chemin
+ * servi par ce matcher n'en porte (jetons et noms en base 62, slugs fixes ; `/p` et `/api`
+ * sont hors matcher).
  */
 export function viseAdmin(chemin: string): boolean {
-  return /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?admin(?:\/|$)/i.test(chemin);
+  let courant = chemin.replace(/\/{2,}/g, "/");
+  for (let decodages = 0; ; decodages += 1) {
+    if (MOTIF_ADMIN.test(courant)) return true;
+    let suivant: string;
+    try {
+      suivant = decodeURIComponent(courant).replace(/\/{2,}/g, "/");
+    } catch {
+      return true;
+    }
+    if (suivant === courant) return false;
+    if (decodages === 3) return true;
+    courant = suivant;
+  }
 }

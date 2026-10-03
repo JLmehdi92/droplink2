@@ -6,7 +6,7 @@ import { SchemaLangue } from "@/i18n/schema";
 import { attendrePlancher } from "@/lib/auth/plancher";
 import { cheminDeRefus, suivreApresSession } from "@/lib/comptes/apres-session";
 import { verifierQuotaMotDePasse } from "@/lib/limitation/quota";
-import { poserPreuveAppareil } from "@/lib/auth/appareil-fiable";
+import { poserPreuveAppareil, retenirAppareil } from "@/lib/auth/appareil-fiable";
 import { creerClientServeur } from "@/lib/supabase/server";
 
 /**
@@ -126,7 +126,8 @@ export async function verifierCode(
   // retenu. JAMAIS dans le flux de réinitialisation : l'UI n'y montre pas la
   // case, mais l'action l'exclut aussi — un document qui affirme un état doit
   // l'exécuter, pas s'en remettre à l'UI (L-014).
-  if (souvenir === "on" && suite !== "mot-de-passe") {
+  // Ni le retour à l'administration non plus : la règle vit dans `retenirAppareil`.
+  if (retenirAppareil(souvenir, suite)) {
     await poserPreuveAppareil(supabase);
   }
 

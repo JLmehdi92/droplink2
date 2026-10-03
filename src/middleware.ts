@@ -104,17 +104,11 @@ const gestionLangue = createMiddleware(routing);
  * jette, et la session expirerait silencieusement au bout d'une heure sans que
  * rien ne l'explique.
  */
-/**
- * Vrai quand le chemin vise la surface d'administration.
- *
- * Le segment est RÉEL — `/fr/admin/...` — et jamais un groupe entre parenthèses.
- * Un groupe n'ajoute rien à l'URL : les écrans tomberaient hors de ce filtre
- * tout en paraissant rangés au bon endroit, ce qui est la pire combinaison.
- *
- * La langue est acceptée sous n'importe quelle casse et le préfixe peut manquer :
- * ne reconnaître que `/fr/admin` laisserait `/FR/admin` et `/admin` franchir le
- * filtre. Ils ne mèneraient nulle part aujourd'hui — mais une protection qui
- * tient à ce qu'une redirection ait lieu D'ABORD n'est pas une protection.
+/*
+ * Le filtre de la surface d'administration vit dans `lib/routes/vise-admin.ts` (module pur,
+ * éprouvé seul). Il décode le chemin que ce middleware reçoit ENCODÉ — `/fr/%61dmin`
+ * échappait à la 404 vide jusqu'au 04/10/2026. Le segment admin est RÉEL, jamais un groupe
+ * entre parenthèses : un groupe n'ajoute rien à l'URL et sortirait les écrans du filtre.
  */
 
 export default async function middleware(requete: NextRequest): Promise<NextResponse> {
