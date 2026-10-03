@@ -214,6 +214,23 @@ describe("L'administration lit — et c'est tracé — puis répond", () => {
           )
         )[0]?.n,
       );
+    /*
+     * ⚠️ DEUX CONTESTATIONS AU MOINS, À DES DATES DISTINCTES (vérification locale du
+     * 03/10/2026). Avec une seule en attente, « la plus ancienne » et « la plus récente »
+     * sont la même ligne : la fonction falsifiée pour désigner la PLUS RÉCENTE passait ce
+     * test, vert. Une seconde contestation, plus récente, rend la règle observable.
+     */
+    const seconde = await creerCommande(vendeur, "Client contestation recente");
+    expect((await bloquerLienCommande(admin.client, { commandeId: seconde.id, motif: MOTIF }, IP)).statut).toBe("ok");
+    expect(
+      (await contester(vendeur.client, vendeur.shopId, { commandeId: seconde.id, message: EXPLICATION, cleImage: null })).statut,
+    ).toBe("ok");
+    const dates = await interroger<{ n: string }>(
+      catalogue,
+      "select count(distinct created_at) as n from public.link_contests where status = 'en_attente'",
+    );
+    expect(Number(dates[0]?.n), "il faut deux dates distinctes pour distinguer la plus ancienne").toBeGreaterThanOrEqual(2);
+
     const avant = await traces();
     const r = await lireAlerteContestations(admin.client);
     // La vérité, lue par le catalogue : la base de tests peut porter d'autres dossiers.
