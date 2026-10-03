@@ -17,6 +17,18 @@ function formulaireDe(el: HTMLElement | null): HTMLFormElement | null {
 }
 const cases = (f: HTMLFormElement) => [...f.querySelectorAll<HTMLInputElement>('input[name="selection"]')];
 
+/**
+ * ⚠️ LES LIGNES CHANGENT SANS `change` (revue ECC du 03/10/2026). Un filtre « sur place »
+ * remplace les lignes du formulaire sans le démonter : des cases cochées disparaissent, et
+ * aucun évènement ne le dit. Sans cette observation, la barre gardait « 3 sélectionnées »
+ * au-dessus d'une liste où plus rien n'était coché (contrainte n° 8).
+ */
+function observerLignes(f: HTMLFormElement, rappel: () => void): () => void {
+  const obs = new MutationObserver(rappel);
+  obs.observe(f, { childList: true, subtree: true });
+  return () => obs.disconnect();
+}
+
 export function CaseTout({ libelle }: { readonly libelle: string }) {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -30,9 +42,11 @@ export function CaseTout({ libelle }: { readonly libelle: string }) {
     const apresReset = () => window.setTimeout(suivre, 0);
     f.addEventListener("change", suivre);
     f.addEventListener("reset", apresReset);
+    const debrancher = observerLignes(f, suivre);
     return () => {
       f.removeEventListener("change", suivre);
       f.removeEventListener("reset", apresReset);
+      debrancher();
     };
   }, []);
   return (
@@ -74,9 +88,11 @@ export function BarreLot({
     compter();
     f.addEventListener("change", compter);
     f.addEventListener("reset", apresReset);
+    const debrancher = observerLignes(f, compter);
     return () => {
       f.removeEventListener("change", compter);
       f.removeEventListener("reset", apresReset);
+      debrancher();
     };
   }, []);
   // LA BARRE SORT EN FONDU (maquette : 200 ms) quand la dernière case est décochée : le

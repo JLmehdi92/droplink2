@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import { X } from "lucide-react";
 import { annoncerApresRechargement } from "@/components/app/annonce";
 
@@ -99,6 +99,19 @@ export function DialogueAdmin({
   // boîte. Une sélection commencée dans le motif et relâchée au-dehors, ou un clic
   // sur la barre de défilement, ne ferme pas (ils effaceraient la saisie).
   const departDehors = useRef(false);
+  /* ⚠️ PENDANT LA REQUÊTE, ÉCHAP EST ARRÊTÉ SUR LA FENÊTRE, PAS SEULEMENT SUR LE DIALOGUE
+     (parcours au navigateur du 03/10/2026, contestation). Le bouton cliqué se désactive pendant
+     le travail, un élément désactivé PERD LE FOCUS, qui tombe sur le `body` : Échap n'atteint
+     plus le `onKeyDown` du dialogue, et le navigateur en fait une demande de fermeture — le
+     dialogue se fermait sur un refus en cours d'envoi. */
+  useEffect(() => {
+    if (!travaille) return;
+    const retenir = (e: KeyboardEvent): void => {
+      if (e.key === "Escape" && refDialogue.current?.open) e.preventDefault();
+    };
+    window.addEventListener("keydown", retenir, true);
+    return () => window.removeEventListener("keydown", retenir, true);
+  }, [travaille, refDialogue]);
   const dehors = (e: React.PointerEvent<HTMLDialogElement> | React.MouseEvent<HTMLDialogElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
@@ -110,8 +123,17 @@ export function DialogueAdmin({
       aria-labelledby={idTitre}
       aria-describedby={aide === undefined ? undefined : `${idTitre}-aide`}
       onClose={onClose}
+      onKeyDown={(e) => {
+        // ⚠️ ÉCHAP EST ARRÊTÉ AU CLAVIER, AVANT `cancel` (revue ECC du 03/10/2026). Chrome
+        // ignore le `preventDefault()` de `cancel` au second Échap sans interaction entre les
+        // deux, et fermait le dialogue PENDANT la requête — `onClose` effaçait alors la saisie.
+        if (e.key !== "Escape") return;
+        e.preventDefault();
+        if (!travaille) fermerDialogue(e.currentTarget);
+      }}
       onCancel={(e) => {
-        // Échap : la sortie animée plutôt que la fermeture sèche du navigateur.
+        // Filet des autres demandes de fermeture (retour Android, technologies d'assistance) :
+        // la sortie animée plutôt que la fermeture sèche du navigateur.
         e.preventDefault();
         if (!travaille) fermerDialogue(e.currentTarget);
       }}

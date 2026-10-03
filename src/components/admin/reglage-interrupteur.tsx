@@ -86,7 +86,11 @@ export function ReglageInterrupteur({ reglage }: { reglage: InterrupteurVu }) {
     // qui aurait pu diverger.
     donnees.set("valeur", actif ? "0" : "1");
 
-    const resultat = await enregistrerParametre(INITIAL, donnees);
+    // Un rejet (réseau) laissait l'interrupteur verrouillé jusqu'au rechargement, sans un mot
+    // (revue ECC du 03/10/2026) : il devient l'échec « panne », dit sous le réglage.
+    const resultat = await enregistrerParametre(INITIAL, donnees).catch(
+      (): Awaited<ReturnType<typeof enregistrerParametre>> => ({ statut: "erreur", motif: "panne" }),
+    );
     setEtat(resultat);
     setEnCours(false);
     // LA BULLE DE LA MAQUETTE (`admin.js`) : « Suivi des colis : activé, effet immédiat, écrit

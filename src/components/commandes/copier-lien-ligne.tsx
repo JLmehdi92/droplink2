@@ -39,6 +39,9 @@ export function CopierLienLigne({
       if (libelles.copie !== undefined) annoncer(libelles.copie);
     } catch {
       poser("echec");
+      // L'échec passe AUSSI par la bulle partagée, comme `copier-fiche` : le statut monté déjà
+      // rempli puis retiré en 1,6 s n'était pas lu de façon fiable (revue a11y ECC du 03/10/2026).
+      annoncer(libelles.echec);
     }
   };
   const libelle = etat === "echec" ? libelles.echec : libelles.copier;

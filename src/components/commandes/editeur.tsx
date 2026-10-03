@@ -255,7 +255,9 @@ export function Editeur({
         if (relue !== null) setHistoriqueRelu(relue);
       })
       .catch((erreur: unknown) => {
-        // L'historique affiché reste celui d'avant : il est vrai, simplement en retard.
+        // L'historique affiché reste celui d'avant : il est vrai, simplement en retard. La série
+        // est finie aussi sur un échec (revue ECC du 03/10/2026).
+        if (!abandonne) serieEnCours.current = false;
         console.error("[editeur] relecture de l'historique impossible", erreur);
       });
     return () => {

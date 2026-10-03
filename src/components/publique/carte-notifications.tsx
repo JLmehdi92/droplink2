@@ -79,7 +79,12 @@ export function CarteNotifications({
   // `useLayoutEffect` : l'état arrive après un `await`, hors d'un événement ; posé dans un
   // effet ordinaire, le message pourrait être peint une image avant d'entrer.
   useLayoutEffect(() => {
-    if (etat !== "envoye" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (etat !== "envoye") return;
+    // Le formulaire et son bouton disparaissent : le focus va au message, sans quoi il tombait
+    // sur le `body` et le statut monté déjà rempli n'était pas lu (revue a11y ECC du 03/10/2026,
+    // comme `arbitrage-qc`).
+    succes.current?.focus({ preventScroll: true });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     succes.current?.animate(
       [
         { opacity: 0, transform: "translateY(4px)" },
@@ -98,7 +103,7 @@ export function CarteNotifications({
       <p className="cv-texte">{libelles.texte}</p>
 
       {etat === "envoye" ? (
-        <p role="status" className="cv-succes" ref={succes}>
+        <p role="status" className="cv-succes" ref={succes} tabIndex={-1}>
           {libelles.envoye}
         </p>
       ) : (

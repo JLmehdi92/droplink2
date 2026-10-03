@@ -159,9 +159,17 @@ export function DialogueSuspension({
     donnees.set("motif", motif);
     if (!suspendu) donnees.set("confirmation", confirmation);
 
-    const resultat = await (suspendu ? reactiver : suspendre)(INITIAL, donnees);
+    // ⚠️ `finally` : une action qui REJETTE laissait le dialogue verrouillé jusqu'au
+    // rechargement (revue ECC du 03/10/2026) ; le rejet devient l'erreur d'écriture affichée.
+    let resultat: Awaited<ReturnType<typeof suspendre>>;
+    try {
+      resultat = await (suspendu ? reactiver : suspendre)(INITIAL, donnees);
+    } catch {
+      resultat = { statut: "erreur", motif: "ecriture" };
+    } finally {
+      setTravaille(false);
+    }
     setEtat(resultat);
-    setTravaille(false);
     // ON NE RECHARGE QU'APRÈS UNE CONFIRMATION DE LA BASE. Recharger sur un
     // échec effacerait le message d'erreur ET la saisie.
     if (resultat.statut === "ok") confirmerEtRecharger(dialogue.current, t(suspendu ? "annonceReactive" : "annonceSuspendu"));

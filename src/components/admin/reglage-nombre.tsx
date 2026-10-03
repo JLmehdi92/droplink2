@@ -93,7 +93,11 @@ export function ReglageNombre({ reglage }: { reglage: ReglageVu }) {
     donnees.set("cle", reglage.cle);
     donnees.set("valeur", valeur);
 
-    const resultat = await enregistrerParametre(INITIAL, donnees);
+    // Un rejet (réseau) laissait le champ verrouillé jusqu'au rechargement, sans un mot
+    // (revue ECC du 03/10/2026) : il devient l'échec « panne », et la saisie reste.
+    const resultat = await enregistrerParametre(INITIAL, donnees).catch(
+      (): Awaited<ReturnType<typeof enregistrerParametre>> => ({ statut: "erreur", motif: "panne" }),
+    );
     setEtat(resultat);
     setEnCours(false);
     // LE BOUTON DISPARAÎT PARCE QUE LA VALEUR EST DÉSORMAIS CELLE DU SERVEUR,

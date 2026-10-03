@@ -73,9 +73,17 @@ export function BlocageLien({
     const donnees = new FormData();
     donnees.set("commandeId", commandeId);
     donnees.set("motif", motif);
-    const resultat = await (bloque ? debloquerLien : bloquerLien)(INITIAL, donnees);
+    // ⚠️ `finally` : une action qui REJETTE laissait le dialogue verrouillé jusqu'au
+    // rechargement (revue ECC du 03/10/2026) ; le rejet devient l'erreur d'écriture affichée.
+    let resultat: Awaited<ReturnType<typeof bloquerLien>>;
+    try {
+      resultat = await (bloque ? debloquerLien : bloquerLien)(INITIAL, donnees);
+    } catch {
+      resultat = { statut: "erreur", motif: "ecriture" };
+    } finally {
+      setTravaille(false);
+    }
     setEtat(resultat);
-    setTravaille(false);
     if (resultat.statut === "ok") confirmerEtRecharger(dialogue.current, t(bloque ? "annonceDebloque" : "annonceBloque"));
   }
 

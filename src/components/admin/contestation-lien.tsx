@@ -63,8 +63,15 @@ export function ContestationLien({
     setRefus(null);
     setLecture({ etat: "attente" });
     dialogue.current?.showModal();
-    const r = await lireContestation(commandeId);
-    setLecture(r.statut === "ok" ? { etat: "ok", contestation: r.contestation } : { etat: "erreur", motif: r.motif });
+    // ⚠️ UN REJET N'EST PAS UNE ATTENTE SANS FIN (revue ECC du 03/10/2026) : une action
+    // qui rejette (réseau coupé) laissait « attente » pour toujours. Elle devient l'erreur
+    // de lecture que l'écran sait déjà dire.
+    try {
+      const r = await lireContestation(commandeId);
+      setLecture(r.statut === "ok" ? { etat: "ok", contestation: r.contestation } : { etat: "erreur", motif: r.motif });
+    } catch {
+      setLecture({ etat: "erreur", motif: "lecture" });
+    }
   }
 
   async function repondre(geste: "refuser" | "debloquer"): Promise<void> {
@@ -83,19 +90,26 @@ export function ContestationLien({
     setTravaille(geste);
     const donnees = new FormData();
     let r: Resultat;
-    if (geste === "refuser") {
-      donnees.set("contestationId", lecture.contestation.id);
-      donnees.set("reponse", reponse);
-      r = await refuserUneContestation({ statut: "inactif" }, donnees);
-    } else {
-      // Débloquer clôt la contestation en « acceptée » : le motif du déblocage est la réponse
-      // que le vendeur lit (migration 168).
-      donnees.set("commandeId", commandeId);
-      donnees.set("motif", reponse);
-      r = await debloquerLien({ statut: "inactif" }, donnees);
+    // ⚠️ `finally` : une action qui REJETTE laissait le dialogue verrouillé (croix, Échap et
+    // voile désactivés pendant le travail) jusqu'au rechargement — revue ECC du 03/10/2026.
+    try {
+      if (geste === "refuser") {
+        donnees.set("contestationId", lecture.contestation.id);
+        donnees.set("reponse", reponse);
+        r = await refuserUneContestation({ statut: "inactif" }, donnees);
+      } else {
+        // Débloquer clôt la contestation en « acceptée » : le motif du déblocage est la réponse
+        // que le vendeur lit (migration 168).
+        donnees.set("commandeId", commandeId);
+        donnees.set("motif", reponse);
+        r = await debloquerLien({ statut: "inactif" }, donnees);
+      }
+    } catch {
+      r = { statut: "erreur", motif: "ecriture" };
+    } finally {
+      setTravaille(null);
     }
     setResultat(r);
-    setTravaille(null);
     if (r.statut === "ok") confirmerEtRecharger(dialogue.current, t(geste === "refuser" ? "annonceRefusee" : "annonceAcceptee"));
   }
 

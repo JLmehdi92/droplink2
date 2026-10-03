@@ -107,7 +107,13 @@ export function FormulaireOnboarding({
   async function deposerLogo(fichier: File): Promise<void> {
     setLogo({ phase: "envoi", pourcent: 0 });
 
-    const prepare = await preparerDepotLogo(fichier.type, fichier.size);
+    // ⚠️ UN REJET (réseau coupé) laissait le logo « en envoi » pour toujours, sans un mot et
+    // sans nouvel essai possible (revue ECC du 03/10/2026) : il devient l'échec d'envoi dit.
+    const prepare = await preparerDepotLogo(fichier.type, fichier.size).catch(() => null);
+    if (prepare === null) {
+      setLogo({ phase: "erreur", motif: t("logoErreur.envoi") });
+      return;
+    }
     if (prepare.statut === "erreur") {
       setLogo({ phase: "erreur", motif: erreurLogo[prepare.motif] });
       return;
@@ -129,9 +135,10 @@ export function FormulaireOnboarding({
         }
       };
       xhr.onload = () => resoudre(xhr.status >= 200 && xhr.status < 300);
-      xhr.onerror = () => resoudre(false);
+      // Interrompu ou expiré : sans ces deux-là, la promesse ne se résolvait jamais.
+      xhr.onerror = xhr.onabort = xhr.ontimeout = () => resoudre(false);
       xhr.send(fichier);
-    });
+    }).catch(() => false);
 
     if (!envoi) {
       setLogo({ phase: "erreur", motif: t("logoErreur.envoi") });
@@ -140,8 +147,8 @@ export function FormulaireOnboarding({
 
     // La taille est RELUE côté serveur : le navigateur n'est jamais cru sur ce
     // qu'il affirme avoir envoyé.
-    const confirme = await confirmerDepotLogo(prepare.cle);
-    if (confirme.statut === "erreur") {
+    const confirme = await confirmerDepotLogo(prepare.cle).catch(() => null);
+    if (confirme === null || confirme.statut === "erreur") {
       setLogo({ phase: "erreur", motif: t("logoErreur.confirmation") });
       return;
     }
@@ -241,8 +248,12 @@ export function FormulaireOnboarding({
                     // Le logo est DÉJÀ enregistré sur la boutique (`confirmerDepotLogo`) :
                     // le retirer de l'écran seulement laisserait la page client le
                     // montrer (contrainte 8). On ne l'efface qu'une fois la base d'accord.
-                    void supprimerLogo().then((retrait) =>
-                      setLogo(retrait.statut === "ok" ? { phase: "vide" } : { phase: "erreur", motif: t("logoErreur.retrait") }),
+                    // Le second rappel : une action qui REJETTE (réseau coupé) laissait le logo
+                    // dit « posé », sans un mot (revue ECC du 03/10/2026).
+                    void supprimerLogo().then(
+                      (retrait) =>
+                        setLogo(retrait.statut === "ok" ? { phase: "vide" } : { phase: "erreur", motif: t("logoErreur.retrait") }),
+                      () => setLogo({ phase: "erreur", motif: t("logoErreur.retrait") }),
                     );
                   }}
                 >

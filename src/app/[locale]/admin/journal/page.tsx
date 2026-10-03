@@ -120,11 +120,15 @@ export default async function AdminJournal({
           curseur: page.curseurSuivant,
         }).toString()}`;
 
-  /** La part d'une famille dans le total de la fenetre. */
-  const part = (n: number): number =>
-    repartition === null || repartition.total === 0
-      ? 0
-      : Math.round((n / repartition.total) * 100);
+  /**
+   * La part d'une famille dans le total de la fenetre — ABSENTE quand la répartition est
+   * illisible : « 0 % du total » affirmerait une mesure que la base n'a pas donnée
+   * (contrainte n° 8 ; revue ECC du 03/10/2026). La valeur, elle, dit déjà « — ».
+   */
+  const part = (n: number | undefined): string | undefined =>
+    repartition === null || n === undefined
+      ? undefined
+      : t("journal.partDuTotal", { part: repartition.total === 0 ? 0 : Math.round((n / repartition.total) * 100) });
   const valeur = (n: number | undefined): string => (n === undefined ? "—" : format.number(n));
 
   return (
@@ -147,17 +151,17 @@ export default async function AdminJournal({
         <TuileVolume
           libelle={t("journal.tuileSuspensions")}
           valeur={valeur(repartition?.suspensions)}
-          complement={t("journal.partDuTotal", { part: part(repartition?.suspensions ?? 0) })}
+          complement={part(repartition?.suspensions)}
         />
         <TuileVolume
           libelle={t("journal.tuileParametres")}
           valeur={valeur(repartition?.parametres)}
-          complement={t("journal.partDuTotal", { part: part(repartition?.parametres ?? 0) })}
+          complement={part(repartition?.parametres)}
         />
         <TuileVolume
           libelle={t("journal.tuileConsultations")}
           valeur={valeur(repartition?.consultations)}
-          complement={t("journal.partDuTotal", { part: part(repartition?.consultations ?? 0) })}
+          complement={part(repartition?.consultations)}
         />
       </Tuiles>
 

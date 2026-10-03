@@ -96,11 +96,18 @@ export function BandeauBlocage({
     setErreur(null);
     let cleImage: string | null = null;
     if (fichier !== null) {
+      // Un rejet (réseau) laissait le bouton désactivé pour toujours, sans un mot (revue ECC du
+      // 03/10/2026) : il devient l'échec d'image, ou d'écriture plus bas, dit sous le formulaire.
       const depot = await demanderImageContestation({
         commandeId,
         typeMime: fichier.type,
         tailleOctets: fichier.size,
-      });
+      }).catch(() => null);
+      if (depot === null) {
+        setErreur("image");
+        setTravaille(false);
+        return;
+      }
       if (depot.statut !== "pret") {
         setErreur(depot.motif);
         setTravaille(false);
@@ -116,7 +123,12 @@ export function BandeauBlocage({
       }
       cleImage = depot.cle;
     }
-    const resultat = await envoyerContestation({ commandeId, message, cleImage });
+    const resultat = await envoyerContestation({ commandeId, message, cleImage }).catch(() => null);
+    if (resultat === null) {
+      setErreur("ecriture");
+      setTravaille(false);
+      return;
+    }
     if (resultat.statut !== "ok") {
       setErreur(resultat.motif);
       setTravaille(false);

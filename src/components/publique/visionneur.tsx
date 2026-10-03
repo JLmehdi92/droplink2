@@ -429,8 +429,10 @@ export function Visionneur({
 
     const surTouche = (evenement: KeyboardEvent): void => {
       if (evenement.key === "Escape") fermer();
-      if (evenement.key === "ArrowRight") aller(1);
-      if (evenement.key === "ArrowLeft") aller(-1);
+      // Sur une vidéo, les flèches avancent et reculent DANS la vidéo (revue ECC du 03/10/2026).
+      const surVideo = evenement.target instanceof HTMLVideoElement;
+      if (evenement.key === "ArrowRight" && !surVideo) aller(1);
+      if (evenement.key === "ArrowLeft" && !surVideo) aller(-1);
       if (evenement.key !== "Tab") return;
 
       // LA BOUCLE EST FERMÉE À LA MAIN plutôt que par `inert` sur le fond : le
@@ -620,6 +622,11 @@ export function Visionneur({
                 <span aria-hidden="true" className="cv-vis__compteur">
                   {(index ?? 0) + 1} / {total}
                 </span>
+                {/* Le CHANGEMENT de photo est lu : le nom du dialogue change, mais aucune région
+                    ne l'annonçait (revue a11y ECC du 03/10/2026). Permanente, donc fiable. */}
+                <span role="status" className="sr-only">
+                  {position(libelles.dialogue ?? libelles.position, (index ?? 0) + 1)}
+                </span>
                 <span className="cv-vis-cale" />
               </div>
 
@@ -658,7 +665,7 @@ export function Visionneur({
                      raison : URL signée à expiration. */
                   <img
                     src={url}
-                    alt=""
+                    alt={position(libelles.dialogue ?? libelles.position, (index ?? 0) + 1)}
                     width={courant.largeur ?? undefined}
                     height={courant.hauteur ?? undefined}
                     draggable={false}

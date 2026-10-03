@@ -225,160 +225,166 @@ export function CarteMedias({
         { cleLocale, nom: fichier.name, progression: 0, echec: null },
       ]);
 
-      const estVideo = fichier.type.startsWith("video/");
-
-      // La vignette est produite AVANT de demander la signature : si le
-      // navigateur ne sait pas décoder le fichier, autant le savoir maintenant.
-      // Son échec n'est PAS bloquant — refuser un média parce qu'on n'a pas su
-      // en faire une vignette ferait payer au vendeur une limite qui est la
-      // nôtre.
-      // Les deux chemins sont ramenés à LA MÊME FORME. Une union dont un membre
-      // porte `dimensions` et l'autre non oblige chaque lecture à se demander
-      // dans quelle branche elle se trouve — et c'est exactement le genre de
-      // question qu'on finit par trancher de travers.
-      const rendu: {
-        vignette: { blob: Blob } | null;
-        couverture: { blob: Blob } | null;
-        dureeSecondes: number | null;
-        dimensions: { largeur: number; hauteur: number } | null;
-      } = estVideo
-        ? { ...(await apercuDepuisVideo(fichier)), couverture: null, dimensions: null }
-        : await vignetteDepuisImage(fichier).then(async (r) =>
-            r === null
-              ? { vignette: null, couverture: null, dureeSecondes: null, dimensions: null }
-              : {
-                  vignette: r.vignette,
-                  /*
-                   * LA COUVERTURE EST PRODUITE ICI, avec la vignette, et pas
-                   * ailleurs : c'est le seul instant où le fichier est déjà
-                   * décodé en mémoire. La fabriquer à la lecture ferait payer ce
-                   * coût à CHAQUE consultation, pour toujours — et la page
-                   * publique est vue en 4G sur un téléphone d'entrée de gamme.
-                   *
-                   * PAS POUR LES VIDÉOS : leur couverture serait l'image
-                   * capturée, déjà servie comme vignette et comme poster. Une
-                   * dérivée 900 px d'une capture vidéo coûterait du stockage
-                   * pour un gain que personne ne verrait.
-                   */
-                  couverture: await couvertureDepuisImage(fichier, limites().couvertureOctets).then(
-                    (c) => (c === null ? null : { blob: c.blob }),
-                  ),
-                  dureeSecondes: null,
-                  dimensions: r.dimensions,
-                },
-          );
-
-      const dimensions = rendu.dimensions;
-
-      const preparation = await demanderDepot({
-        orderId,
-        typeMime: fichier.type,
-        tailleAnnoncee: fichier.size,
-        ...(rendu.dureeSecondes === null
-          ? {}
-          : { dureeSecondes: rendu.dureeSecondes }),
-      });
-
-      if (preparation.statut !== "ok") {
-        const motif = "motif" in preparation ? preparation.motif : "inconnu";
-        majEnCours(cleLocale, { echec: libelleRefus(motif) });
-        return;
-      }
-
+      // ⚠️ UN REJET (réseau coupé, action qui lève) n'abandonne plus la ligne sur sa barre, ni
+      // la SÉRIE : chaque fichier échoue seul, avec son motif (revue ECC du 03/10/2026).
       try {
-        await envoyer(preparation.url, preparation.enTetes, fichier, (p) =>
-          majEnCours(cleLocale, { progression: p }),
-        );
-      } catch {
-        majEnCours(cleLocale, { echec: libelleRefus("reseau") });
-        return;
-      }
+        const estVideo = fichier.type.startsWith("video/");
 
-      // Les deux dérivées partent ensuite, et leur échec ne compromet pas le
-      // média : la page publique retombe sur ce qu'elle a.
-      for (const [derivee, demander] of [
-        [rendu.vignette, demanderDepotVignette],
-        [rendu.couverture, demanderDepotCouverture],
-      ] as const) {
-        if (derivee === null) continue;
-        const signature = await demander({
+        // La vignette est produite AVANT de demander la signature : si le
+        // navigateur ne sait pas décoder le fichier, autant le savoir maintenant.
+        // Son échec n'est PAS bloquant — refuser un média parce qu'on n'a pas su
+        // en faire une vignette ferait payer au vendeur une limite qui est la
+        // nôtre.
+        // Les deux chemins sont ramenés à LA MÊME FORME. Une union dont un membre
+        // porte `dimensions` et l'autre non oblige chaque lecture à se demander
+        // dans quelle branche elle se trouve — et c'est exactement le genre de
+        // question qu'on finit par trancher de travers.
+        const rendu: {
+          vignette: { blob: Blob } | null;
+          couverture: { blob: Blob } | null;
+          dureeSecondes: number | null;
+          dimensions: { largeur: number; hauteur: number } | null;
+        } = estVideo
+          ? { ...(await apercuDepuisVideo(fichier)), couverture: null, dimensions: null }
+          : await vignetteDepuisImage(fichier).then(async (r) =>
+              r === null
+                ? { vignette: null, couverture: null, dureeSecondes: null, dimensions: null }
+                : {
+                    vignette: r.vignette,
+                    /*
+                     * LA COUVERTURE EST PRODUITE ICI, avec la vignette, et pas
+                     * ailleurs : c'est le seul instant où le fichier est déjà
+                     * décodé en mémoire. La fabriquer à la lecture ferait payer ce
+                     * coût à CHAQUE consultation, pour toujours — et la page
+                     * publique est vue en 4G sur un téléphone d'entrée de gamme.
+                     *
+                     * PAS POUR LES VIDÉOS : leur couverture serait l'image
+                     * capturée, déjà servie comme vignette et comme poster. Une
+                     * dérivée 900 px d'une capture vidéo coûterait du stockage
+                     * pour un gain que personne ne verrait.
+                     */
+                    couverture: await couvertureDepuisImage(fichier, limites().couvertureOctets).then(
+                      (c) => (c === null ? null : { blob: c.blob }),
+                    ),
+                    dureeSecondes: null,
+                    dimensions: r.dimensions,
+                  },
+            );
+
+        const dimensions = rendu.dimensions;
+
+        const preparation = await demanderDepot({
+          orderId,
+          typeMime: fichier.type,
+          tailleAnnoncee: fichier.size,
+          ...(rendu.dureeSecondes === null
+            ? {}
+            : { dureeSecondes: rendu.dureeSecondes }),
+        });
+
+        if (preparation.statut !== "ok") {
+          const motif = "motif" in preparation ? preparation.motif : "inconnu";
+          majEnCours(cleLocale, { echec: libelleRefus(motif) });
+          return;
+        }
+
+        try {
+          await envoyer(preparation.url, preparation.enTetes, fichier, (p) =>
+            majEnCours(cleLocale, { progression: p }),
+          );
+        } catch {
+          majEnCours(cleLocale, { echec: libelleRefus("reseau") });
+          return;
+        }
+
+        // Les deux dérivées partent ensuite, et leur échec ne compromet pas le
+        // média : la page publique retombe sur ce qu'elle a.
+        for (const [derivee, demander] of [
+          [rendu.vignette, demanderDepotVignette],
+          [rendu.couverture, demanderDepotCouverture],
+        ] as const) {
+          if (derivee === null) continue;
+          const signature = await demander({
+            orderId,
+            mediaId: preparation.mediaId,
+            typeMime: fichier.type,
+            tailleAnnoncee: derivee.blob.size,
+            // La preuve que ce `mediaId` vient de `demanderDepot`. Sans elle,
+            // l'identifiant serait libre et le stockage écrivable sans mesure.
+            laissezPasser: preparation.laissezPasser,
+          });
+          if (signature.statut === "ok") {
+            await envoyer(signature.url, signature.enTetes, derivee.blob, () => undefined).catch(
+              () => undefined,
+            );
+          }
+        }
+
+        const confirmation = await validerDepot({
           orderId,
           mediaId: preparation.mediaId,
           typeMime: fichier.type,
-          tailleAnnoncee: derivee.blob.size,
-          // La preuve que ce `mediaId` vient de `demanderDepot`. Sans elle,
-          // l'identifiant serait libre et le stockage écrivable sans mesure.
-          laissezPasser: preparation.laissezPasser,
+          ...(dimensions === null
+            ? {}
+            : { largeur: dimensions.largeur, hauteur: dimensions.hauteur }),
+          ...(rendu.dureeSecondes === null
+            ? {}
+            : { dureeSecondes: rendu.dureeSecondes }),
         });
-        if (signature.statut === "ok") {
-          await envoyer(signature.url, signature.enTetes, derivee.blob, () => undefined).catch(
-            () => undefined,
-          );
+
+        if (confirmation.statut !== "ok") {
+          const motif = "motif" in confirmation ? confirmation.motif : "inconnu";
+          majEnCours(cleLocale, { echec: libelleRefus(motif) });
+          return;
         }
-      }
 
-      const confirmation = await validerDepot({
-        orderId,
-        mediaId: preparation.mediaId,
-        typeMime: fichier.type,
-        ...(dimensions === null
-          ? {}
-          : { largeur: dimensions.largeur, hauteur: dimensions.hauteur }),
-        ...(rendu.dureeSecondes === null
-          ? {}
-          : { dureeSecondes: rendu.dureeSecondes }),
-      });
+        // La ligne existe : on peut afficher. L'URL locale sert de vignette en
+        // attendant le prochain rendu serveur — elle décrit le fichier que le
+        // serveur vient d'accepter, pas un pari sur ce qu'il aurait accepté.
+        // LE COMPTE EST LU AVANT L'AJOUT, et une seule fois : c'est ce qui rend
+        // « le premier du lot » vrai pour un seul fichier, et non pour tous.
+        const premier = suiviCouverture.current.ajouter();
 
-      if (confirmation.statut !== "ok") {
-        const motif = "motif" in confirmation ? confirmation.motif : "inconnu";
-        majEnCours(cleLocale, { echec: libelleRefus(motif) });
-        return;
-      }
+        const apercu =
+          rendu.vignette === null
+            ? null
+            : URL.createObjectURL(rendu.vignette.blob);
+        if (apercu !== null) apercusLocaux.current.add(apercu);
+        setMedias((liste) => [
+          ...liste,
+          {
+            id: confirmation.mediaId,
+            type: estVideo ? "video" : "photo",
+            urlVignette: apercu,
+            // Rien n'est affirmé ici : la couverture n'est posée à l'écran
+            // qu'APRÈS que la base l'a confirmée, quelques lignes plus bas.
+            estCouverture: false,
+            dureeS: rendu.dureeSecondes,
+          },
+        ]);
+        setEnCours((liste) => liste.filter((e) => e.cleLocale !== cleLocale));
+        onEnregistre?.();
 
-      // La ligne existe : on peut afficher. L'URL locale sert de vignette en
-      // attendant le prochain rendu serveur — elle décrit le fichier que le
-      // serveur vient d'accepter, pas un pari sur ce qu'il aurait accepté.
-      // LE COMPTE EST LU AVANT L'AJOUT, et une seule fois : c'est ce qui rend
-      // « le premier du lot » vrai pour un seul fichier, et non pour tous.
-      const premier = suiviCouverture.current.ajouter();
-
-      const apercu =
-        rendu.vignette === null
-          ? null
-          : URL.createObjectURL(rendu.vignette.blob);
-      if (apercu !== null) apercusLocaux.current.add(apercu);
-      setMedias((liste) => [
-        ...liste,
-        {
-          id: confirmation.mediaId,
-          type: estVideo ? "video" : "photo",
-          urlVignette: apercu,
-          // Rien n'est affirmé ici : la couverture n'est posée à l'écran
-          // qu'APRÈS que la base l'a confirmée, quelques lignes plus bas.
-          estCouverture: false,
-          dureeS: rendu.dureeSecondes,
-        },
-      ]);
-      setEnCours((liste) => liste.filter((e) => e.cleLocale !== cleLocale));
-      onEnregistre?.();
-
-      if (premier) {
-        // La première photo devient la couverture — mais l'écran ne le dit
-        // qu'une fois la base d'accord. `definirCouverture` NE LÈVE PAS : elle
-        // rend un statut. Le `.catch()` qui vivait ici ne pouvait donc rien
-        // attraper, et l'échec était jeté en silence.
-        const resultat = await definirCouverture(orderId, confirmation.mediaId);
-        if (resultat.statut === "ok") {
-          setMedias((liste) =>
-            liste.map((m) => ({
-              ...m,
-              estCouverture: m.id === confirmation.mediaId,
-            })),
-          );
-          onEnregistre?.();
-        } else {
-          setEchecAction(t("echecCouverture"));
+        if (premier) {
+          // La première photo devient la couverture — mais l'écran ne le dit
+          // qu'une fois la base d'accord. `definirCouverture` NE LÈVE PAS : elle
+          // rend un statut. Le `.catch()` qui vivait ici ne pouvait donc rien
+          // attraper, et l'échec était jeté en silence.
+          const resultat = await definirCouverture(orderId, confirmation.mediaId);
+          if (resultat.statut === "ok") {
+            setMedias((liste) =>
+              liste.map((m) => ({
+                ...m,
+                estCouverture: m.id === confirmation.mediaId,
+              })),
+            );
+            onEnregistre?.();
+          } else {
+            setEchecAction(t("echecCouverture"));
+          }
         }
+      } catch {
+        majEnCours(cleLocale, { echec: libelleRefus("reseau") });
       }
     },
     [orderId, libelleRefus, majEnCours, onEnregistre, t],
@@ -400,8 +406,9 @@ export function CarteMedias({
 
   const supprimer = useCallback(
     async (id: string): Promise<void> => {
-      const resultat = await retirerMedia(orderId, id);
-      if (resultat.statut !== "ok") {
+      // Un rejet (réseau) est un échec DIT, comme un statut d'erreur (revue ECC du 03/10/2026).
+      const resultat = await retirerMedia(orderId, id).catch(() => null);
+      if (resultat === null || resultat.statut !== "ok") {
         setEchecAction(t("echecSuppression"));
         return;
       }
@@ -420,8 +427,8 @@ export function CarteMedias({
 
   const couvrir = useCallback(
     async (id: string): Promise<void> => {
-      const resultat = await definirCouverture(orderId, id);
-      if (resultat.statut !== "ok") {
+      const resultat = await definirCouverture(orderId, id).catch(() => null);
+      if (resultat === null || resultat.statut !== "ok") {
         setEchecAction(t("echecCouverture"));
         return;
       }
@@ -448,16 +455,18 @@ export function CarteMedias({
       const apres = arrayMove([...avant], depuis, vers);
       setMedias(apres);
 
+      // Un rejet (réseau) perd le pari comme un refus : sans ce `catch`, l'ordre parié restait
+      // à l'écran (revue ECC du 03/10/2026).
       const resultat = await ordonnerMedias(
         orderId,
         apres.map((m) => m.id),
-      );
+      ).catch(() => null);
 
       // PARI PERDU : retour à l'état confirmé. Un réordonnancement optimiste
       // laissé à l'écran après un appel échoué est l'un des trois défauts qui
       // ont fait adopter la règle — il ne casse rien, n'apparaît nulle part, et
       // se manifeste chez le destinataire.
-      if (resultat.statut !== "ok") {
+      if (resultat === null || resultat.statut !== "ok") {
         setMedias(avant);
         setEchecAction(t("echecOrdre"));
         return;
@@ -817,7 +826,9 @@ function envoyer(
       }
       rejeter(new Error("dépôt refusé : " + requete.status));
     };
-    requete.onerror = () => rejeter(new Error("réseau"));
+    // Interrompu ou expiré aussi : sans eux, la promesse ne se résolvait jamais et la ligne
+    // restait sur sa barre (revue ECC du 03/10/2026).
+    requete.onerror = requete.onabort = requete.ontimeout = () => rejeter(new Error("réseau"));
     requete.send(corps);
   });
 }
