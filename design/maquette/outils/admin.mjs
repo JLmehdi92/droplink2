@@ -7,7 +7,8 @@
 // aucune suppression de compte, aucune connexion « à la place de ».
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-const ici = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "node:url";
+const ici = path.dirname(fileURLToPath(import.meta.url));
 const racine = path.join(ici, "..");
 const ADMIN = "admin@droplink.fr";
 

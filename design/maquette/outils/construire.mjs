@@ -2,7 +2,8 @@
 // version autonome de chaque page (médias et polices inclus) pour l'Artifact.
 import { readFileSync, writeFileSync, mkdirSync, cpSync, rmSync } from "node:fs";
 import path from "node:path";
-const ici = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "node:url";
+const ici = path.dirname(fileURLToPath(import.meta.url));
 const racine = path.join(ici, "..");
 const src = (f) => path.join(racine, "src", f);
 // La feuille servie est l'assemblage de ses deux sources : base.css (landing, accès,

@@ -7,7 +7,8 @@
 // Usage : node outils/pages-publiques.mjs ../droplink2
 import { readFileSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-const ici = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "node:url";
+const ici = path.dirname(fileURLToPath(import.meta.url));
 const racine = path.join(ici, "..");
 const produit = path.resolve(process.argv[2] ?? path.join(racine, "..", "droplink2"));
 const M = JSON.parse(readFileSync(path.join(produit, "messages", "fr.json"), "utf8"));
