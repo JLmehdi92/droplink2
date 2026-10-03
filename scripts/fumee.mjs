@@ -934,7 +934,10 @@ const controles = [
   [!fr.includes("Trusted by industry leaders"), "faux logos clients absents"],
   [!/Logistique Invisible|Genealogie|Dedouanement/i.test(fr), "copy de fret absente"],
   [!/\bERP\b|\bSAP\b|\bOracle\b/.test(fr), "vocabulaire ERP absent"],
-  [!/\brep\b|replica|\bW2C\b/i.test(fr), "vocabulaire du vertical absent"],
+  // ⚠️ FRONTIÈRES UNICODE, PAS `\b` (03/10/2026) : `\b` ne connaît que l'ASCII, donc
+  // « repère » (« Votre espace repère ce qui cloche ») y lisait « rep » isolé — un faux
+  // positif. « rep » seul et « W2C » restent attrapés ; « replica » l'est partout, comme avant.
+  [!/(?<![\p{L}\p{N}])rep(?![\p{L}\p{N}])|replica|(?<![\p{L}\p{N}])W2C(?![\p{L}\p{N}])/iu.test(fr), "vocabulaire du vertical absent"],
   // LE FLOU DE FOND N EST PAS INTERDIT ICI. Le brief le proscrit sur
   // `/p/[token]`, et nulle part ailleurs : c est cette page-la qui est vue une
   // fois, en 4G, sur un appareil quelconque, et sur un aplat uni le flou n a
@@ -2484,6 +2487,31 @@ try {
             );
             const parCle = new Map(feuilles(catalogueEn));
             const parCleZh = new Map(feuilles(catalogueZh));
+            /*
+             * ⚠️ LES PHRASES DE L APERCU DE « MA MARQUE », DANS LES TROIS LANGUES (03/10/2026).
+             *
+             * L aperçu embarque ses phrases dans les trois langues (`tousLesLibellesApercu`)
+             * pour suivre EN DIRECT la langue que le vendeur choisit pour sa page client —
+             * c est la correction du 06/09 dont `marque.apercuPour` etait la seule phrase.
+             * La refonte y a ajoute la demo complete de la page client (galerie, controle,
+             * dates, frise) : leur francais est donc dans le HTML de `/en/marque`, par
+             * construction. Ce n est pas une fuite.
+             *
+             * LUES A LA SOURCE, JAMAIS RECOPIEES : les cles sont celles que
+             * `libelles-apercu.ts` demande a ses trois traducteurs, resolues ici dans les
+             * trois catalogues. Une phrase ajoutee a l aperçu est exemptee le jour meme ;
+             * une phrase retiree cesse de l etre. Et l exemption ne vaut QUE sur `/marque`.
+             */
+            const sourceApercu = readFileSync(join(racine, "src", "lib", "boutique", "libelles-apercu.ts"), "utf8");
+            const espacesApercu = { client: "page-publique", marque: "marque", accueil: "onboarding" };
+            const phrasesApercu = new Set();
+            for (const [, traducteur, cle] of sourceApercu.matchAll(/\b(client|marque|accueil)\("([^"]+)"/g)) {
+              const chemin = espacesApercu[traducteur] + "." + cle;
+              for (const cat of [new Map(feuilles(catalogue)), parCle, parCleZh]) {
+                const v = cat.get(chemin);
+                if (typeof v === "string") phrasesApercu.add(v);
+              }
+            }
             const sentinelles = feuilles(catalogue)
               .map(([cle, vFr]) => ({
                 cle,
@@ -2586,7 +2614,10 @@ try {
                   lang: (/<html[^>]*lang="([A-Za-z-]+)"/.exec(html) ?? [, "?"])[1],
                   reconnus: sentinelles.filter((x) => vu.includes(x[attendue])).length,
                   fuites: sentinelles.filter(
-                    (x) => vu.includes(x[interdite]) && !vu.includes(x[attendue]),
+                    (x) =>
+                      vu.includes(x[interdite]) &&
+                      !vu.includes(x[attendue]) &&
+                      !(ecran === "/marque" && phrasesApercu.has(x[interdite])),
                   ),
                 });
               }
@@ -2617,6 +2648,10 @@ try {
                   (langsFaux.length === 0
                     ? ""
                     : ` (fautives : ${langsFaux.map((b) => b.langue + b.ecran + '=' + b.lang).join(", ")})`),
+              ],
+              [
+                phrasesApercu.size >= 30,
+                `CONTRE-TEST : ${phrasesApercu.size} phrases de l aperçu de « Ma marque » lues dans libelles-apercu.ts (exemptees sur /marque seulement)`,
               ],
               [
                 fuites.length === 0,
@@ -2790,6 +2825,14 @@ try {
         const allumeesJournal = entreesJournal.filter((m) =>
           m[0].includes('aria-current="page"'),
         ).length;
+        /*
+         * ⚠️ UNE NAVIGATION DEPUIS LA REFONTE (03/10/2026). La barre d onglets du telephone
+         * est partie : au telephone, la MEME `<nav class="app__nav">` devient le tiroir
+         * (decision n° 1 de Mehdi, « je prends tout »). On ne fige donc plus « deux » : on
+         * COMPTE les navigations rendues, et chacune doit porter exactement UNE entree
+         * courante — deux marques dans une seule navigation (le defaut du 12/09) rougit.
+         */
+        const navigationsJournal = (htmlJournal.match(/<nav\b[^>]*class="app__nav"/g) ?? []).length;
 
         await service.from("profiles").update({ role: "user" }).eq("id", profilFumee);
         const retrograde = await fetch(`${base}/fr/admin`, {
@@ -2830,12 +2873,12 @@ try {
             `le journal d audit repond aussi a un administrateur (statut ${journalPromu.status})`,
           ],
           [
-            entreesJournal.length >= 12,
-            `CONTRE-TEST : ${entreesJournal.length} entrees de navigation admin trouvees dans le journal rendu`,
+            navigationsJournal >= 1 && entreesJournal.length >= 8 * navigationsJournal,
+            `CONTRE-TEST : ${navigationsJournal} navigation(s) et ${entreesJournal.length} entrees admin trouvees dans le journal rendu`,
           ],
           [
-            allumeesJournal === 2,
-            `exactement UNE entree est courante, dans chacune des deux navigations (${allumeesJournal} marques)`,
+            allumeesJournal === navigationsJournal,
+            `exactement UNE entree est courante, dans chacune des ${navigationsJournal} navigation(s) (${allumeesJournal} marques)`,
           ],
           // L AUTRE SENS, AVEC LA MEME SESSION. C est ici que se prouve que le
           // role est relu EN BASE a chaque requete, et non porte par le jeton.
@@ -5992,9 +6035,13 @@ function ageHsts(entetes) {
 
     // UN SEUL HREFLANG PAR ARTICLE, PLUS LE X-DEFAULT : la page se cite
     // elle-meme et sert de repli, sans promettre de traduction.
+    //
+    // ⚠️ SEULS LES `<link rel="alternate">` (03/10/2026) : le menu de langue de l en-tete
+    // porte des `<a hrefLang="en">` vers `/en` — des liens de NAVIGATION, pas des
+    // traductions annoncees de l article. Les compter accusait un article correct.
     const hreflangFautifs = pagesArticles
       .filter(([, h]) => {
-        const vus = [...h.matchAll(/hreflang="([^"]+)"/gi)].map((m) => m[1]);
+        const vus = [...h.matchAll(/<link\b[^>]*rel="alternate"[^>]*hreflang="([^"]+)"/gi)].map((m) => m[1]);
         return !(vus.includes("fr") && vus.includes("x-default") && !vus.includes("en") && !vus.includes("zh-CN"));
       })
       .map(([s]) => s);
@@ -6016,7 +6063,17 @@ function ageHsts(entetes) {
       try {
         const g = JSON.parse(bloc[1]);
         if (g["@type"] !== "Article") graphesCasses.push(`${s}:@type=${g["@type"]}`);
-        if ("author" in g) avecAuteur.push(s);
+        // L AUTEUR PEUT ETRE L ORGANISATION, JAMAIS UNE PERSONNE (audit SEO du 03/10/2026 :
+        // Google attend un `author`, et `#organisation` est la reponse vraie). Tout autre
+        // auteur — une personne, un nom, un autre `@id` — rougit comme avant.
+        const auteur = g.author;
+        const estOrganisation =
+          auteur !== null &&
+          typeof auteur === "object" &&
+          !Array.isArray(auteur) &&
+          ((typeof auteur["@id"] === "string" && auteur["@id"].endsWith("/#organisation") && Object.keys(auteur).length === 1) ||
+            auteur["@type"] === "Organization");
+        if ("author" in g && !estOrganisation) avecAuteur.push(s);
       } catch {
         graphesCasses.push(`${s}:JSON INVALIDE`);
       }
@@ -6030,7 +6087,8 @@ function ageHsts(entetes) {
     // repondre a « qui dit ca ».
     controles.push([
       avecAuteur.length === 0,
-      "aucun graphe ne nomme un auteur" + (avecAuteur.length ? ` — ${avecAuteur.join(", ")}` : ""),
+      "aucun graphe ne nomme une personne pour auteur (l organisation seule est admise)" +
+        (avecAuteur.length ? ` — ${avecAuteur.join(", ")}` : ""),
     ]);
 
     // LE PLAN DE SITE ANNONCE LE BLOG EN FRANCAIS, ET SEULEMENT EN FRANCAIS.
@@ -6433,16 +6491,38 @@ const EXCEPTIONS_VARIABLES = [
   // portage de l onboarding sur le design system, le 14/09/2026, a retire ce
   // halo a la couleur du vendeur — c est NOTRE ecran, il prend l anneau du
   // design system. C est la sonde qui l a dit, en echouant DANS L AUTRE SENS.
+  //
+  // ⚠️ `--fond-carte-propulsee` ET `--filet-carte-propulsee` ONT QUITTE CETTE LISTE LE
+  // 03/10/2026 : la refonte a reecrit la carte « Propulse par DropLink », qui ne les lit plus.
+  // C est la sonde qui l a dit, en echouant DANS L AUTRE SENS.
+  //
+  // LES SIX SUIVANTES (refonte, 03/10/2026) sont des REGLAGES PAR ELEMENT, poses EN LIGNE
+  // (`style={{ "--x": … }}`) sur chaque element que la regle style — jamais des jetons.
   [
-    "--fond-carte-propulsee",
-    "posee EN LIGNE par la carte « Propulse par DropLink » (carte-propulsee.tsx), a la couleur " +
-      "du VENDEUR calculee au serveur, et lue par `lg:bg-(image:…)` : la teinte n existe qu au " +
-      "bureau (la planche aplatit ses cartes au telephone), et un palier ne s ecrit qu en classe.",
+    "--avance",
+    "etape atteinte d une frise de demonstration, posee en ligne (`page.tsx` de la landing) et " +
+      "par le film des pages d acces (`film-acces.tsx`, `setProperty`), lue par `socle.css`.",
   ],
   [
-    "--filet-carte-propulsee",
-    "meme carte, meme raison : le filet a 26 % de la couleur du vendeur, lu par `lg:border-(…)`. " +
-      "Les deux noms vivent dans le MEME fichier que leur lecture.",
+    "--pastille",
+    "couleur d une pastille de demonstration, posee en ligne a sa valeur hexadecimale " +
+      "(`page.tsx` de la landing), lue par `socle.css`.",
+  ],
+  ["--l", "rang de la ligne animee d un titre (`.l4-ligne`), pose en ligne (landing, blog), lu par `socle.css`."],
+  [
+    "--p",
+    "profondeur (decalage d entree) d une carte ou d un message de la landing, posee en ligne " +
+      "(`page.tsx`), lue par `app.css`.",
+  ],
+  [
+    "--k",
+    "proportion d une barre (0 a 1), posee en ligne sur chaque barre de l administration " +
+      "(boutiques, fiche compte, statistiques), lue par `app.css`.",
+  ],
+  [
+    "--i",
+    "rang d une ligne dans son animation decalee, pose en ligne (tableau des tarifs, " +
+      "statistiques), lu par `app.css`.",
   ],
 ];
 const tolerees = new Set(EXCEPTIONS_VARIABLES.map(([v]) => v));
@@ -6590,9 +6670,11 @@ controles.push(
   // CONTRE-TEST : un inventaire vide declarerait « tout est servi » sans avoir
   // rien regarde. C est lui qui a signale les deux versions precedentes.
   [
-    // Seuil pose SOUS la mesure du jour (96) : il signale une extraction
-    // cassee, pas une variation normale du code.
-    classesEcrites.size >= 80,
+    // Seuil pose SOUS la mesure du jour : il signale une extraction cassee,
+    // pas une variation normale du code. 96 au 08/09/2026 ; 41 au 03/10/2026,
+    // apres la refonte, qui a remplace la plupart des utilitaires Tailwind par
+    // des classes nommees (`src/styles/refonte/`) — d ou 30, sous cette mesure.
+    classesEcrites.size >= 30,
     `CONTRE-TEST : ${classesEcrites.size} classes utilitaires ecrites dans le code`,
   ],
   [
@@ -6640,12 +6722,21 @@ controles.push(
   // classe a traverse le rendu jusqu au navigateur du client.
   const surfaces = ["/fr", "/fr/conditions", "/fr/blog"];
   const sansPlancher = [];
+  /*
+   * ⚠️ LE SELECTEUR DE LANGUE DU PIED (refonte, 03/10/2026) tient ses 44 px par la FEUILLE,
+   * pas par `min-h-11` : `.langue__menu a { … min-height: 44px }` (`app.css`). Ses liens ne
+   * sont admis que si cette regle est REELLEMENT SERVIE — si elle disparait, ils redeviennent
+   * des liens nus et le controle rougit. On garde l effet, pas une exemption.
+   */
+  const regleLangue44 = /\.langue__menu a\s*\{[^}]*min-height:\s*44px/.test(css);
   for (const chemin of surfaces) {
     const html = await (await fetch(`${base}${chemin}`)).text();
     const debutPied = html.lastIndexOf("<footer");
     const pied = debutPied === -1 ? "" : html.slice(debutPied, html.indexOf("</footer>", debutPied));
+    const menuLangue = /<span class="langue__menu">([\s\S]*?)<\/span>/.exec(pied)?.[1] ?? "";
+    const liensLangue = new Set([...menuLangue.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]));
     const liens = [...pied.matchAll(/<a\b[^>]*>/g)].map((m) => m[0]);
-    const nus = liens.filter((l) => !l.includes("min-h-11"));
+    const nus = liens.filter((l) => !l.includes("min-h-11") && !(regleLangue44 && liensLangue.has(l)));
     if (debutPied === -1 || liens.length === 0) sansPlancher.push(`${chemin}:AUCUN LIEN DE PIED`);
     else if (nus.length > 0) sansPlancher.push(`${chemin}:${nus.length}/${liens.length} sans plancher`);
   }

@@ -77,7 +77,7 @@ describe("Le solde du palier, lu chez le fournisseur", () => {
   });
 
   test("« aujourd'hui » absent reste absent — jamais un zéro inventé", async () => {
-    const { today_used: _ignore, ...sansJour } = QUOTA.data;
+    const sansJour = Object.fromEntries(Object.entries(QUOTA.data).filter(([cle]) => cle !== "today_used"));
     bouchonner(() => Promise.resolve(reponse(200, { code: 0, data: sansJour })));
 
     const q = await dixSeptTrack.lireQuota();
