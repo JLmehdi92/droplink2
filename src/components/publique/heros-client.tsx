@@ -121,7 +121,7 @@ export function HerosClient({
         </div>
 
         <div className="cv-heros__corps">
-          <div className="cv-heros__texte">
+          <div>
             <p className="cv-ref cv-entree">
               {libelles.votreCommande}
               {reference === null ? null : (

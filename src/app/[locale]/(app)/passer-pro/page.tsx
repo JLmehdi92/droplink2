@@ -175,7 +175,7 @@ export default async function PasserProPage({ params }: { params: Promise<{ loca
      d'écrire un nombre. Le paiement est un lien SIGNÉ vers Lemon Squeezy (204) :
      aucun paiement ne passe par le produit (contrainte n° 1). */
   return (
-    <main id="contenu" className="tableau pro-ecran">
+    <main id="contenu" className="tableau">
       <div className="tableau__tete">
         <div>
           <p className="v4-fil">
@@ -232,7 +232,7 @@ export default async function PasserProPage({ params }: { params: Promise<{ loca
             <colgroup>
               <col className="tp__col-libelle" />
               <col />
-              <col className="tp__col-pro" />
+              <col />
             </colgroup>
             <thead>
               <tr>
@@ -267,7 +267,7 @@ export default async function PasserProPage({ params }: { params: Promise<{ loca
           ) : paiement === null ? (
             <span className="pro-pied__ferme">{t("pasEncoreOuvert")}</span>
           ) : (
-            <a href={paiement} target="_blank" rel="noopener noreferrer" className="bouton-app bouton-app--marque pro-pied__payer">
+            <a href={paiement} target="_blank" rel="noopener noreferrer" className="bouton-app bouton-app--marque">
               {t("passer")}
               <ArrowRight aria-hidden="true" className="ic" />
             </a>

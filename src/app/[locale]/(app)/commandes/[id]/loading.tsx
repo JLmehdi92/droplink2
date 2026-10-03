@@ -33,7 +33,7 @@ export default async function ChargementFiche() {
               </div>
             ))}
           </div>
-          <div className="squelette__carte squelette__droite">
+          <div className="squelette__carte">
             <i className="sq sq--etiquette sq--court" />
             <div className="squelette__medias">
               <i className="sq" />

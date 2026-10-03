@@ -96,11 +96,13 @@ export async function OutilPeriode({ base, parametres }: { readonly base: string
         <ChampsCaches parametres={parametres} sauf={["du", "au"]} />
         <label>
           {t("periodeDu")}
-          <input name="du" type="date" defaultValue={parametres.du ?? ""} max={parametres.au ?? undefined} />
+          {/* `filtre-du` / `filtre-au` : la fumée les cherche pour prouver que la période se pose
+              à TOUTES les largeurs, téléphone compris (audit du 18/09/2026). */}
+          <input id="filtre-du" name="du" type="date" defaultValue={parametres.du ?? ""} max={parametres.au ?? undefined} />
         </label>
         <label>
           {t("periodeAu")}
-          <input name="au" type="date" defaultValue={parametres.au ?? ""} min={parametres.du ?? undefined} />
+          <input id="filtre-au" name="au" type="date" defaultValue={parametres.au ?? ""} min={parametres.du ?? undefined} />
         </label>
         <div className="pop__pied">
           {posee ? (
@@ -182,7 +184,7 @@ export async function BarreListe({
               <span>{t("filtres")}</span>
               {nFiltres > 0 ? <b className="bouton-outil__n">{nFiltres}</b> : null}
             </summary>
-            <form method="get" action={base} className="pop pop--droite pop--filtres" data-sur-place="">
+            <form method="get" action={base} className="pop pop--droite" data-sur-place="">
               <ChampsCaches parametres={parametres} sauf={["statut", "qc", "archivees"]} />
               <label>
                 {t("statutExpedition")}
@@ -362,7 +364,7 @@ export async function ListeCommandes({
             <form method="post" action={geste} className="liste__lot">
               <input type="hidden" name="geste" value="lot" />
               <input type="hidden" name="retour" value={retour} />
-              <div className="liste__table" role="table" aria-label={t("titre")} data-table>
+              <div role="table" aria-label={t("titre")} data-table>
                 <div className="rangee rangee--tete" role="row">
                   <span role="columnheader">
                     <CaseTout libelle={t("toutSelectionner")} />

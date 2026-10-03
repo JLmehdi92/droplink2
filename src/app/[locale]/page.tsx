@@ -830,7 +830,7 @@ export default async function Accueil({ params }: { params: Promise<{ locale: st
                 <colgroup>
                   <col className="tp__col-libelle" />
                   <col />
-                  <col className="tp__col-pro" />
+                  <col />
                 </colgroup>
                 <thead>
                   <tr>

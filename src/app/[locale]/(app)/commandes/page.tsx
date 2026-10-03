@@ -193,7 +193,7 @@ export default async function Commandes({
   const outils = !compteVide;
 
   return (
-    <main id="contenu" className="tableau commandes-ecran">
+    <main id="contenu" className="tableau">
       <div className="tableau__tete">
         <div>
           <p className="v4-fil">
@@ -211,7 +211,10 @@ export default async function Commandes({
         {compteVide ? null : (
           <div className="outils-tete">
             <OutilPeriode base={base} parametres={parametres} />
-            {outils ? <OutilExport parametres={parametres} /> : null}
+            {/* LA PÉRIODE RESTE sur un filtre qui ne rend rien (on en a besoin pour revenir en
+                arrière) ; L'EXPORT NON : il n'y a rien à exporter, et il produirait un fichier
+                vide (règle du produit, gardée par la fumée — elle gagne sur la maquette). */}
+            {outils && page.lignes.length > 0 ? <OutilExport parametres={parametres} /> : null}
           </div>
         )}
       </div>

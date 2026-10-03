@@ -14,6 +14,7 @@
  * règles laissent la main aux classes utilitaires posées dans le JSX.
  */
 
+@layer base {
 :root {
   --fond: var(--color-ds-surface-page);
   --surface: #FFFFFF;
@@ -51,6 +52,7 @@
   --r-controle: 12px;
   --gouttiere: clamp(16px, 4vw, 40px);
   color-scheme: light;
+}
 }
 
 

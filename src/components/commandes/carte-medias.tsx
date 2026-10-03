@@ -478,7 +478,7 @@ export function CarteMedias({
         <h2 id="ed-medias">{t("titre")}</h2>
         <p className="ed-compteur">
           {t.rich("compteur", { n: medias.length, max: plafondMedias, b: (c) => <b>{c}</b> })}
-          <span className="ed-compteur__videos">
+          <span>
             {" \u00b7 "}
             {t("videos", { n: videos, max: plafondVideos })}
           </span>

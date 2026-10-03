@@ -2748,7 +2748,6 @@ img.compte__avatar { object-fit: cover; }
   .js [data-hx]:not([data-hx-parti]) :is([data-hx-carte], [data-hx-photo], [data-hx-tampon]) { opacity: 0; }
 }
 .formulaire__statut--erreur { background: color-mix(in srgb, var(--erreur-encre) 8%, var(--surface)); color: var(--erreur-encre); }
-}
 
 /* À l'impression, un tableau des tarifs pas encore regardé ne s'imprime pas vide. */
 @media print {
@@ -2761,3 +2760,4 @@ img.compte__avatar { object-fit: cover; }
    est partie avec la maquette. Elle garde l'allure d'une cellule, et le dit au survol. */
 a.adm-qui--lien { border-radius: 8px; text-decoration: none; }
 @media (hover: hover) and (pointer: fine) { a.adm-qui--lien:hover b { text-decoration: underline; text-underline-offset: 3px; } }
+}

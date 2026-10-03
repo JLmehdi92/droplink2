@@ -330,7 +330,6 @@ dialog.cv-feuille.sort::backdrop { animation: cv-voile-sort 220ms ease-out forwa
   .cv-trajet__ligne { background: var(--color-ds-filet-appuye); }
   .cv-trajet__fait, .cv-arret--fait, .cv-camion { background: var(--color-ds-texte-fort); color: #FFFFFF; }
 }
-}
 
 /* =====================================================================
    LES ÉCRANS D'ÉTAT DE /p (refonte, 02/10/2026) : le lien mort
@@ -427,3 +426,4 @@ dialog.cv-feuille.sort::backdrop { animation: cv-voile-sort 220ms ease-out forwa
 .cv-vis-vignette__lecture { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(11, 11, 24, .7); pointer-events: none; }
 @media (hover: hover) and (pointer: fine) { .cv-vis-bouton:hover { background: rgba(255, 255, 255, .2); } .cv-vis-vignette:hover { opacity: .85; } }
 @media (prefers-reduced-motion: reduce) { .cv-vis-bouton, .cv-vis-vignette { transition: none; } }
+}

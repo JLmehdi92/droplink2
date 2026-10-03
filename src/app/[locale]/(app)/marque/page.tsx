@@ -82,7 +82,7 @@ export default async function Marque({
   /* LA REFONTE (02/10/2026) suit `marque.html` : six réglages numérotés à
      gauche, l'aperçu de la page client à droite (mobile ou desktop). */
   return (
-    <main id="contenu" className="tableau marque-ecran">
+    <main id="contenu" className="tableau">
       <div className="tableau__tete">
         <div>
           <p className="v4-fil">

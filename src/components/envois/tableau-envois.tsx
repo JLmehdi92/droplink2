@@ -126,7 +126,7 @@ export async function TableauEnvois({
       {/* LES CINQ COMPTEURS FILTRENT LA LISTE (maquette) : ce sont des liens.
           Le seul jugement de couleur est l'alerte « sans mouvement » : un chiffre
           se vérifie, une appréciation se discute. */}
-      <nav className="compteurs compteurs--5 compteurs--liens v4-carte" aria-label={t("compteurs.titre")}>
+      <nav className="compteurs compteurs--5 v4-carte" aria-label={t("compteurs.titre")}>
         {tuiles.map((c) => (
           <LienEcran
             key={c.cle}
@@ -283,7 +283,7 @@ export async function TableauEnvois({
         ) : (
           /* LA SÉLECTION EXPORTE : un `GET` qui ne modifie rien. */
           <form method="get" action="/api/envois/export" className="liste__lot">
-            <div className="liste__table" role="table" aria-label={t("titre")} data-table>
+            <div role="table" aria-label={t("titre")} data-table>
               <div className="rangee rangee--tete rangee--envoi" role="row">
                 <span role="columnheader">
                   <CaseTout libelle={t("lot.toutSelectionner")} />

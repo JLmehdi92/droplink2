@@ -228,7 +228,7 @@ export default async function Tarifs({ params }: { params: Promise<{ locale: str
               <colgroup>
                 <col className="tp__col-libelle" />
                 <col />
-                <col className="tp__col-pro" />
+                <col />
               </colgroup>
               <thead>
                 <tr>

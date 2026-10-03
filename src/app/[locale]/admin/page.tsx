@@ -379,7 +379,7 @@ export default async function PanneauAdmin({
         ) : actions.length === 0 ? (
           <p className="adm-texte pb-4">{t("journal.vide")}</p>
         ) : (
-          <ol className="adm-journal adm-journal--court">
+          <ol className="adm-journal">
             {actions.map((ligne) => (
               <EntreeJournal key={ligne.id} ligne={ligne} />
             ))}

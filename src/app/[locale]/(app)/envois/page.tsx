@@ -105,7 +105,7 @@ export default async function Envois({
      fraîcheur des données avec « Actualiser » à droite. */
   const nom = profil.nomAffiche ?? profil.nomBoutique;
   return (
-    <main id="contenu" className="tableau envois-ecran">
+    <main id="contenu" className="tableau">
       <div className="tableau__tete">
         <div>
           <p className="v4-fil">
