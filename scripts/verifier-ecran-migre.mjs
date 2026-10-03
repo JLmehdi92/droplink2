@@ -932,6 +932,11 @@ const RELEVE = `(() => {
      */
     panneaux: [...document.querySelectorAll('details')].map((d) => {
       const s = d.querySelector('summary');
+      // ⚠️ UN BOUTON QU ON NE VOIT PAS N OUVRE RIEN (03/10/2026) : le menu de compte vit
+      // dans le tiroir, \`visibility: hidden\` et hors champ tant qu il est ferme — il
+      // sortait « hors de la fenetre » sur chaque ecran a 390. Tiroir OUVERT
+      // (\`CLIC_PRODUIT="Ouvrir le menu > ~<boutique>"\`), il y reste : mesure.
+      if (!s || getComputedStyle(s).visibility === 'hidden') return null;
       const ouvert = d.open;
       d.open = true;
       const pan = [...d.children].find((e) => e !== s);
@@ -991,6 +996,12 @@ const RELEVE = `(() => {
         // simple devant « s » se perd. L exclusion ne marchait donc que pour une
         // classe seule (18/09/2026).
         if (/(^|\\s)sr-only(\\s|$)/.test(e.className || '')) return false;
+        // ⚠️ LE CONTENU D UN \`<details>\` FERME, comme les regles voisines (03/10/2026) :
+        // il garde sa boite sans etre touchable, et la garde FIGEE au premier pas de
+        // son entree (\`scale(.97)\` des menus \`.pop\`) — 44 px y mesuraient 43, trente
+        // fois par ecran. Les menus OUVERTS se mesurent par \`CLIC_PRODUIT\`.
+        const dt = e.closest('details');
+        if (dt !== null && !dt.open && e.closest('summary') === null) return false;
         const label = e.closest('label');
         if (label !== null && label.getBoundingClientRect().height >= 44) return false;
         if (e.tagName === 'A') {
@@ -1039,6 +1050,10 @@ const RELEVE = `(() => {
           if (c.display === 'none' || c.visibility === 'hidden' || parseFloat(c.opacity) === 0) return false;
           if (c.textOverflow === 'ellipsis' || (c.webkitLineClamp && c.webkitLineClamp !== 'none')) return false;
           if (n === e) continue;
+          // ⚠️ UN CONTENEUR QUI DEFILE REND SON CONTENU ATTEIGNABLE (03/10/2026) : la bande
+          // d onglets des parametres defile a 390, ses derniers onglets sortaient « coupes
+          // par BODY » alors qu un glissement les amene. Au-dela de lui, rien n est coupe.
+          if (/^(auto|scroll)$/.test(c.overflowX) && r.right > n.getBoundingClientRect().right - 2) return false;
           const coupeX = c.overflowX === 'hidden' || c.overflowX === 'clip';
           const coupeY = c.overflowY === 'hidden' || c.overflowY === 'clip';
           if (!coupeX && !coupeY) continue;
@@ -1131,6 +1146,12 @@ const RELEVE = `(() => {
       for (let i = 0; i < textes.length && paires.length < 6; i++) for (let j = i + 1; j < textes.length && paires.length < 6; j++) {
         const a = textes[i], b = textes[j];
         if (a.e.contains(b.e) || b.e.contains(a.e)) continue;
+        /* ⚠️ DEUX LIGNES D UN MEME TITRE (landing, 03/10/2026) : le titre a l interligne 0,98
+           pose chaque ligne dans son \`span\` (\`.l4-ligne\`, comme la maquette) ; la boite d une
+           ligne compte les jambages de la police (~1,2 em), deux lignes voisines se « recouvrent »
+           donc de ~14 px sans qu un glyphe en touche un autre. */
+        const titre = a.e.closest('h1,h2,h3,h4,h5,h6');
+        if (titre !== null && titre === b.e.closest('h1,h2,h3,h4,h5,h6')) continue;
         const dx = Math.min(a.r.right, b.r.right) - Math.max(a.r.left, b.r.left);
         const dy = Math.min(a.r.bottom, b.r.bottom) - Math.max(a.r.top, b.r.top);
         if (dx > 2 && dy > 2) paires.push('« ' + (a.e.textContent || '').trim().slice(0, 20) + ' » sur « ' + (b.e.textContent || '').trim().slice(0, 20) + ' »');
@@ -1143,13 +1164,31 @@ const RELEVE = `(() => {
         if (e.type === 'hidden') return false;
         const d = e.closest('details');
         if (d !== null && !d.open && e.closest('summary') === null) return false;
+        /* ⚠️ L APPARITION AU DEFILEMENT (landing, 03/10/2026) : un bloc \`[data-apparait]\` reste
+           a opacite nulle tant qu il n est pas entre dans la fenetre (moins 8 % en bas, comme
+           la maquette, \`main.js\`). SOUS la fenetre, on ne le touche pas sans defiler, et le
+           defilement le revele. Dans la fenetre et encore invisible, il reste un defaut. */
+        if (e.closest('[data-apparait]:not(.est-visible)') !== null && r.top >= window.innerHeight * 0.92) return false;
         let opacite = 1;
         for (let n = e; n !== null && n.nodeType === 1; n = n.parentElement) {
           const c = getComputedStyle(n);
           if (c.display === 'none' || c.visibility === 'hidden') return false;
           opacite *= parseFloat(c.opacity);
         }
-        return opacite < 0.05; })
+        if (opacite >= 0.05) return false;
+        /* ⚠️ LE CHAMP NATIF TRANSPARENT POSÉ SUR SON RENDU (refonte, 03/10/2026) : case,
+           interrupteur, pastille de couleur. Un <input> à opacité nulle dont le PARENT est
+           visible et contient toute sa boîte n'est pas une cible invisible : sous le doigt,
+           c'est le contrôle qu'on voit. Un bouton ou un lien effacé reste signalé. */
+        const p = e.parentElement;
+        if (e.tagName === 'INPUT' && p !== null) {
+          let opaciteParent = 1;
+          for (let n = p; n !== null && n.nodeType === 1; n = n.parentElement) opaciteParent *= parseFloat(getComputedStyle(n).opacity);
+          const rp = p.getBoundingClientRect();
+          const couvre = rp.left <= r.left + 1 && rp.top <= r.top + 1 && rp.right >= r.right - 1 && rp.bottom >= r.bottom - 1;
+          if (opaciteParent >= 0.05 && couvre) return false;
+        }
+        return true; })
       .map((e) => ({ quoi: (e.getAttribute('aria-label') || e.getAttribute('title') || e.textContent || e.tagName).trim().slice(0, 40), ...boite(e) })),
     barre_laterale: aside ? { ...boite(aside), filet: getComputedStyle(aside).borderRightColor } : null,
     principal: main ? { ...boite(main), colonnes: getComputedStyle(main).gridTemplateColumns, gap: getComputedStyle(main).gap, maxW: getComputedStyle(main).maxWidth } : null,
@@ -1285,7 +1324,11 @@ const VISIBLES = `(() => {
   };
   const textes = [...document.querySelectorAll('body *')]
     .filter((e) => e.children.length === 0 && (e.textContent || '').trim().length > 1 &&
-                   !['SCRIPT','STYLE','TITLE'].includes(e.tagName) && e.getClientRects().length > 0)
+                   !['SCRIPT','STYLE','TITLE'].includes(e.tagName) && e.getClientRects().length > 0 &&
+                   // Le décoratif (\`aria-hidden\`) ne porte aucune information (règle 4) : le film des
+                   // pages d'accès se FIGE sous \`reduce\` sur une image choisie, comme la maquette
+                   // (\`film.js\`), et ses autres plans « disparaissaient » (03/10/2026).
+                   e.closest('[aria-hidden=true]') === null)
     .map((e) => {
       const r = e.getBoundingClientRect();
       return { texte: (e.textContent || '').trim().slice(0, 40), visible: opaciteEffective(e) >= 0.5,
