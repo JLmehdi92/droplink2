@@ -1,5 +1,6 @@
 "use client";
 
+import { annoncer } from "@/components/app/annonce";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -85,61 +86,46 @@ export function ReglageInterrupteur({ reglage }: { reglage: InterrupteurVu }) {
     // qui aurait pu diverger.
     donnees.set("valeur", actif ? "0" : "1");
 
-    setEtat(await enregistrerParametre(INITIAL, donnees));
+    // Un rejet (réseau) laissait l'interrupteur verrouillé jusqu'au rechargement, sans un mot
+    // (revue ECC du 03/10/2026) : il devient l'échec « panne », dit sous le réglage.
+    const resultat = await enregistrerParametre(INITIAL, donnees).catch(
+      (): Awaited<ReturnType<typeof enregistrerParametre>> => ({ statut: "erreur", motif: "panne" }),
+    );
+    setEtat(resultat);
     setEnCours(false);
+    // LA BULLE DE LA MAQUETTE (`admin.js`) : « Suivi des colis : activé, effet immédiat, écrit
+    // au journal. » — l'état DIT est celui que la base a relu ; la trace vient du déclencheur
+    // `tracer_parametre`, dans la même transaction que l'écriture.
+    if (resultat.statut === "ok") {
+      annoncer(
+        t(resultat.apres.valeur !== 0 ? "faitActive" : "faitDesactive", { nom: t(`cles.${reglage.cle}.titre`) }),
+      );
+    }
   };
 
   return (
-    <div className="border-t border-ds-filet py-4">
-      <div className="flex items-center justify-between gap-6">
-        <div className="min-w-0">
-          <p className="text-[14px] leading-[18px] font-semibold text-ds-texte-fort">
-            {t(`cles.${reglage.cle}.titre`)}
-          </p>
-          <p className="mt-[2px] text-[12px] leading-[15px] text-ds-texte-sourdine">
-            {t(`cles.${reglage.cle}.aide`)}
-          </p>
-        </div>
-
-        {/*
-         * ⚠️ LA CIBLE TACTILE EST SUR LE BOUTON, LA PILULE EST DEDANS. Le
-         * plancher de 44 px posé sous `pointer: coarse` s'applique au BOUTON :
-         * dessiner la pilule directement dessus la faisait passer de 27 à 44 px
-         * de haut au téléphone — mesuré. Le doigt garde ses 44 px, l'œil garde
-         * les 27 de la planche.
-         */}
-        <button
-          type="button"
-          role="switch"
-          aria-checked={actif}
-          aria-label={t(`cles.${reglage.cle}.titre`)}
-          disabled={enCours}
-          onClick={() => void basculer()}
-          className="flex shrink-0 items-center justify-center disabled:opacity-60"
-        >
-          <span
-            className={
-              "flex h-[27px] w-[46px] items-center rounded-ds-pill px-[3px] " +
-              (actif ? "justify-end bg-ds-accent" : "justify-start bg-[#dcdce4]")
-            }
-          >
-            <span className="block h-[21px] w-[21px] rounded-ds-pill bg-white" />
-          </span>
-        </button>
+    <div className={"adm-reglage adm-reglage--inter" + (etat.statut === "erreur" ? " est-erreur" : "")}>
+      <div>
+        <p className="adm-reglage__titre">{t(`cles.${reglage.cle}.titre`)}</p>
+        <p>{t(`cles.${reglage.cle}.aide`)}</p>
+        <small className="adm-origine">{ecrit ? origine : t("origine.jamaisDecide")}</small>
       </div>
-
-      {ecrit ? (
-        <p className="mt-[6px] text-[12px] leading-[15px] text-ds-texte-sourdine">
-          {origine}
-        </p>
-      ) : null}
-
-      <p aria-live="polite" className="text-[12px] leading-[16px] empty:hidden">
-        {etat.statut === "ok" ? (
-          <span className="mt-[6px] block text-ds-texte-fort">{t("fait")}</span>
-        ) : etat.statut === "erreur" ? (
-          <span className="mt-[6px] block text-ds-erreur-encre">{t(`erreur.${etat.motif}`)}</span>
-        ) : null}
+      {/* L'ÉTAT AFFICHÉ EST CELUI QUE LA BASE A RENDU, jamais un pari : la case
+          ne bascule qu'à la réponse (contrainte 8). */}
+      <label className="interrupteur">
+        <input
+          type="checkbox"
+          role="switch"
+          checked={actif}
+          disabled={enCours}
+          onChange={() => void basculer()}
+          aria-label={t(`cles.${reglage.cle}.titre`)}
+        />
+        <i aria-hidden="true" />
+      </label>
+      <p className="adm-reglage__retour" role="status" aria-live="polite">
+        {/* Un refus reste écrit dans la rangée ; un succès se dit dans la bulle. */}
+        {etat.statut === "erreur" ? t(`erreur.${etat.motif}`) : null}
       </p>
     </div>
   );

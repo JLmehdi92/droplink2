@@ -68,11 +68,21 @@ const DU_CANEVAS = new Set([
  */
 const EXCEPTIONS: ReadonlyArray<readonly [string, string]> = [
   ["#4285f4", "logo Google — une marque tierce ne se retouche pas"],
+  /* La landing de la refonte (02/10/2026). Les deux pastilles du nuancier de
+     démonstration sont des teintes de VENDEUR imaginaires — corail et jaune — que
+     `resoudreAccent` corrige sous les yeux du visiteur : elles n'appartiennent à
+     aucune palette, c'est tout leur propos. Et `#6A4D21` n'est pas une couleur :
+     c'est la référence de la commande de démonstration (« Commande #6A4D21 »),
+     que le motif hexadécimal attrape. */
+  ["#e0533f", "nuancier de la landing : une teinte de vendeur imaginaire, corrigée par resoudreAccent"],
+  ["#f5c518", "nuancier de la landing : un jaune trop clair pour du texte, la démonstration de l'ajustement"],
+  ["#6a4d21", "pas une couleur : la référence de la commande de démonstration de la landing"],
   ["#ea4335", "logo Google"],
   ["#fbbc05", "logo Google"],
   ["#34a853", "logo Google"],
-  ["#c13584", "logo Instagram"],
-  ["#1da851", "logo WhatsApp"],
+  // Instagram (#c13584) et WhatsApp (#1da851) sont sortis le 02/10/2026 : les
+  // tuiles colorées des réseaux de « Ma marque » ont laissé place aux champs à
+  // icône de la refonte, dans la couleur de l'interface.
   /*
    * ⚠️ LES NEUF MONOGRAMMES DE TRANSPORTEUR, ET POURQUOI CE NE SONT PAS DES
    * LOGOS RECONSTITUÉS.
@@ -102,21 +112,6 @@ const EXCEPTIONS: ReadonlyArray<readonly [string, string]> = [
   ["#4d148c", "monogramme FedEx — dessin du kit"],
   ["#ff6600", "encre du monogramme FedEx — dessin du kit"],
   /*
-   * ⚠️ LES TROIS ARRÊTS DU FOND DES ÉCRANS D'ACCÈS, ET POURQUOI ILS N'ONT PAS
-   * DE TOKEN. Le design system pose ce dégradé EN DUR dans son `AuthBackdrop` :
-   * `linear-gradient(135deg,#F3F1FE 0%,#FAF8FE 42%,#F7F2FC 100%)`. Il ne le
-   * range pas dans `tokens/colors.css` parce qu'il ne sert qu'à ces deux
-   * écrans — trois teintes de lavande à peine distinctes, qui n'ont de sens
-   * qu'ensemble et dans cet ordre.
-   *
-   * Les nommer ici les rend RELUES plutôt que tolérées : si un troisième écran
-   * les employait, ce serait le signe qu'elles méritent un token, et cette
-   * ligne est l'endroit où on s'en apercevrait.
-   */
-  ["#f3f1fe", "fond des écrans d'accès — arrêt 0 %, repris du design system"],
-  ["#faf8fe", "fond des écrans d'accès — arrêt 42 %"],
-  ["#f7f2fc", "fond des écrans d'accès — arrêt 100 %"],
-  /*
    * LES PAGES LÉGALES, portées sur le kit `legal` le 13/09/2026. Trois couleurs
    * que le kit écrit en dur et qu'aucun token ne porte : la pastille « à
    * compléter » — filet pointillé et encre ambre — et le filet de l'encadré
@@ -131,58 +126,30 @@ const EXCEPTIONS: ReadonlyArray<readonly [string, string]> = [
      plus rien. C'est l'AUTRE SENS du test qui les a sorties, pas une relecture :
      une exception qui ne désigne plus rien est une porte ouverte sur la valeur
      du jour où quelqu'un la réécrira. */
-  ["#f3dfb4", "filet de l'encadré d'avertissement des pages légales — kit legal"],
-  /*
-   * LA PAGE DU LIEN MORT, portée sur `client_link/not-found` le 13/09/2026 : un
-   * cinquième lavande, et le kit le pose en dur sur cette seule page.
-   */
-  ["#f2f0fd", "fond de la page du lien mort — arrêt 0 %, kit client_link"],
-  ["#faf9fe", "fond de la page du lien mort — arrêt 42 %, et fond des pages légales — arrêt 0 %"],
-  ["#f6f2fc", "fond de la page du lien mort — arrêt 100 %"],
+  /* `#f3dfb4` (filet ambre des alertes) est parti le 02/10/2026 avec les cartes
+     d'alerte de l'ancienne administration. */
+  /* Les trois arrêts lavande de l'ancienne page du lien mort (`#f2f0fd`, `#faf9fe`,
+     `#f6f2fc`) sont partis le 02/10/2026 : elle prend la grammaire de la page de
+     notification (`lien-invalide.html`), peinte par la feuille. */
   // Le dernier arrêt du fond des pages légales. Il n'était PAS déclaré et la
   // garde n'a rien dit : c'est la couleur que la correction du motif a sortie.
-  ["#f8f3fd", "fond des pages légales — arrêt 100 %, kit legal"],
-  /*
-   * ⚠️ LE FOND DE L'ESPACE VENDEUR, ET C'EST UN QUATRIÈME LAVANDE. Le design
-   * system en pose un par surface, tous voisins et tous différents :
-   *   accès          #F3F1FE → #FAF8FE → #F7F2FC
-   *   page client    #F6F4FE → #FBFAFE → #F8F3FD
-   *   espace vendeur #F7F5FE → #FBFAFE → #F8F4FD
-   *
-   * Deux d'entre eux partagent leur arrêt médian et aucun n'a les mêmes bornes.
-   * À l'œil ils sont indiscernables ; c'est précisément pourquoi ils sont
-   * NOMMÉS ici plutôt que tolérés : le jour où l'un est recopié sur la mauvaise
-   * surface, cette liste est le seul endroit où l'écart se lit.
-   */
-  ["#f7f5fe", "fond de l'espace vendeur — arrêt 0 %"],
-  [
-    "#fbfafe",
-    "l'arrêt MÉDIAN, partagé par la page client et l'espace vendeur. Le seul " +
-      "des onze arrêts que deux surfaces emploient réellement — et je l'avais " +
-      "décrit dans le commentaire ci-dessus sans le déclarer : le contrôle l'a " +
-      "dit, la relecture ne l'avait pas vu.",
-  ],
-  ["#f8f4fd", "fond de l'espace vendeur — arrêt 100 %"],
-  /*
-   * ⚠️ LES TROIS PASTILLES DE LA FENÊTRE DE LA MAQUETTE DU HÉROS, portées avec
-   * elle le 17/09/2026 (`AppWindowMock` du kit `marketing_site`).
-   *
-   * Ce ne sont PAS des couleurs de thème, et c'est la raison de les garder hors
-   * de la palette : elles citent le chrome de fenêtre d'un système
-   * d'exploitation, comme un logo de marque tierce. Les jetonner les ferait
-   * suivre notre palette au prochain changement de design — et une pastille
-   * « fermer » verte ne se lirait plus comme une fenêtre.
-   *
-   * Elles ne peignent rien d'autre que ce dessin : `aria-hidden`, aucun texte
-   * par-dessus, donc aucun contraste à tenir.
-   */
+  /* Les trois arrêts du fond de l'ancienne coque (`#f7f5fe`, `#fbfafe`, `#f8f4fd`)
+     sont partis le 02/10/2026 : l'administration, dernière à les peindre, prend le
+     fond de la refonte (`page-app`). */
   /* Les étoiles des témoignages de la landing — `TestimonialCard` du kit les
      peint en `#F5B843` en dur, et aucun jeton du design system ne le porte.
      Portées le 18/09/2026 avec la section, sur la liste d'écarts de Wassim. */
-  ["#f5b843", "étoiles pleines des témoignages de la landing — TestimonialCard, kit marketing_site"],
-  ["#ff5f57", "pastille « fermer » de la fenêtre dessinée du héros — chrome macOS, kit marketing_site"],
-  ["#febc2e", "pastille « réduire » de la fenêtre dessinée du héros — chrome macOS, kit marketing_site"],
-  ["#28c840", "pastille « agrandir » de la fenêtre dessinée du héros — chrome macOS, kit marketing_site"],
+  /*
+   * LES COULEURS RAPIDES DE L'ONBOARDING (refonte, 02/10/2026, `bienvenue.html`).
+   * Ce sont des PROPOSITIONS de couleur de marque pour le vendeur, pas des
+   * couleurs de notre thème : elles finissent dans `shops.accent_color` et
+   * passent par `resoudreAccent()` comme une saisie libre. Les jetonner les
+   * ferait suivre notre palette, alors qu'elles doivent rester des choix variés.
+   * (Les trois arrêts du fond d'accès et les pastilles de la fenêtre du héros
+   * sont partis le même jour avec `coque-acces` et `maquette-application`.)
+   */
+  ["#e5484d", "couleur rapide « corail » proposée à l'onboarding — maquette bienvenue.html"],
+  ["#d97706", "couleur rapide « ambre » proposée à l'onboarding — maquette bienvenue.html"],
 ];
 const tolerees = new Map(EXCEPTIONS);
 

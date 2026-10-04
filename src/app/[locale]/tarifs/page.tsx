@@ -1,8 +1,11 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormateur } from "@/lib/format/formateur";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Check, Crown, Tag } from "lucide-react";
-import { CoquePublique } from "@/components/coque-publique";
+import { CoqueSite } from "@/components/public/coque-site";
+import { GrapheJsonLd } from "@/components/seo/graphe-json-ld";
+import { donneesPage } from "@/lib/seo/donnees-structurees";
 import { creerClientServeur } from "@/lib/supabase/server";
 import { PRIX_PRO_EUR } from "@/lib/paiement/plan";
 import { routing } from "@/i18n/routing";
@@ -44,7 +47,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const langue = estLangueSupportee(locale) ? locale : LANGUE_DEFAUT;
   const t = await getTranslations({ locale: langue, namespace: "tarifs" });
-  const format = await getFormatter({ locale: langue });
+  const format = await getFormateur({ locale: langue });
   const description = t("metaDescription", {
     prix: format.number(PRIX_PRO_EUR, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }),
   });
@@ -56,9 +59,6 @@ export async function generateMetadata({
   };
 }
 
-const BOUTON =
-  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-ds-pill border px-[22px] text-[14px] leading-[normal] font-semibold tracking-[-0.02em] transition-shadow";
-
 export default async function Tarifs({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -66,7 +66,8 @@ export default async function Tarifs({ params }: { params: Promise<{ locale: str
   const t = await getTranslations("tarifs");
   const p = await getTranslations("passerPro");
   const nav = await getTranslations("navigation");
-  const format = await getFormatter();
+  const a = await getTranslations("accueil");
+  const format = await getFormateur();
 
   // Le client serveur ordinaire : `anon` pour un visiteur, `authenticated` pour un
   // vendeur connecté — les deux ont le droit de lire ces deux nombres (096, 176, 196).
@@ -104,174 +105,173 @@ export default async function Tarifs({ params }: { params: Promise<{ locale: str
 
   /* Le tableau de « Passer au Pro », ligne pour ligne : un plafond illisible
      fait disparaître ses deux lignes plutôt que d'afficher un nombre de secours. */
-  const LIGNES: ReadonlyArray<{ readonly cle: string; readonly gratuit: string; readonly pro: string }> = [
+  const gras = { b: (c: React.ReactNode) => <b>{c}</b> };
+  const inclus = <Check className="ic tp-oui" role="img" aria-label={p("tableau.inclus")} />;
+  const LIGNES: ReadonlyArray<{ readonly cle: string; readonly gratuit: React.ReactNode; readonly pro: React.ReactNode }> = [
     ...(aVie === null
       ? []
       : [
           {
             cle: "commandes",
-            gratuit: p("tableau.aVie", { n: nombre(aVie) }),
-            pro: parMois === null ? p("tableau.mensuel") : p("tableau.parMois", { n: nombre(parMois) }),
+            gratuit: p.rich("tableau.aVie", { n: nombre(aVie), ...gras }),
+            pro: parMois === null ? p("tableau.mensuel") : p.rich("tableau.parMois", { n: nombre(parMois), ...gras }),
           },
           {
             cle: "colis",
             // UNE FOIS le quota de commandes (201) : 5 commandes, 5 colis depuis la 210, sans marge
             // de correction payée par le budget de suivi commun.
-            gratuit: p("tableau.aVie", { n: nombre(aVie) }),
+            gratuit: p.rich("tableau.aVie", { n: nombre(aVie), ...gras }),
             // Une fois le plafond de commandes, plus deux (197) : 300 commandes, 300 colis.
-            pro: parMois === null ? p("tableau.mensuel") : p("tableau.parMois", { n: nombre(parMois) }),
+            pro: parMois === null ? p("tableau.mensuel") : p.rich("tableau.parMois", { n: nombre(parMois), ...gras }),
           },
         ]),
-    { cle: "adresse", gratuit: p("tableau.adresseGratuit"), pro: p("tableau.adressePro") },
+    {
+      cle: "adresse",
+      gratuit: <code className="tp-code">{p("tableau.adresseGratuit")}</code>,
+      pro: <code className="tp-code tp-code--pro">{p("tableau.adressePro")}</code>,
+    },
     { cle: "carte", gratuit: p("tableau.carteGratuit"), pro: p("tableau.cartePro") },
-    { cle: "medias", gratuit: p("tableau.inclus"), pro: p("tableau.inclus") },
-    { cle: "couleurs", gratuit: p("tableau.inclus"), pro: p("tableau.inclus") },
+    { cle: "medias", gratuit: inclus, pro: inclus },
+    { cle: "couleurs", gratuit: inclus, pro: inclus },
   ];
 
-  const carte = (pro: boolean): string =>
-    "flex flex-col gap-5 rounded-ds-card-lg border bg-ds-surface-carte p-[22px] md:p-7 " +
-    (pro ? "border-ds-violet-200 shadow-ds-md" : "border-ds-filet shadow-ds-card");
-
   const liste = (elements: readonly string[]) => (
-    <ul className="flex flex-1 flex-col gap-3 border-t border-ds-filet pt-5">
+    <ul className="tf-inclus">
       {elements.map((x) => (
-        <li key={x} className="flex items-start gap-2.5 text-[14px] leading-[1.45] text-ds-texte-corps">
-          <span className="mt-px inline-flex flex-none text-ds-accent">
-            <Check aria-hidden="true" size={16} strokeWidth={2.2} />
-          </span>
+        <li key={x}>
+          <Check aria-hidden="true" className="ic" />
           <span>{x}</span>
         </li>
       ))}
     </ul>
   );
 
+  /* LA REFONTE (02/10/2026) suit `tarifs.html` : en-tête de page, les deux plans, le
+     tableau de comparaison. Plafonds et prix LUS (base, `PRIX_PRO_EUR`). Le dégradé est
+     sur « Commencer avec Pro », la seule action principale de l'écran (règle 3). */
   return (
-    // Le dégradé revient au bouton de la carte Pro (règle 3) : « Créer un compte »
-    // passe en secondaire dans l'en-tête, comme sur le signalement.
-    <CoquePublique locale={locale} pastille={t("pastille")} enteteSecondaire>
-      <main id="contenu" className="mx-auto box-border w-full max-w-[1180px] flex-1 px-4 pt-6 pb-12 md:px-[34px] md:pt-12 md:pb-20">
-        <div className="max-w-[720px]">
-          <span className="mb-3.5 inline-flex items-center gap-2 rounded-ds-pill bg-ds-surface-teinte px-3 py-[5px] text-[11.5px] leading-[normal] font-extrabold tracking-[0.12em] text-ds-accent-encre uppercase md:text-[11px]">
-            <Tag aria-hidden="true" size={13} strokeWidth={2.2} />
-            {t("eyebrow")}
-          </span>
-          <h1 className="text-[27px] leading-[1.06] font-extrabold tracking-[-0.045em] text-balance text-ds-texte-fort sm:text-[32px] md:text-[44px]">
-            {t("titre")}
-          </h1>
-          <p className="mt-3.5 text-[16px] leading-[1.55] text-ds-texte-corps">{t("intro")}</p>
-        </div>
-
-        <div className="mt-8 grid gap-[18px] md:grid-cols-2">
-          <section className={carte(false)}>
-            <div>
-              <span className="flex items-center gap-2 text-[15px] leading-[normal] font-bold text-ds-texte-fort">
-                {p("gratuit")}
-              </span>
-              <span className="mt-3 block text-[44px] leading-none font-extrabold tracking-[-0.045em] text-ds-texte-fort">
-                {zero}
-              </span>
-              <span className="mt-2 block text-[13.5px] leading-[normal] text-ds-texte-sourdine">{t("gratuitSous")}</span>
-            </div>
-            {liste(inclusGratuit)}
-            <Link
-              href={`/${locale}/inscription`}
-              className={BOUTON + " border-ds-filet bg-ds-surface-carte text-ds-texte-fort shadow-ds-sm hover:shadow-ds-md"}
-            >
-              {t("ctaGratuit")}
-              <ArrowRight aria-hidden="true" size={16} strokeWidth={1.9} />
-            </Link>
-          </section>
-
-          <section className={carte(true)}>
-            <div>
-              <span className="flex items-center gap-2 text-[15px] leading-[normal] font-bold text-ds-accent-encre">
-                <Crown aria-hidden="true" size={16} strokeWidth={2.2} />
-                {p("pro")}
-              </span>
-              <span className="mt-3 block text-[44px] leading-none font-extrabold tracking-[-0.045em] text-ds-texte-fort">
-                {prix}
-              </span>
-              <span className="mt-2 block text-[13.5px] leading-[normal] text-ds-texte-sourdine">{t("proSous")}</span>
-            </div>
-            {liste(inclusPro)}
-            <div className="flex flex-col gap-2.5">
-              <Link
-                href={`/${locale}/inscription`}
-                className={
-                  BOUTON +
-                  " degrade-ds-marque border-transparent text-ds-texte-sur-marque shadow-ds-brand hover:shadow-ds-brand-hover"
-                }
-              >
-                {t("ctaPro")}
-                <ArrowRight aria-hidden="true" size={16} strokeWidth={1.9} />
-              </Link>
-              <span className="text-[12.5px] leading-[1.55] text-ds-texte-sourdine">
-                {t("noteCompte")} {t("dejaInscrit")}{" "}
-                <Link href={`/${locale}/connexion`} className="font-semibold text-ds-texte-lien hover:text-ds-texte-lien-survol">
-                  {nav("seConnecter")}
-                </Link>
-              </span>
-            </div>
-          </section>
-        </div>
-
-        <h2 className="mt-12 mb-4 text-[22px] font-bold tracking-[-0.03em] text-balance text-ds-texte-fort">
-          {t("comparer")}
-        </h2>
-        <section className="rounded-ds-card-lg border border-ds-filet bg-ds-surface-carte p-6 shadow-ds-card">
-          <div className="hidden grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] items-baseline gap-4 border-b border-ds-filet-appuye pb-3.5 md:grid">
-            <span />
-            <span className="text-[13px] leading-[normal] font-bold text-ds-texte-sourdine">{p("gratuit")}</span>
-            <span className="flex flex-wrap items-baseline gap-2">
-              <span className="text-[13px] leading-[normal] font-bold text-ds-accent-encre">{p("pro")}</span>
-              <span className="inline-flex items-center gap-1.5 rounded-ds-pill bg-ds-violet-100 px-[11px] py-[5px] text-[11px] leading-[normal] font-bold tracking-[-0.02em] text-ds-accent-encre">
-                {p("parMois", { prix })}
-              </span>
+    <CoqueSite locale={locale} page="tarifs">
+      {/* La description du graphe est le chapeau, sans montant : les données
+          structurées ne déclarent aucun prix (`seo.test.ts`). */}
+      <GrapheJsonLd
+        graphe={donneesPage(estLangueSupportee(locale) ? locale : LANGUE_DEFAUT, "/tarifs", {
+          nom: t("eyebrow"),
+          description: t("intro"),
+        })}
+      />
+      <main id="contenu" className="pub">
+        <section className="pub-tete conteneur">
+          <p className="l4-etiquette">
+            <span>
+              <Tag aria-hidden="true" className="ic" />
             </span>
-          </div>
-
-          {LIGNES.map((ligne, i) => (
-            <div
-              key={ligne.cle}
-              className={
-                "py-3.5 md:grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4 " +
-                (i === LIGNES.length - 1 ? "" : "border-b border-ds-filet")
-              }
-            >
-              <span className="block text-[14px] leading-[normal] font-semibold text-ds-texte-fort">
-                {p(`tableau.${ligne.cle}`)}
-              </span>
-              {/* Au téléphone chaque valeur porte son plan : sans en-tête de colonne,
-                  « Affichée » seul ne dit pas duquel. */}
-              <span className="mt-1.5 flex min-w-0 items-baseline justify-between gap-3 md:mt-0 md:block">
-                <span className="flex-none text-[12.5px] leading-[normal] text-ds-texte-sourdine md:hidden">
-                  {p("gratuit")}
-                </span>
-                <span className="min-w-0 text-right text-[14px] leading-[normal] break-words text-ds-texte-corps md:block md:text-left">
-                  {ligne.gratuit}
-                </span>
-              </span>
-              <span className="mt-1.5 flex min-w-0 items-baseline justify-between gap-3 md:mt-0 md:block">
-                <span className="flex-none text-[12.5px] leading-[normal] text-ds-texte-sourdine md:hidden">
-                  {p("pro")}
-                </span>
-                <span className="min-w-0 text-right text-[14px] leading-[normal] font-semibold break-words text-ds-accent-encre md:block md:text-left">
-                  {ligne.pro}
-                </span>
-              </span>
-            </div>
-          ))}
-
-          <p className="mt-[22px] max-w-[520px] text-[12.5px] leading-[1.55] text-ds-texte-sourdine">{p("facture")}</p>
+            {t("eyebrow")}
+          </p>
+          <h1 className="pub-titre l4-titre">
+            <span className="l4-ligne" style={{ "--l": 0 } as React.CSSProperties}>{t("titre")}</span>
+          </h1>
+          <p className="pub-chapo" data-entree>
+            {t("intro")}
+          </p>
         </section>
 
-        <p className="mt-7 text-[14px] leading-[1.55] text-ds-texte-corps">
-          {t("question")}{" "}
-          <Link href={`/${locale}/docs#faq`} className="font-semibold text-ds-texte-lien hover:text-ds-texte-lien-survol">
-            {t("voirDocs")}
-          </Link>
-        </p>
+        <section className="conteneur tf-plans">
+          <article className="tf-plan v4-carte" data-anime>
+            <header>
+              <h2>{p("gratuit")}</h2>
+              <p className="tf-prix">
+                <b>{zero}</b>
+              </p>
+              <p className="tf-sous">{t("gratuitSous")}</p>
+            </header>
+            {liste(inclusGratuit)}
+            <Link className="bouton bouton--second bouton--large min-h-11" href={`/${locale}/inscription`}>
+              {t("ctaGratuit")}
+              <ArrowRight aria-hidden="true" className="ic" />
+            </Link>
+          </article>
+          <article className="tf-plan tf-plan--pro v4-carte" data-anime>
+            <header>
+              <h2>
+                <Crown aria-hidden="true" className="ic" />
+                {p("pro")}
+              </h2>
+              <p className="tf-prix">
+                <b>{prix}</b>
+                <small>{a("tarifs.parMois")}</small>
+              </p>
+              <p className="tf-sous">{t("proSous")}</p>
+            </header>
+            {liste(inclusPro)}
+            <div className="tf-pro-actions">
+              <Link className="bouton bouton--marque bouton--large min-h-11" href={`/${locale}/inscription`}>
+                {t("ctaPro")}
+                <ArrowRight aria-hidden="true" className="ic" />
+              </Link>
+              <p className="tf-note">
+                {t("noteCompte")} {t("dejaInscrit")}{" "}
+                <Link className="lien-texte" href={`/${locale}/connexion`}>
+                  {nav("seConnecter")}
+                </Link>
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <section className="conteneur tf-comparer" aria-labelledby="tf-comparer">
+          <h2 id="tf-comparer" className="pub-h2">
+            {t("comparer")}
+          </h2>
+          <div className="tp tf-tp" data-anime>
+            <table className="tp__table">
+              <caption className="sr">{t("comparer")}</caption>
+              <colgroup>
+                <col className="tp__col-libelle" />
+                <col />
+                <col />
+              </colgroup>
+              <thead>
+                <tr>
+                  <td className="tp__coin" />
+                  <th scope="col">
+                    <span className="tp__nom">{p("gratuit")}</span>
+                    <span className="tp__prix">
+                      <b>{zero}</b>
+                    </span>
+                  </th>
+                  <th scope="col" className="tp__pro">
+                    <span className="tp__nom">{p("pro")}</span>
+                    <span className="tp__prix">
+                      <b>{prix}</b>
+                      <small>{a("tarifs.parMois")}</small>
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {LIGNES.map((ligne, i) => (
+                  <tr key={ligne.cle} style={{ "--i": i } as React.CSSProperties}>
+                    <th scope="row">{p(`tableau.${ligne.cle}`)}</th>
+                    <td>{ligne.gratuit}</td>
+                    <td>{ligne.pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* QUI FACTURE, ET CE QUE DEVIENT LE PLAN À LA RÉSILIATION : la maquette ne la porte
+              pas, le produit la garde (contrainte n° 1, et Lemon Squeezy demande ces
+              conditions sur la page publique de tarifs). */}
+          <p className="tf-note">{p("facture")}</p>
+          <p className="tf-question">
+            {t("question")}{" "}
+            <Link className="lien-texte" href={`/${locale}/docs#plans`}>
+              {t("voirDocs")}
+              <ArrowRight aria-hidden="true" className="ic" />
+            </Link>
+          </p>
+        </section>
       </main>
-    </CoquePublique>
+    </CoqueSite>
   );
 }

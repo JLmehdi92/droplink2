@@ -3,7 +3,8 @@ import { EXPLICATION_MIN, lireEtatBlocage } from "@/lib/commandes/contestation";
 import { limites } from "@/lib/storage/limites";
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormateur } from "@/lib/format/formateur";
 import type { Metadata } from "next";
 import { TraductionsClient } from "@/components/traductions-client";
 import { Editeur } from "@/components/commandes/editeur";
@@ -47,7 +48,7 @@ const lireCommandeEditee = cache(async (id: string) => {
       // ouverture porte sur un brouillon encore vide ou sur une commande déjà
       // remplie — la distinction que portait le second point d'émission qu'on
       // vient de retirer.
-      "id, public_token, customer_label, product_ref, tracking_number, carrier_code, internal_notes, status, qc_status, cover_media_id, archived_at, first_content_at, views_count, last_viewed_at, created_at, updated_at",
+      "id, public_token, customer_label, product_ref, tracking_number, carrier_code, internal_notes, status, qc_status, cover_media_id, archived_at, first_content_at, views_count, last_viewed_at, created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -237,7 +238,7 @@ export default async function EditeurCommande({
     else suiviBloque = EtatQuota.parse(quota);
   }
 
-  const format = await getFormatter();
+  const format = await getFormateur();
   const instant = (iso: string): string =>
     format.dateTime(new Date(iso), {
       day: "numeric",
@@ -315,13 +316,7 @@ export default async function EditeurCommande({
   const jourLong = (iso: string): string => format.dateTime(new Date(iso), { dateStyle: "long" });
 
   return (
-    /*
-      LA MARGE NÉGATIVE ANNULE LA PLACE RÉSERVÉE AUX ONGLETS. Le layout de
-      l'espace vendeur réserve 86 px en bas pour la barre d'onglets fixe ;
-      l'éditeur n'en a pas — la planche `EditeurMobile` met une bande d'action à
-      la place. Sans cette annulation, 86 px de gris flottaient sous la bande.
-    */
-    <main id="contenu" className="-mb-[86px] flex min-h-dvh flex-col md:mb-0">
+    <main id="contenu" className="tableau fiche">
       <TraductionsClient espaces={["editeur", "medias", "actions", "blocageVendeur"]}>
         <Editeur
           // UNE CLÉ PAR COMMANDE (revue ECC du 23/09/2026) : l'éditeur et sa carte
@@ -331,6 +326,7 @@ export default async function EditeurCommande({
           key={data.id}
           id={data.id}
           langue={langue}
+          boutique={profil.nomAffiche ?? profil.nomBoutique}
           jeton={data.public_token}
           // Le menu « ••• » de la fiche (dupliquer, archiver, sortir des
           // archives), rendu ici côté serveur : voir `menu-gestes-fiche.tsx`.
@@ -360,7 +356,6 @@ export default async function EditeurCommande({
               <MenuGestesFiche
                 langue={langue}
                 id={data.id}
-                jeton={data.public_token}
                 archivee={data.archived_at !== null}
                 taille="bureau"
               />
@@ -369,7 +364,6 @@ export default async function EditeurCommande({
               <MenuGestesFiche
                 langue={langue}
                 id={data.id}
-                jeton={data.public_token}
                 archivee={data.archived_at !== null}
                 taille="telephone"
               />
@@ -395,10 +389,7 @@ export default async function EditeurCommande({
             quand: quandFormatees,
             notes: notesEtapes,
           }}
-          dates={{
-            creeLe: instant(data.created_at),
-            misAJourLe: instant(data.updated_at),
-          }}
+          dates={{ creeLe: instant(data.created_at) }}
           /*
            * LE NOM DU TRANSPORTEUR EST RÉSOLU ICI, côté serveur : le catalogue
            * pèse 157 Ko et il est `server-only`. L'îlot d'édition ne reçoit
@@ -423,6 +414,7 @@ export default async function EditeurCommande({
             dans l'îlot ferait voyager ses libellés et sa liste d'événements dans
             la charge d'hydratation, pour un bloc que personne n'interroge.
           */
+          historiquePlusRecent={historique[0]?.id ?? null}
           historique={
             <HistoriqueCommande lignes={historique} />
           }

@@ -6,6 +6,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { clePubliable, urlSupabase } from "@/lib/supabase/config";
+import { signalementDisponible } from "@/lib/contact";
 
 /**
  * CHAQUE EXCLUSION DE CE MATCHER EST UNE PORTE.
@@ -103,17 +104,11 @@ const gestionLangue = createMiddleware(routing);
  * jette, et la session expirerait silencieusement au bout d'une heure sans que
  * rien ne l'explique.
  */
-/**
- * Vrai quand le chemin vise la surface d'administration.
- *
- * Le segment est RÉEL — `/fr/admin/...` — et jamais un groupe entre parenthèses.
- * Un groupe n'ajoute rien à l'URL : les écrans tomberaient hors de ce filtre
- * tout en paraissant rangés au bon endroit, ce qui est la pire combinaison.
- *
- * La langue est acceptée sous n'importe quelle casse et le préfixe peut manquer :
- * ne reconnaître que `/fr/admin` laisserait `/FR/admin` et `/admin` franchir le
- * filtre. Ils ne mèneraient nulle part aujourd'hui — mais une protection qui
- * tient à ce qu'une redirection ait lieu D'ABORD n'est pas une protection.
+/*
+ * Le filtre de la surface d'administration vit dans `lib/routes/vise-admin.ts` (module pur,
+ * éprouvé seul). Il décode le chemin que ce middleware reçoit ENCODÉ — `/fr/%61dmin`
+ * échappait à la 404 vide jusqu'au 04/10/2026. Le segment admin est RÉEL, jamais un groupe
+ * entre parenthèses : un groupe n'ajoute rien à l'URL et sortirait les écrans du filtre.
  */
 
 export default async function middleware(requete: NextRequest): Promise<NextResponse> {
@@ -155,6 +150,40 @@ export default async function middleware(requete: NextRequest): Promise<NextResp
     cible.pathname = `/p/${lienAuNom.jeton}`;
     cible.searchParams.set(PARAM_NOM, lienAuNom.nom);
     return NextResponse.rewrite(cible);
+  }
+
+  /*
+   * SANS ADRESSE DE SIGNALEMENT, LA PAGE N'EXISTE PAS — ET ELLE DOIT LE DIRE DANS LA
+   * CHARTE (03/10/2026). La page appelle notFound de Next, mais un notFound levé SOUS
+   * `[locale]` sert la 404 générique de Next (anglais en dur, hors charte) : ce dépôt
+   * n'a pas de layout racine, et `global-not-found` ne répond qu'aux routes
+   * INEXISTANTES. Mesuré sur un build servi, prérendu comme rendu à la demande. On
+   * réécrit donc vers un chemin qui n'existe pas : même statut 404, mais l'écran
+   * introuvable de la refonte, dans la langue de l'URL. Le notFound de la page
+   * reste, en filet.
+   */
+  // Lu DÉCODÉ : `/fr/%73ignalement` désigne la même page, et contournait la réécriture
+  // (revue du 03/10/2026). Un encodage invalide n'est pas cette page.
+  let cheminDecode: string | null = null;
+  try {
+    cheminDecode = decodeURIComponent(requete.nextUrl.pathname);
+  } catch {
+    cheminDecode = null;
+  }
+  const signalement =
+    cheminDecode === null ? undefined : /^\/([^/]+)\/signalement\/?$/.exec(cheminDecode)?.[1];
+  if (
+    signalement !== undefined &&
+    (routing.locales as readonly string[]).includes(signalement) &&
+    !signalementDisponible()
+  ) {
+    const cible = requete.nextUrl.clone();
+    cible.pathname = `/${signalement}/signalement/absente`;
+    // `global-not-found` lit sa langue dans l'en-tête que pose d'ordinaire next-intl,
+    // qu'on court-circuite ici : sans lui, `/zh-CN/signalement` répondait en français.
+    const enTetes = new Headers(requete.headers);
+    enTetes.set("x-next-intl-locale", signalement);
+    return NextResponse.rewrite(cible, { request: { headers: enTetes } });
   }
 
   const reponse = gestionLangue(requete);

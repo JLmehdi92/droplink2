@@ -1,34 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, Flag, Link as IconeLien, Mail } from "lucide-react";
-import { BoutonPrincipalDs, CLASSE_LIBELLE_DS, ChampAcces } from "@/components/acces-champs";
+import { ArrowRight, Check, ChevronDown, CircleCheck, Copy, Mail, TriangleAlert } from "lucide-react";
 
 /**
- * LE FORMULAIRE DE SIGNALEMENT — la carte de droite de `legal/signalement.html`,
- * dans le vocabulaire des champs d'accès : boîtes de 56 au rayon 16, icône à
- * gauche, bouton pleine largeur au DÉGRADÉ DE MARQUE, la seule action
- * principale de l'écran.
+ * LE SIGNALEMENT, PRÉPARÉ DANS LA PAGE (refonte du 02/10/2026, décision n° 11 de Mehdi :
+ * la maquette `signalement.html`).
  *
- * ⚠️ ÉCART ASSUMÉ, ET LA RAISON COMPTE. Un formulaire qui s'envoie tout seul et
- * promet un accusé de réception supposerait un point de réception. Nous n'en
- * avons AUCUN : pas de route, pas de table, pas d'envoi d'email. Publier ce
- * formulaire branché sur rien produirait la pire défaillance possible pour cette
- * page précise : un signalement que son auteur croit déposé, que personne ne
- * reçoit, et dont l'absence de réponse se lira comme un refus. C'est aussi la
- * capacité technique qui fonde notre statut d'hébergeur.
+ * RIEN NE PART D'ICI. Le formulaire compose un message et le MONTRE — destinataire,
+ * objet, corps — avec deux gestes : le copier, ou l'ouvrir dans la messagerie. C'est la
+ * même mécanique qu'avant (un lien `mailto:`), rendue visible : un `mailto:` qui ne
+ * s'ouvre pas (aucune messagerie configurée, poste partagé) laissait l'utilisateur
+ * devant un bouton qui ne faisait rien. Annoncer un accusé de réception qui n'arrivera
+ * jamais ferait recommencer un signalement, ou renoncer.
  *
- * Le bouton compose donc un message dans la messagerie du visiteur, avec tout le
- * contenu déjà rempli. Rien n'est affirmé qui ne se soit produit : le libellé dit
- * « préparer », la phrase sous le bouton dit que rien ne part tant qu'on ne
- * l'envoie pas soi-même, et l'adresse reste visible en clair pour qui n'a pas de
- * client de messagerie configuré.
- */
-
-/*
- * LES CLÉS SONT ÉCRITES EN TOUTES LETTRES : l'inventaire des chaînes mortes lit
- * les appels du code, et une clé composée à l'exécution lui échappe.
+ * LE MESSAGE PRÉPARÉ DISPARAÎT DÈS QU'UN CHAMP CHANGE : il affirmerait un contenu que
+ * le formulaire ne porte plus, et c'est l'ancien texte qui partirait.
+ *
+ * LA VALIDATION EST CELLE DE LA MAQUETTE (`public.js`) : une adresse en `https://`, une
+ * description d'au moins dix caractères, une adresse e-mail ; chaque refus est dit sous
+ * son champ, le focus va au premier. Aucun serveur ne reçoit ce formulaire : il n'y a
+ * pas d'autorité à doubler, seulement un message à ne pas préparer à moitié.
  */
 const CATEGORIES = [
   ["droits", "signalement.cat_droits"],
@@ -37,11 +30,6 @@ const CATEGORIES = [
   ["autre", "signalement.cat_autre"],
 ] as const;
 
-/** La boîte d'un champ d'accès, pour les deux contrôles que `ChampAcces` ne rend pas. */
-const BOITE =
-  "rounded-ds-card border border-ds-filet-appuye bg-ds-surface-carte transition-colors " +
-  "focus-within:border-ds-filet-focus focus-within:shadow-[var(--anneau-ds-focus)]";
-
 export function FormulaireSignalement({ adresse }: { readonly adresse: string }) {
   const t = useTranslations("legal");
 
@@ -49,47 +37,132 @@ export function FormulaireSignalement({ adresse }: { readonly adresse: string })
   const [categorie, setCategorie] = useState<(typeof CATEGORIES)[number][0]>("droits");
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
+  const [pret, setPret] = useState<{ readonly sujet: string; readonly corps: string } | null>(null);
+  const [copie, setCopie] = useState<"repos" | "copie" | "selection">("repos");
+  // Les refus de la saisie (maquette, `public.js`) : un confort, rien n'est envoyé d'ici.
+  const [erreurs, setErreurs] = useState<Partial<Record<"lien" | "description" | "email", string>>>({});
+  const blocPret = useRef<HTMLDivElement>(null);
+  const corpsPret = useRef<HTMLPreElement>(null);
 
-  const composer = (): string => {
+  const regles = {
+    lien: (v: string) => (/^https?:\/\/\S+\.\S+/.test(v.trim()) ? "" : t("signalement.erreurLien")),
+    description: (v: string) => (v.trim().length >= 10 ? "" : t("signalement.erreurDescription")),
+    email: (v: string) => (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? "" : t("signalement.erreurEmail")),
+  };
+  // Un champ refusé se réévalue à chaque frappe, et son refus s'efface dès qu'il est juste.
+  const reevaluer = (champ: keyof typeof regles, v: string) => {
+    if (erreurs[champ]) setErreurs((e) => ({ ...e, [champ]: regles[champ](v) }));
+  };
+
+  // Le bloc « prêt » entre (320 ms) et vient dans le champ de vision (maquette, `public.js`).
+  useEffect(() => {
+    const bloc = blocPret.current;
+    if (pret === null || bloc === null) return;
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduit) {
+      bloc.animate(
+        [
+          { opacity: 0, transform: "translateY(8px)" },
+          { opacity: 1, transform: "none" },
+        ],
+        { duration: 320, easing: "cubic-bezier(.23,1,.32,1)" },
+      );
+    }
+    bloc.scrollIntoView({ block: "nearest", behavior: reduit ? "auto" : "smooth" });
+  }, [pret]);
+
+  // « Message copié » revient à « Copier le message » après 2,2 s (maquette).
+  useEffect(() => {
+    if (copie === "repos") return;
+    const minuteur = window.setTimeout(() => setCopie("repos"), 2200);
+    return () => window.clearTimeout(minuteur);
+  }, [copie]);
+
+  const composer = (): { sujet: string; corps: string } => {
     const cle = CATEGORIES.find(([c]) => c === categorie)?.[1] ?? "signalement.cat_autre";
     const libelleCategorie = t(cle);
-
     const corps = [
-      `${t("signalement.lien")} : ${lien}`,
+      `${t("signalement.lien")} : ${lien.trim()}`,
       `${t("signalement.categorie")} : ${libelleCategorie}`,
-      `${t("signalement.email")} : ${email}`,
+      `${t("signalement.email")} : ${email.trim()}`,
       "",
       `${t("signalement.description")} :`,
-      description,
+      description.trim(),
     ].join("\n");
+    return { sujet: t("signalement.sujet", { titre: t("signalementTitre"), categorie: libelleCategorie }), corps };
+  };
 
-    const sujet = `${t("signalementTitre")} — ${libelleCategorie}`;
-    return `mailto:${adresse}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  const copier = async (): Promise<void> => {
+    if (pret === null) return;
+    try {
+      await navigator.clipboard.writeText(
+        `${t("signalement.a")} : ${adresse}\n${t("signalement.objet")} : ${pret.sujet}\n\n${pret.corps}`,
+      );
+      setCopie("copie");
+    } catch {
+      // L'état « copié » n'est affiché qu'après succès. Refusée, la copie se DIT, et le
+      // message est sélectionné pour être copié à la main (maquette, `public.js`).
+      const corps = corpsPret.current;
+      const selection = window.getSelection();
+      if (corps !== null && selection !== null) {
+        const plage = document.createRange();
+        plage.selectNodeContents(corps);
+        selection.removeAllRanges();
+        selection.addRange(plage);
+      }
+      setCopie("selection");
+    }
   };
 
   return (
     <form
-      className="flex flex-col gap-5 rounded-ds-3xl bg-ds-surface-carte p-6 shadow-ds-lg md:px-10 md:py-9"
+      className="sig-form v4-carte"
+      noValidate
       onSubmit={(evenement) => {
         evenement.preventDefault();
-        window.location.href = composer();
+        const refus = {
+          lien: regles.lien(lien),
+          description: regles.description(description),
+          email: regles.email(email),
+        };
+        setErreurs(refus);
+        const premier = (["lien", "description", "email"] as const).find((k) => refus[k] !== "");
+        if (premier !== undefined) {
+          evenement.currentTarget.querySelector<HTMLElement>(`#${premier}`)?.focus();
+          return;
+        }
+        setPret(composer());
+        setCopie("repos");
       }}
     >
-      <ChampAcces
-        id="lien"
-        nom="lien"
-        type="url"
-        libelle={t("signalement.lien")}
-        icone={IconeLien}
-        placeholder={t("signalement.lienExemple")}
-        valeur={lien}
-        surChangement={setLien}
-      />
+      <div className={"sig-champ" + (erreurs.lien ? " est-invalide" : "")}>
+        <label htmlFor="lien">{t("signalement.lien")}</label>
+        <input
+          id="lien"
+          name="lien"
+          type="url"
+          inputMode="url"
+          required
+          placeholder={t("signalement.lienExemple")}
+          value={lien}
+          aria-invalid={erreurs.lien ? true : undefined}
+          aria-describedby={erreurs.lien ? "lien-erreur" : undefined}
+          onChange={(e) => {
+            setLien(e.target.value);
+            reevaluer("lien", e.target.value);
+            setPret(null);
+          }}
+        />
+        {erreurs.lien ? (
+          <p className="sig-erreur" id="lien-erreur" role="alert">
+            {erreurs.lien}
+          </p>
+        ) : null}
+      </div>
 
-      <label htmlFor="motif" className="block">
-        <span className={`mb-2 block ${CLASSE_LIBELLE_DS}`}>{t("signalement.categorie")}</span>
-        <span className={`flex h-14 items-center gap-3 px-[18px] ${BOITE}`}>
-          <Flag aria-hidden="true" size={18} strokeWidth={1.8} className="shrink-0 text-ds-texte-sourdine" />
+      <div className="sig-champ">
+        <label htmlFor="motif">{t("signalement.categorie")}</label>
+        <span className="sig-liste">
           <select
             id="motif"
             name="motif"
@@ -97,8 +170,8 @@ export function FormulaireSignalement({ adresse }: { readonly adresse: string })
             onChange={(e) => {
               const choisie = CATEGORIES.find(([c]) => c === e.target.value);
               if (choisie !== undefined) setCategorie(choisie[0]);
+              setPret(null);
             }}
-            className="h-full min-w-0 flex-1 cursor-pointer appearance-none border-none bg-transparent text-[15px] text-ds-texte-fort outline-none"
           >
             {CATEGORIES.map(([c, cle]) => (
               <option key={c} value={c}>
@@ -106,52 +179,125 @@ export function FormulaireSignalement({ adresse }: { readonly adresse: string })
               </option>
             ))}
           </select>
-          <ChevronDown aria-hidden="true" size={18} strokeWidth={1.8} className="shrink-0 text-ds-texte-sourdine" />
+          <ChevronDown aria-hidden="true" className="ic" />
         </span>
-      </label>
+      </div>
 
-      <label htmlFor="description" className="block">
-        <span className={`mb-2 block ${CLASSE_LIBELLE_DS}`}>{t("signalement.description")}</span>
+      <div className={"sig-champ" + (erreurs.description ? " est-invalide" : "")}>
+        <label htmlFor="description">{t("signalement.description")}</label>
         <textarea
           id="description"
           name="description"
           required
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          rows={5}
           placeholder={t("signalement.descriptionExemple")}
-          className={`block h-[132px] w-full resize-none px-[18px] py-[15px] text-[15px] leading-[1.55] text-ds-texte-fort outline-none placeholder:text-ds-texte-corps ${BOITE}`}
+          value={description}
+          aria-invalid={erreurs.description ? true : undefined}
+          aria-describedby={erreurs.description ? "description-erreur" : undefined}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            reevaluer("description", e.target.value);
+            setPret(null);
+          }}
         />
-      </label>
-
-      <ChampAcces
-        id="email"
-        nom="email"
-        type="email"
-        libelle={t("signalement.email")}
-        icone={Mail}
-        placeholder={t("signalement.emailExemple")}
-        autoComplete="email"
-        valeur={email}
-        surChangement={setEmail}
-      />
-
-      <div className="mt-1">
-        <BoutonPrincipalDs libelle={t("signalement.envoyer")} libelleEnCours={t("signalement.envoyer")} />
+        {erreurs.description ? (
+          <p className="sig-erreur" id="description-erreur" role="alert">
+            {erreurs.description}
+          </p>
+        ) : null}
       </div>
 
-      {/* CE QUE LE BOUTON FAIT VRAIMENT, dit sous le bouton. Annoncer un accusé de
-          réception qui n'arrivera jamais est précisément ce qui ferait
-          recommencer un signalement — ou renoncer. */}
-      <div className="flex flex-col gap-1.5 text-center">
-        <p className="text-[12.5px] leading-[1.55] text-ds-texte-sourdine">{t("signalement.ouvreMessagerie")}</p>
-        <p className="text-[12.5px] leading-[1.55] text-ds-texte-sourdine">
-          {t("signalement.adresseDirecte")}{" "}
-          <a href={`mailto:${adresse}`} className="font-semibold text-ds-texte-lien hover:text-ds-accent-encre">
-            {adresse}
-          </a>
-        </p>
+      <div className={"sig-champ" + (erreurs.email ? " est-invalide" : "")}>
+        <label htmlFor="email">{t("signalement.email")}</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          required
+          placeholder={t("signalement.emailExemple")}
+          value={email}
+          aria-invalid={erreurs.email ? true : undefined}
+          aria-describedby={erreurs.email ? "email-erreur" : undefined}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            reevaluer("email", e.target.value);
+            setPret(null);
+          }}
+        />
+        {erreurs.email ? (
+          <p className="sig-erreur" id="email-erreur" role="alert">
+            {erreurs.email}
+          </p>
+        ) : null}
       </div>
+
+      <button className="bouton bouton--marque bouton--large" type="submit">
+        {t("signalement.envoyer")}
+        <ArrowRight aria-hidden="true" className="ic" />
+      </button>
+      <p className="sig-aide">{t("signalement.ouvreMessagerie")}</p>
+
+      {/* L'ANNONCE EST COURTE, à part des contrôles : un `role="status"` autour du bloc
+          entier faisait lire tout le corps du message. */}
+      <p className="sr-only" role="status">
+        {pret === null ? "" : t("signalement.pretTitre")}
+      </p>
+      <div>
+        {pret === null ? null : (
+          <div className="sig-pret" ref={blocPret}>
+            <p className="sig-pret__tete">
+              <CircleCheck aria-hidden="true" className="ic" />
+              <b>{t("signalement.pretTitre")}</b>
+            </p>
+            <dl>
+              <div>
+                <dt>{t("signalement.a")}</dt>
+                <dd>
+                  <span className="sig-copiable">{adresse}</span>
+                </dd>
+              </div>
+              <div>
+                <dt>{t("signalement.objet")}</dt>
+                <dd>{pret.sujet}</dd>
+              </div>
+            </dl>
+            <pre className="sig-pret__corps" ref={corpsPret}>{pret.corps}</pre>
+            <div className="sig-pret__actions">
+              <button type="button" className="bouton bouton--second" onClick={() => void copier()}>
+                {copie === "copie" ? (
+                  <Check aria-hidden="true" className="ic" />
+                ) : copie === "selection" ? (
+                  <TriangleAlert aria-hidden="true" className="ic" />
+                ) : (
+                  <Copy aria-hidden="true" className="ic" />
+                )}
+                {copie === "copie"
+                  ? t("signalement.copie")
+                  : copie === "selection"
+                    ? t("signalement.copieSelection")
+                    : t("signalement.copier")}
+              </button>
+              <a
+                className="bouton bouton--plein"
+                href={`mailto:${adresse}?subject=${encodeURIComponent(pret.sujet)}&body=${encodeURIComponent(pret.corps)}`}
+              >
+                <Mail aria-hidden="true" className="ic" />
+                {t("signalement.ouvrir")}
+              </a>
+            </div>
+            <p className="sig-aide">{t("signalement.rienEnvoye")}</p>
+          </div>
+        )}
+      </div>
+
+      <p className="sig-directe">
+        {t("signalement.adresseDirecte")}{" "}
+        <a className="sig-copiable" href={`mailto:${adresse}`}>
+          {adresse}
+        </a>
+      </p>
     </form>
   );
 }

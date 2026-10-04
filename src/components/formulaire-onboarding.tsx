@@ -2,8 +2,11 @@
 
 import { ACCEPT_LOGO } from "@/lib/boutique/types-logo";
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { secouer } from "@/components/acces/validation-locale";
 import { useTranslations } from "next-intl";
-import { ImagePlus, MessageCircle, Store, Upload, Users, X } from "lucide-react";
+import { CircleCheck, Images, MessageCircle, Upload, Users } from "lucide-react";
+import { ApercuPageClient } from "@/components/marque/apercu-page-client";
+import { supprimerLogo } from "@/app/[locale]/(app)/marque/actions";
 import type { LibellesApercu } from "@/lib/boutique/phrases-apercu";
 import {
   confirmerDepotLogo,
@@ -12,7 +15,7 @@ import {
   type ResultatOnboarding,
 } from "@/app/[locale]/bienvenue/actions";
 import { ACCENT_DEFAUT, resoudreAccent } from "@/lib/design/contraste";
-import { BoutonPrincipalDs, ChampAcces, MessageErreurDs } from "@/components/acces-champs";
+import { BoutonPrincipalDs, MessageErreurDs } from "@/components/acces-champs";
 
 /**
  * L'ONBOARDING — `OnboardingScreen` du kit `auth`, écrit le 14/09/2026 avant ce
@@ -33,7 +36,14 @@ import { BoutonPrincipalDs, ChampAcces, MessageErreurDs } from "@/components/acc
 
 const INITIAL: ResultatOnboarding = { statut: "inactif" };
 
-const LIBELLE = "mb-2 block text-[14px] leading-[normal] font-semibold text-ds-texte-fort";
+/** Les couleurs rapides de la maquette (`.onb-couleur__vite`) : des départs, pas une palette imposée. */
+const COULEURS_RAPIDES = [
+  ["#5B4BF5", "couleurs.violet"],
+  ["#0F766E", "couleurs.sapin"],
+  ["#E5484D", "couleurs.corail"],
+  ["#0B0B18", "couleurs.encre"],
+  ["#D97706", "couleurs.ambre"],
+] as const;
 
 type EtatLogo =
   | { phase: "vide" }
@@ -52,15 +62,25 @@ const TYPES = [
 
 export function FormulaireOnboarding({
   locale,
+  languePage,
   libelles,
 }: {
   readonly locale: string;
+  /** La langue de la page client (l'anglais par défaut), celle de l'aperçu. */
+  readonly languePage: string;
   readonly libelles: LibellesApercu;
 }) {
   const t = useTranslations("onboarding");
   const [resultat, action] = useActionState(terminerOnboarding, INITIAL);
 
   const [typeDeCompte, setTypeDeCompte] = useState<"supplier" | "reseller" | "">("");
+  // « Choisissez à qui vous vendez » dit avant l'envoi (maquette, `compte.js`) ; le
+  // serveur le refuse aussi, et son refus secoue le même groupe.
+  const [typeManquant, setTypeManquant] = useState(false);
+  const choixType = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (resultat.statut === "erreur" && resultat.motif === "saisie") secouer(choixType.current);
+  }, [resultat]);
   const [nom, setNom] = useState("");
   const [couleur, setCouleur] = useState(ACCENT_DEFAUT);
   const [logo, setLogo] = useState<EtatLogo>({ phase: "vide" });
@@ -72,7 +92,6 @@ export function FormulaireOnboarding({
     if (apercuLocal === null) return;
     return () => URL.revokeObjectURL(apercuLocal);
   }, [apercuLocal]);
-  const champFichier = useRef<HTMLInputElement>(null);
 
   const accent = useMemo(() => resoudreAccent(couleur), [couleur]);
 
@@ -88,7 +107,13 @@ export function FormulaireOnboarding({
   async function deposerLogo(fichier: File): Promise<void> {
     setLogo({ phase: "envoi", pourcent: 0 });
 
-    const prepare = await preparerDepotLogo(fichier.type, fichier.size);
+    // ⚠️ UN REJET (réseau coupé) laissait le logo « en envoi » pour toujours, sans un mot et
+    // sans nouvel essai possible (revue ECC du 03/10/2026) : il devient l'échec d'envoi dit.
+    const prepare = await preparerDepotLogo(fichier.type, fichier.size).catch(() => null);
+    if (prepare === null) {
+      setLogo({ phase: "erreur", motif: t("logoErreur.envoi") });
+      return;
+    }
     if (prepare.statut === "erreur") {
       setLogo({ phase: "erreur", motif: erreurLogo[prepare.motif] });
       return;
@@ -110,9 +135,10 @@ export function FormulaireOnboarding({
         }
       };
       xhr.onload = () => resoudre(xhr.status >= 200 && xhr.status < 300);
-      xhr.onerror = () => resoudre(false);
+      // Interrompu ou expiré : sans ces deux-là, la promesse ne se résolvait jamais.
+      xhr.onerror = xhr.onabort = xhr.ontimeout = () => resoudre(false);
       xhr.send(fichier);
-    });
+    }).catch(() => false);
 
     if (!envoi) {
       setLogo({ phase: "erreur", motif: t("logoErreur.envoi") });
@@ -121,8 +147,8 @@ export function FormulaireOnboarding({
 
     // La taille est RELUE côté serveur : le navigateur n'est jamais cru sur ce
     // qu'il affirme avoir envoyé.
-    const confirme = await confirmerDepotLogo(prepare.cle);
-    if (confirme.statut === "erreur") {
+    const confirme = await confirmerDepotLogo(prepare.cle).catch(() => null);
+    if (confirme === null || confirme.statut === "erreur") {
       setLogo({ phase: "erreur", motif: t("logoErreur.confirmation") });
       return;
     }
@@ -138,196 +164,193 @@ export function FormulaireOnboarding({
   const champsEnEchec =
     resultat.statut === "erreur" && resultat.motif === "saisie" ? (resultat.champs ?? []) : [];
 
+  /* LA REFONTE (02/10/2026) suit `bienvenue.html` : le formulaire à gauche, la VRAIE
+     grammaire de la page client à droite (`ApercuPageClient`, celle de « Ma marque »), aux
+     couleurs que `resoudreAccent()` donnera réellement au client. */
   return (
     <form
       action={action}
-      className="grid grid-cols-[minmax(0,1fr)] items-center gap-20 lg:grid-cols-[minmax(0,620px)_minmax(0,1fr)]"
+      className="onb__grille"
+      noValidate
+      onSubmit={(e) => {
+        if (typeDeCompte !== "") return;
+        e.preventDefault();
+        setTypeManquant(true);
+        secouer(choixType.current);
+        choixType.current?.querySelector("input")?.focus();
+      }}
     >
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="couleurAccent" value={couleur} />
 
-      {/* ================= LES RÉGLAGES ================================== */}
-      <div className="mx-auto flex w-full max-w-[620px] flex-col gap-[22px] rounded-ds-3xl bg-ds-surface-carte px-5 pt-6 pb-[30px] shadow-ds-lg md:px-12 md:py-10">
-        {/* ⚠️ « ÉTAPE 1 SUR 2 » EST VRAI : la seconde étape est la première
-            commande, et c'est là que mène « Continuer ». Un compteur d'étapes qui
-            promettrait une suite inexistante affirmerait ce qui n'est pas. */}
-        <div aria-hidden="true" className="grid grid-cols-2 gap-1.5">
-          <span className="h-1 rounded-ds-pill bg-ds-accent" />
-          <span className="h-1 rounded-ds-pill bg-ds-ink-200" />
+      <div className="onb__form">
+        <header className="acces__tete">
+          <h1 tabIndex={-1}>{t("titre")}</h1>
+          <p>{t("sousTitre")}</p>
+        </header>
+
+        <div className="onb-champ">
+          <label htmlFor="nom">{t("nomTitre")}</label>
+          <input
+            id="nom"
+            name="nom"
+            type="text"
+            maxLength={60}
+            autoComplete="organization"
+            placeholder={t("nomPlaceholder")}
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            aria-invalid={champsEnEchec.includes("nomBoutique") ? true : undefined}
+          />
         </div>
 
-        <div>
-          <h1 className="text-[24px] leading-[1.1] font-extrabold tracking-[-0.04em] text-ds-texte-titre md:text-[34px]">
-            {t("titre")}
-          </h1>
-          <p className="mt-2.5 text-[15px] leading-[1.55] text-ds-texte-corps">{t("sousTitre")}</p>
-        </div>
-
-        {/* --- Le nom de la boutique ------------------------------------ */}
-        <ChampAcces
-          id="nom"
-          nom="nom"
-          libelle={t("nomTitre")}
-          icone={Store}
-          placeholder={t("nomPlaceholder")}
-          requis={false}
-          valeur={nom}
-          surChangement={setNom}
-          invalide={champsEnEchec.includes("nom")}
-        />
-
-        {/* --- Le logo -------------------------------------------------- */}
-        <div>
-          <span className={LIBELLE}>{t("logoTitre")}</span>
-          <div className="flex items-center gap-3.5">
-            {logo.phase === "pose" ? (
-              // eslint-disable-next-line @next/next/no-img-element -- aperçu local (blob:), hors optimiseur d'images
-              <img
-                src={logo.apercu}
-                alt=""
-                className="h-14 w-14 shrink-0 rounded-ds-card border border-ds-filet bg-ds-surface-carte object-contain p-1.5"
-              />
-            ) : (
-              <span
-                aria-hidden="true"
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-ds-card border border-dashed border-ds-filet-appuye bg-ds-surface-creux text-ds-texte-sourdine"
-              >
-                <ImagePlus size={20} strokeWidth={1.8} />
-              </span>
-            )}
-            <div className="min-w-0">
-              <button
-                type="button"
-                onClick={() => champFichier.current?.click()}
-                className="inline-flex h-11 items-center gap-[9px] rounded-ds-card border border-ds-filet bg-ds-surface-carte px-4 text-[14px] font-semibold text-ds-texte-fort shadow-ds-xs transition-colors hover:bg-ds-surface-creux"
-              >
-                <Upload aria-hidden="true" size={16} strokeWidth={1.9} className="text-ds-accent" />
-                {logo.phase === "envoi"
-                  ? t("logoEnvoi", { pourcent: logo.pourcent })
-                  : logo.phase === "pose"
-                    ? t("logoRemplacer")
-                    : t("logoChoisir")}
-              </button>
-              <p className="mt-1.5 truncate text-[12.5px] leading-[1.55] text-ds-texte-sourdine">
-                {logo.phase === "pose" ? logo.nom : t("logoFormats")}
-              </p>
+        <div className="onb-champ">
+          <span className="onb-champ__titre" id="onb-logo-titre">
+            {t("logoTitre")}
+          </span>
+          <div className="onb-logo">
+            <span className="onb-logo__visuel" aria-hidden="true">
+              {logo.phase === "pose" ? (
+                // eslint-disable-next-line @next/next/no-img-element -- aperçu local (blob:), hors optimiseur d'images
+                <img src={logo.apercu} alt="" />
+              ) : (
+                <Images className="ic" />
+              )}
+            </span>
+            <div className="onb-logo__actions">
+              {/* Le dépôt est un `<label>` autour du champ fichier : un clic ou Entrée l'ouvre. */}
+              <label className="bouton-outil onb-logo__choisir">
+                <input
+                  type="file"
+                  accept={ACCEPT_LOGO}
+                  className="sr"
+                  aria-labelledby="onb-logo-titre"
+                  onChange={(e) => {
+                    const fichier = e.target.files?.[0];
+                    e.target.value = "";
+                    if (fichier !== undefined) void deposerLogo(fichier);
+                  }}
+                />
+                <Upload aria-hidden="true" className="ic" />
+                <span>
+                  {logo.phase === "envoi"
+                    ? t("logoEnvoi", { pourcent: logo.pourcent })
+                    : logo.phase === "pose"
+                      ? t("logoRemplacer")
+                      : t("logoChoisir")}
+                </span>
+              </label>
+              {logo.phase === "pose" ? (
+                <button
+                  type="button"
+                  className="onb-lien"
+                  onClick={() => {
+                    // Le logo est DÉJÀ enregistré sur la boutique (`confirmerDepotLogo`) :
+                    // le retirer de l'écran seulement laisserait la page client le
+                    // montrer (contrainte 8). On ne l'efface qu'une fois la base d'accord.
+                    // Le second rappel : une action qui REJETTE (réseau coupé) laissait le logo
+                    // dit « posé », sans un mot (revue ECC du 03/10/2026).
+                    void supprimerLogo().then(
+                      (retrait) =>
+                        setLogo(retrait.statut === "ok" ? { phase: "vide" } : { phase: "erreur", motif: t("logoErreur.retrait") }),
+                      () => setLogo({ phase: "erreur", motif: t("logoErreur.retrait") }),
+                    );
+                  }}
+                >
+                  {t("logoRetirer")}
+                </button>
+              ) : null}
+              <small>{logo.phase === "pose" ? logo.nom : t("logoFormats")}</small>
             </div>
-            {logo.phase === "pose" ? (
-              <button
-                type="button"
-                onClick={() => setLogo({ phase: "vide" })}
-                aria-label={t("logoRetirer")}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-ds-sm text-ds-texte-sourdine transition-colors hover:text-ds-erreur-encre"
-              >
-                <X aria-hidden="true" size={18} strokeWidth={1.9} />
-              </button>
-            ) : null}
           </div>
           {logo.phase === "erreur" ? (
-            <p role="alert" className="mt-2 text-[13px] text-ds-erreur-encre">
+            <p role="alert" className="champ-acces__erreur">
               {logo.motif}
             </p>
           ) : null}
         </div>
 
-        {/* --- La couleur ----------------------------------------------- */}
-        <div>
-          <label htmlFor="couleurTexte" className={LIBELLE}>
-            {t("couleurTitre")}
-          </label>
-          <span className="flex h-14 items-center gap-3 rounded-ds-card border border-ds-filet-appuye bg-ds-surface-carte px-[18px] focus-within:border-ds-filet-focus focus-within:shadow-[var(--anneau-ds-focus)]">
-            {/* LA CIBLE FAIT 44 PX, LA PASTILLE 28 : les marges négatives rendent
-                à la ligne l'encombrement du kit, sans rétrécir ce qu'on touche. */}
-            <label className="-mx-2 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
-              <span
-                aria-hidden="true"
-                className="h-7 w-7 rounded-ds-xs shadow-[inset_0_0_0_1px_rgba(11,11,24,0.08)]"
-                style={{ backgroundColor: couleur }}
-              />
-              <span className="sr-only">{t("couleurTitre")}</span>
-              <input type="color" value={couleur} onChange={(e) => setCouleur(e.target.value)} className="sr-only" />
+        <div className="onb-champ">
+          <label htmlFor="couleurTexte">{t("couleurTitre")}</label>
+          <div className="onb-couleur">
+            <label className="couleur__pastille" style={{ background: couleur }}>
+              <span className="sr">{t("couleurChoisir")}</span>
+              <input type="color" value={couleur} onChange={(e) => setCouleur(e.target.value)} />
             </label>
             <input
               id="couleurTexte"
               type="text"
               value={couleur}
-              onChange={(e) => setCouleur(e.target.value.trim())}
-              placeholder="#000000"
-              className="h-full min-w-0 flex-1 border-none bg-transparent font-mono text-[15px] text-ds-texte-fort uppercase outline-none"
+              maxLength={7}
+              spellCheck={false}
+              autoComplete="off"
+              aria-invalid={champsEnEchec.includes("couleurAccent") ? true : undefined}
+              aria-describedby={champsEnEchec.includes("couleurAccent") ? "erreur-couleur" : undefined}
+              onChange={(e) => {
+                // « 0F766E » sans dièse est une couleur : on le pose, comme la maquette,
+                // plutôt que de laisser la base la refuser sans un mot.
+                const v = e.target.value.trim();
+                setCouleur(/^[0-9a-fA-F]{6}$/.test(v) ? "#" + v : v);
+              }}
             />
-          </span>
-          {/* LA PHRASE DIT DÉJÀ QUE L'AJUSTEMENT EST AUTOMATIQUE : un
-              avertissement « couleur ajustée » s'afficherait ici avant que le
-              vendeur ait rien choisi, sur la couleur par défaut. */}
-          <p className="mt-2 text-[12.5px] leading-[1.5] text-ds-texte-sourdine">{t("couleurAide")}</p>
+            <div className="onb-couleur__vite" role="group" aria-label={t("couleursRapides")}>
+              {COULEURS_RAPIDES.map(([valeur, cle]) => (
+                <button
+                  key={valeur}
+                  type="button"
+                  style={{ "--c": valeur } as React.CSSProperties}
+                  aria-label={t(cle)}
+                  aria-pressed={couleur.toLowerCase() === valeur.toLowerCase()}
+                  onClick={() => setCouleur(valeur)}
+                />
+              ))}
+            </div>
+          </div>
+          {/* L'AJUSTEMENT EST DIT D'AVANCE : un avertissement « couleur ajustée » s'afficherait
+              avant que le vendeur ait rien choisi, sur la couleur par défaut. */}
+          <p className="onb-aide">{t("couleurAide")}</p>
+          {champsEnEchec.includes("couleurAccent") ? (
+            <p role="alert" id="erreur-couleur" className="champ-acces__erreur">
+              {t("erreurCouleur")}
+            </p>
+          ) : null}
         </div>
 
-        {/* --- Le type de compte ---------------------------------------- */}
-        <fieldset>
-          {/* LA SEULE COLONNE SANS VALEUR PAR DÉFAUT EN BASE : un défaut aurait
-              classé tous les fournisseurs comme revendeurs, et faussé la
-              segmentation d'usage qui est le livrable de la phase de validation. */}
-          <legend className={LIBELLE}>{t("typeTitre")}</legend>
-          <div className="grid gap-3 sm:grid-cols-2">
+        {/* LA SEULE COLONNE SANS VALEUR PAR DÉFAUT EN BASE : un défaut aurait classé tous
+            les fournisseurs comme revendeurs, et faussé la segmentation d'usage. */}
+        <fieldset className="onb-champ onb-type">
+          <legend className="onb-champ__titre">{t("typeTitre")}</legend>
+          <div className="onb-type__choix" ref={choixType}>
             {TYPES.map((type) => {
-              const choisi = typeDeCompte === type.valeur;
               const Icone = type.icone;
               return (
-                <label
-                  key={type.valeur}
-                  className={
-                    "flex cursor-pointer items-start gap-3 rounded-ds-card border p-4 transition-colors " +
-                    (choisi
-                      ? "border-ds-accent bg-ds-surface-teinte shadow-[var(--anneau-ds-focus)]"
-                      : "border-ds-filet bg-ds-surface-carte hover:bg-ds-surface-creux")
-                  }
-                >
+                <label key={type.valeur} className="onb-carte">
                   <input
                     type="radio"
                     name="typeDeCompte"
                     value={type.valeur}
-                    checked={choisi}
-                    onChange={() => setTypeDeCompte(type.valeur)}
-                    className="sr-only"
+                    checked={typeDeCompte === type.valeur}
+                    onChange={() => {
+                      setTypeDeCompte(type.valeur);
+                      setTypeManquant(false);
+                    }}
                   />
-                  <span
-                    aria-hidden="true"
-                    className={
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-ds-sm text-ds-accent " +
-                      (choisi ? "bg-ds-surface-carte" : "bg-ds-surface-teinte")
-                    }
-                  >
-                    <Icone size={17} strokeWidth={1.9} />
+                  <span className="onb-carte__icone" aria-hidden="true">
+                    <Icone className="ic" />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block text-[14.5px] leading-[normal] font-bold text-ds-texte-fort">{t(type.titre)}</span>
-                    <span className="mt-0.5 block text-[13px] leading-[1.45] text-ds-texte-corps">{t(type.detail)}</span>
-                  </span>
+                  <b>{t(type.titre)}</b>
+                  <small>{t(type.detail)}</small>
+                  <CircleCheck aria-hidden="true" className="ic onb-carte__coche" />
                 </label>
               );
             })}
           </div>
-          {champsEnEchec.includes("typeDeCompte") ? (
-            <p role="alert" className="mt-2 text-[13px] text-ds-erreur-encre">
+          {typeManquant || (champsEnEchec.includes("typeDeCompte") && typeDeCompte === "") ? (
+            <p role="alert" className="champ-acces__erreur">
               {t("erreurType")}
             </p>
           ) : null}
         </fieldset>
-
-        {/* Hors du clavier et des lecteurs d'écran : le bouton de dépôt est le contrôle,
-            ce champ n'en est que le moteur (même correctif que « Ma marque », 26/09/2026). */}
-        <input
-          ref={champFichier}
-          type="file"
-          accept={ACCEPT_LOGO}
-          className="sr-only"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(e) => {
-            const fichier = e.target.files?.[0];
-            if (fichier !== undefined) void deposerLogo(fichier);
-          }}
-        />
 
         {resultat.statut === "erreur" && resultat.motif !== "saisie" ? (
           <MessageErreurDs
@@ -339,55 +362,33 @@ export function FormulaireOnboarding({
         <BoutonPrincipalDs libelle={t("valider")} libelleEnCours={t("validationEnCours")} />
       </div>
 
-      {/* ================= L'APERÇU EN DIRECT ============================= */}
-      {/* MASQUÉ SOUS `lg` : il ne porte aucune information dont le formulaire
+      {/* L'APERÇU, MASQUÉ SOUS 1 020 px : il ne porte aucune information dont le formulaire
           dépende, et au téléphone il repousserait le bouton sous trois écrans. */}
-      <div className="hidden flex-col items-center gap-5 lg:flex">
-        <span className="text-[11px] leading-[normal] font-extrabold tracking-[0.12em] text-ds-texte-sourdine uppercase">
+      <section className="onb__apercu" aria-label={t("apercuEtiquette")}>
+        <p className="onb__apercu-titre">
+          <span className="direct">
+            <i aria-hidden="true" />
+          </span>
           {t("apercuTitre")}
-        </span>
-        <div aria-hidden="true" className="w-[300px] rounded-[40px] bg-ds-ink-900 p-2 shadow-ds-window">
-          {/* LA PAGE CLIENT TELLE QU'ELLE EST : carte d'identité, carte de
-              commande et sa frise, galerie. Les couleurs sont celles que
-              `resoudreAccent` donnera réellement au client — jamais un blanc en
-              dur sur l'aplat, un accent clair le rendrait illisible. */}
-          <div className="flex min-h-[540px] flex-col gap-2.5 overflow-hidden rounded-[32px] bg-ds-surface-page p-3.5">
-            <div className="flex items-center gap-2.5 rounded-ds-card border border-ds-filet bg-ds-surface-carte p-3">
-              {logo.phase === "pose" ? (
-                // eslint-disable-next-line @next/next/no-img-element -- aperçu local (blob:)
-                <img src={logo.apercu} alt="" className="h-[34px] w-[34px] shrink-0 rounded-full object-cover" />
-              ) : (
-                <span className="h-[34px] w-[34px] shrink-0 rounded-full" style={{ backgroundColor: accent.remplissage }} />
-              )}
-              <span className="truncate text-[14px] font-bold text-ds-texte-fort">
-                {nom.trim() === "" ? t("sansNom") : nom}
-              </span>
-            </div>
-            <div className="rounded-ds-card border border-ds-filet bg-ds-surface-carte p-3.5">
-              <span className="block text-[16px] font-extrabold tracking-[-0.03em] text-ds-texte-fort">
-                {libelles.commande}
-              </span>
-              <div className="mt-3 grid grid-cols-4 gap-1">
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="h-[5px] rounded-full" style={{ backgroundColor: accent.interface }} />
-                ))}
-                <span className="h-[5px] rounded-full bg-ds-ink-200" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={i} className="aspect-square rounded-ds-sm bg-ds-surface-creux" />
-              ))}
-            </div>
-            <span
-              className="flex h-[42px] items-center justify-center rounded-ds-card text-[13px] font-bold"
-              style={{ backgroundColor: accent.remplissage, color: accent.surRemplissage }}
-            >
-              {libelles.approuver}
-            </span>
+        </p>
+        <div className="telephone telephone--onb" aria-hidden="true">
+          <div className="telephone__ecran">
+            <ApercuPageClient
+              textes={libelles.page}
+              pour={libelles.pourGenerique}
+              nom={nom.trim()}
+              description=""
+              logo={logo.phase === "pose" ? logo.apercu : null}
+              accent={accent}
+              reseaux={[]}
+              marqueMasquee={false}
+              langue={languePage}
+              nomProvisoire={libelles.nomProvisoire}
+              accueil
+            />
           </div>
         </div>
-      </div>
+      </section>
     </form>
   );
 }

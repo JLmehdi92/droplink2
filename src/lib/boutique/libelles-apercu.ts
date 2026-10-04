@@ -1,7 +1,9 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
+import { getFormateur } from "@/lib/format/formateur";
 import { LANGUES, type Langue } from "@/i18n/config";
 import type { LibellesApercu } from "@/lib/boutique/phrases-apercu";
+import { fourchetteDates } from "@/lib/page-publique/fourchette";
 
 /**
  * LES PHRASES QUE MONTRE UN APERÇU « CE QUE VOIT LE CLIENT ».
@@ -67,6 +69,14 @@ import type { LibellesApercu } from "@/lib/boutique/phrases-apercu";
 export async function libellesApercu(langue: Langue): Promise<LibellesApercu> {
   const client = await getTranslations({ locale: langue, namespace: "page-publique" });
   const marque = await getTranslations({ locale: langue, namespace: "marque" });
+  const accueil = await getTranslations({ locale: langue, namespace: "onboarding" });
+  const format = await getFormateur({ locale: langue });
+  // Les dates de DÉMONSTRATION de l'aperçu : relatives à aujourd'hui, pour que
+  // l'aperçu ne vieillisse pas, et formatées par la langue de la page client.
+  const jour = (decalage: number) =>
+    format.dateTime(new Date(Date.now() + decalage * 86_400_000), { day: "numeric", month: "short" });
+  const du = new Date(Date.now() + 86_400_000);
+  const au = new Date(Date.now() + 2 * 86_400_000);
 
   return {
     commande: client("titre"),
@@ -74,9 +84,47 @@ export async function libellesApercu(langue: Langue): Promise<LibellesApercu> {
     // le nom, qu'on n'a pas encore.
     pourGabarit: client.raw("pourClient"),
     pourGenerique: marque("apercuPour"),
+    nomProvisoire: accueil("nomProvisoire"),
     approuver: client("qc.approuver"),
     statut: client("frise.en_transit"),
     reseauxGabarit: client.raw("reseaux.titre"),
+    page: {
+      commandeDe: client("commandeDe"),
+      titre: client("titre"),
+      sousTitre: client("commande.sousTitre"),
+      dateEstimee: client("commande.dateEstimee"),
+      // La même règle que la page client (« 1 au 2 octobre », `fourchetteDates`) : l'aperçu
+      // montre ce que le client lira, pas la plage d'Intl (« October 4 – 5 »).
+      dates: fourchetteDates(
+        du,
+        au,
+        { memeMois: (v) => client("fourchette.memeMois", v), autreMois: (v) => client("fourchette.autreMois", v) },
+        (x, o) => format.dateTime(x, o),
+      ),
+      etapes: [client("frise.preparation"), client("frise.expedie"), client("frise.en_transit"), client("frise.livre")],
+      quand: [jour(-2), jour(-1), jour(0), jour(1)],
+      enCours: client("frise.enCours"),
+      enAttente: client("frise.enAttente"),
+      bandeau: client("bandeau.en_transit"),
+      mouvement: client("suivi.aujourdHui"),
+      galerie: client("galerie.titre"),
+      qcTitre: client("qc.titre"),
+      qcTexte: client("qc.texte"),
+      qcRefuser: client("qc.refuser"),
+      qcApprouver: client("qc.approuver"),
+      livraisonTitre: client("livraison.titre"),
+      transporteur: client("livraison.transporteur"),
+      numero: client("livraison.numero"),
+      dateCourte: client("livraison.dateEstimee"),
+      contactTitre: client("contact.titre"),
+      contactTexte: client("contact.texte"),
+      contactBouton: client("contact.bouton"),
+      propulseSurtitre: client("carteDropLink.surtitre"),
+      propulseTitre: client("carteDropLink.titre"),
+      propulseTexte: client("carteDropLink.texte"),
+      propulseBouton: client("carteDropLink.bouton"),
+      site: client("reseaux.site"),
+    },
   };
 }
 

@@ -3862,6 +3862,21 @@ $$;
     },
   },
 
+  // L'alerte de la vue d'ensemble (213) : sans sa garde, un vendeur lirait le nombre de
+  // contestations de TOUTES les boutiques et la référence de la plus ancienne.
+  "contestations-alerte-sans-garde": {
+    casserDepuisMigration: {
+      fichier: "213_l_alerte_des_contestations.sql",
+      depuis: "create function public.compter_contestations_en_attente_admin(",
+      remplacer: "  if not public.est_admin() then\n    raise exception 'introuvable' using errcode = 'DL031';\n  end if;\n",
+      par: "",
+    },
+    reparerDepuisMigration: {
+      fichier: "213_l_alerte_des_contestations.sql",
+      depuis: "create function public.compter_contestations_en_attente_admin(",
+    },
+  },
+
 };
 
 /**
@@ -3980,9 +3995,22 @@ const DEPOT = {
     // `next-intl/middleware`, qui ne se resout pas hors d un contexte Next.
     // Une fonction de correspondance de chemin n a besoin d aucun de ces
     // modules : elle vit desormais dans un module pur, et elle est eprouvee.
+    // ⚠️ ET IL A RE-DÉMÉNAGÉ LE 04/10/2026 : `viseAdmin` décode désormais le chemin (revue de
+    // sécurité ECC — `/fr/%61dmin` échappait au filtre). La cible casse l'ENTRÉE de la boucle.
     fichier: "src/lib/routes/vise-admin.ts",
-    remplacer: "  return /^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?admin(?:\\/|$)/i.test(chemin);",
-    par: "  void chemin;\n  return false;",
+    remplacer: '  let courant = chemin.replace(/\\/{2,}/g, "/");',
+    par: '  void chemin;\n  return false;\n  let courant = chemin.replace(/\\/{2,}/g, "/");',
+  },
+
+  /**
+   * HORS du cas motivant : le filtre reconnaît encore `/fr/admin`, mais ne DÉCODE plus.
+   * C'est exactement le défaut mesuré le 04/10/2026 (`/fr/%61dmin` servi par Next avec une
+   * 404 non vide) : la suite du filtre doit rougir sur les chemins encodés.
+   */
+  "admin-chemin-encode-non-decode": {
+    fichier: "src/lib/routes/vise-admin.ts",
+    remplacer: '      suivant = decodeURIComponent(courant).replace(/\\/{2,}/g, "/");',
+    par: "      suivant = courant;",
   },
 
   /**

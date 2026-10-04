@@ -1,9 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
-import { CARTE } from "@/components/publique/carte-client";
-import type { AccentResolu } from "@/lib/design/contraste";
 
 /**
  * LE CLIENT DEMANDE À ÊTRE PRÉVENU PAR E-MAIL — planche `NotificationsCard`.
@@ -23,11 +21,9 @@ type Etat = "repos" | "envoi" | "envoye" | "invalide" | "trop" | "erreur";
 
 export function CarteNotifications({
   jeton,
-  accent,
   libelles,
 }: {
   readonly jeton: string;
-  readonly accent: AccentResolu;
   readonly libelles: {
     readonly titre: string;
     readonly texte: string;
@@ -44,13 +40,20 @@ export function CarteNotifications({
   const idChamp = useId();
   const idMessage = useId();
 
+  /* L'ADRESSE EST JUGÉE ICI D'ABORD, comme la maquette (`novalidate` + la même expression) :
+     la bulle native du navigateur parlait SA langue, pas celle de la page. Le serveur
+     reste le juge (400 → le même message). */
   const envoyer = async (): Promise<void> => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(adresse.trim())) {
+      setEtat("invalide");
+      return;
+    }
     setEtat("envoi");
     try {
       const reponse = await fetch("/p/" + encodeURIComponent(jeton) + "/notification", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: adresse }),
+        body: JSON.stringify({ email: adresse.trim() }),
       });
       setEtat(
         reponse.status === 202
@@ -69,29 +72,44 @@ export function CarteNotifications({
   const message =
     etat === "invalide" ? libelles.invalide : etat === "trop" ? libelles.trop : etat === "erreur" ? libelles.erreur : null;
 
+  // LA REFONTE (02/10/2026) : la carte `cv-carte` de la maquette v3, aux couleurs du
+  // vendeur par les variables `--cl-*` de la page.
+  // « Presque fini » ENTRE (maquette : `apparaitre`, 200 ms, 4 px) — après le 202 seulement.
+  const succes = useRef<HTMLParagraphElement>(null);
+  // `useLayoutEffect` : l'état arrive après un `await`, hors d'un événement ; posé dans un
+  // effet ordinaire, le message pourrait être peint une image avant d'entrer.
+  useLayoutEffect(() => {
+    if (etat !== "envoye") return;
+    // Le formulaire et son bouton disparaissent : le focus va au message, sans quoi il tombait
+    // sur le `body` et le statut monté déjà rempli n'était pas lu (revue a11y ECC du 03/10/2026,
+    // comme `arbitrage-qc`).
+    succes.current?.focus({ preventScroll: true });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    succes.current?.animate(
+      [
+        { opacity: 0, transform: "translateY(4px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 200, easing: "cubic-bezier(.23,1,.32,1)" },
+    );
+  }, [etat]);
+
   return (
-    <section className={CARTE}>
-      <div className="flex gap-3.5">
-        <span
-          aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-          style={{ backgroundColor: accent.teinte, color: accent.interface }}
-        >
-          <Bell size={20} strokeWidth={1.9} />
-        </span>
-        <span className="flex flex-col gap-[5px]">
-          <span className="text-[15px] font-bold text-ds-texte-fort">{libelles.titre}</span>
-          <span className="text-[13px] leading-[1.55] text-ds-texte-corps">{libelles.texte}</span>
-        </span>
-      </div>
+    <section className="cv-carte cv-entree" aria-labelledby={idChamp + "-titre"}>
+      <h2 className="cv-titre" id={idChamp + "-titre"}>
+        <Bell aria-hidden="true" className="ic" />
+        {libelles.titre}
+      </h2>
+      <p className="cv-texte">{libelles.texte}</p>
 
       {etat === "envoye" ? (
-        <p role="status" className="mt-4 text-[13px] leading-[1.55] font-semibold text-ds-succes-encre">
+        <p role="status" className="cv-succes" ref={succes} tabIndex={-1}>
           {libelles.envoye}
         </p>
       ) : (
         <form
-          className="mt-4 flex flex-wrap gap-2.5"
+          className="cv-notif"
+          noValidate
           onSubmit={(e) => {
             e.preventDefault();
             void envoyer();
@@ -103,7 +121,6 @@ export function CarteNotifications({
           <input
             id={idChamp}
             type="email"
-            required
             autoComplete="email"
             inputMode="email"
             maxLength={254}
@@ -112,18 +129,12 @@ export function CarteNotifications({
             placeholder={libelles.champ}
             aria-invalid={etat === "invalide"}
             aria-describedby={message === null ? undefined : idMessage}
-            className="h-11 min-w-0 flex-[1_1_200px] rounded-full border border-ds-filet bg-ds-surface-carte px-4 text-[14px] text-ds-texte-fort shadow-ds-xs outline-none placeholder:text-ds-texte-corps focus:border-ds-accent"
           />
-          <button
-            type="submit"
-            disabled={etat === "envoi"}
-            className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-ds-card border border-transparent px-[22px] text-[14px] font-semibold tracking-[-0.02em] shadow-ds-sm transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-70"
-            style={{ backgroundColor: accent.remplissage, color: accent.surRemplissage }}
-          >
+          <button type="submit" disabled={etat === "envoi"} className="cv-bouton cv-bouton--plein">
             {libelles.bouton}
           </button>
           {message === null ? null : (
-            <p id={idMessage} role="alert" className="w-full text-[13px] text-ds-erreur-encre">
+            <p id={idMessage} role="alert" className="cv-erreur">
               {message}
             </p>
           )}

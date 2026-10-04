@@ -6,7 +6,7 @@ import { SchemaLangue } from "@/i18n/schema";
 import { attendrePlancher } from "@/lib/auth/plancher";
 import { cheminDeRefus, suivreApresSession } from "@/lib/comptes/apres-session";
 import { verifierQuotaMotDePasse } from "@/lib/limitation/quota";
-import { poserPreuveAppareil } from "@/lib/auth/appareil-fiable";
+import { poserPreuveAppareil, retenirAppareil } from "@/lib/auth/appareil-fiable";
 import { creerClientServeur } from "@/lib/supabase/server";
 
 /**
@@ -30,7 +30,15 @@ import { creerClientServeur } from "@/lib/supabase/server";
 
 export type ResultatVerification =
   | { statut: "inactif" }
-  | { statut: "erreur"; motif: "code" | "invalide" | "trop" | "indisponible" };
+  | { statut: "erreur"; motif: "code" | "invalide" | "trop" | "indisponible" }
+  /**
+   * Le code est ACCEPTÉ, et la suite est connue. Rendu seulement à un formulaire
+   * hydraté (`js=1`) : il pose les cases en vert (maquette, `compte.js`) PUIS
+   * navigue. Sans JavaScript, ou avant l'hydratation, l'action redirige comme
+   * avant — un formulaire qui recevrait ce résultat sans script resterait sur place.
+   * Le vert suit la réponse du serveur, il ne la précède jamais (contrainte 8).
+   */
+  | { statut: "valide"; chemin: string };
 
 const Saisie = z.object({
   code: z
@@ -43,6 +51,8 @@ const Saisie = z.object({
   // La case « se souvenir de cet appareil » (203) : présente seulement à la
   // connexion ordinaire, absente du flux de réinitialisation.
   souvenir: z.enum(["on"]).optional(),
+  // Posé par le formulaire une fois hydraté : il sait alors naviguer lui-même.
+  js: z.enum(["1"]).optional(),
 });
 
 export async function verifierCode(
@@ -54,17 +64,26 @@ export async function verifierCode(
 
   const suiteBrute = donnees.get("suite");
   const souvenirBrut = donnees.get("souvenir");
+  const jsBrut = donnees.get("js");
   const analyse = Saisie.safeParse({
-    code: donnees.get("code"),
+    // LES SIX CASES PORTENT TOUTES `name="code"` : sans JavaScript, ou avant
+    // l'hydratation, le navigateur envoie les six valeurs, recollées ici. Un
+    // seul champ caché rempli par React laissait un compte à double facteur
+    // (l'administration, depuis la 186) sans moyen de se connecter.
+    code: donnees
+      .getAll("code")
+      .map((v) => (typeof v === "string" ? v.trim() : ""))
+      .join(""),
     locale: donnees.get("locale"),
     suite: typeof suiteBrute === "string" && suiteBrute !== "" ? suiteBrute : undefined,
     souvenir: typeof souvenirBrut === "string" && souvenirBrut !== "" ? souvenirBrut : undefined,
+    js: typeof jsBrut === "string" && jsBrut !== "" ? jsBrut : undefined,
   });
   if (!analyse.success) {
     await attendrePlancher(debut);
     return { statut: "erreur", motif: "invalide" };
   }
-  const { code, locale, suite, souvenir } = analyse.data;
+  const { code, locale, suite, souvenir, js } = analyse.data;
 
   const supabase = await creerClientServeur();
   const { data, error } = await supabase.auth.getUser();
@@ -107,22 +126,30 @@ export async function verifierCode(
   // retenu. JAMAIS dans le flux de réinitialisation : l'UI n'y montre pas la
   // case, mais l'action l'exclut aussi — un document qui affirme un état doit
   // l'exécuter, pas s'en remettre à l'UI (L-014).
-  if (souvenir === "on" && suite !== "mot-de-passe") {
+  // Ni le retour à l'administration non plus : la règle vit dans `retenirAppareil`.
+  if (retenirAppareil(souvenir, suite)) {
     await poserPreuveAppareil(supabase);
   }
 
+  // Toutes les suites d'un code ACCEPTÉ passent par ici : un formulaire hydraté
+  // reçoit le chemin (cases vertes, puis navigation), les autres sont redirigés.
+  const aboutir = (chemin: string): ResultatVerification => {
+    if (js === "1") return { statut: "valide", chemin };
+    redirect(chemin);
+  };
+
   if (suite === "mot-de-passe") {
     await attendrePlancher(debut);
-    redirect(`/${locale}/nouveau-mot-de-passe`);
+    return aboutir(`/${locale}/nouveau-mot-de-passe`);
   }
   if (suite === "admin") {
     // La session est maintenant `aal2` : c'est `exigerAdmin`, à l'arrivée, qui
     // relit le rôle en base — cette redirection n'accorde rien.
     await attendrePlancher(debut);
-    redirect(`/${locale}/admin`);
+    return aboutir(`/${locale}/admin`);
   }
 
   const destination = await suivreApresSession(locale, supabase);
   await attendrePlancher(debut);
-  redirect(destination.ok ? destination.chemin : cheminDeRefus(locale, destination.motif));
+  return aboutir(destination.ok ? destination.chemin : cheminDeRefus(locale, destination.motif));
 }

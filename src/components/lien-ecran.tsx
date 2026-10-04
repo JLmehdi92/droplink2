@@ -78,11 +78,27 @@ export function LienEcran({
    * qui lit ce fichier pour savoir ce qu'on peut lui donner.
    */
   readonly "data-vue-active"?: "true" | undefined;
+  /** Une tuile de compteur qui appelle un geste (maquette, `[data-alerte]`). */
+  readonly "data-alerte"?: string | undefined;
   /**
    * `false` sur la surface d'administration : son plafond de requêtes compte
    * les préchargements (voir `tests/unit/admin-sans-prechargement.test.ts`).
    */
   readonly prefetch?: boolean;
+  /** Le rang d'une entrée de la coque (`--rang`), pour la cascade du tiroir. */
+  readonly style?: React.CSSProperties;
+  /** Le sens de l'entrée de l'écran suivant, posé au clic (`NavigationVendeur`). */
+  readonly onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  /**
+   * Les onglets des Paramètres (maquette `parametres.js`) : des LIENS qui portent le rôle
+   * d'onglet, un seul arrêt de tabulation, et les flèches pour passer de l'un à l'autre.
+   */
+  readonly id?: string;
+  readonly role?: "tab";
+  readonly "aria-selected"?: boolean;
+  readonly "aria-controls"?: string | undefined;
+  readonly tabIndex?: number;
+  readonly onKeyDown?: (e: React.KeyboardEvent<HTMLAnchorElement>) => void;
 }) {
   return (
     <Link href={href} className={className} {...reste}>

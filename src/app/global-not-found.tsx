@@ -5,7 +5,12 @@ import { Inter } from "next/font/google";
 import { ArrowRight, Unlink } from "lucide-react";
 import { CLASSE_ACTION_ERREUR, EcranErreurPublic } from "@/components/ecran-erreur-public";
 import { routing } from "@/i18n/routing";
+import { MarqueurHydratation, ScriptJs } from "@/components/script-js";
 import "./globals.css";
+// Ce fichier remplace la racine : les feuilles de la refonte, que `[locale]/layout`
+// importe d'ordinaire, doivent être importées ici aussi.
+import "@/styles/refonte/socle.css";
+import "@/styles/refonte/app.css";
 
 /**
  * CE QUE VOIT QUELQU'UN QUI SUIT UNE ADRESSE QUI N'EXISTE PAS.
@@ -83,18 +88,27 @@ export default async function PageIntrouvable() {
   const t = await getTranslations({ locale: langue, namespace: "erreurs" });
 
   return (
-    <html lang={langue}>
+    <html lang={langue} suppressHydrationWarning>
       <body className={`${corps.variable} antialiased`}>
+        {/* La classe `js` des autres surfaces : sans elle, l'entrée en cascade de
+            `introuvable.html` (`.js .err-corps > *`) ne jouait jamais ici. */}
+        <ScriptJs />
+        <MarqueurHydratation />
         {/* React hisse ce titre dans le `<head>`. Il est ici et non dans un
             `metadata` exporté parce que ce fichier ne reçoit aucune propriété :
             un `metadata` statique ne pourrait pas être dans la bonne langue. */}
         <title>{t("introuvableTitre")}</title>
         <meta name="robots" content="noindex, nofollow" />
 
-        {/* `ui_kits/erreurs/introuvable.html`. UN MAILLON ROMPU, PAS UNE LOUPE :
+        {/* Refonte du 02/10/2026 : `introuvable.html`. UN MAILLON ROMPU, PAS UNE LOUPE :
             la loupe dit « votre recherche n'a rien donné » ; ici il n'y a pas eu
             de recherche, il y a une adresse qui ne mène à rien. */}
-        <EcranErreurPublic icone={Unlink} titre={t("introuvableTitre")} texte={t("introuvableTexte")}>
+        <EcranErreurPublic
+          icone={Unlink}
+          titre={t("introuvableTitre")}
+          texte={t("introuvableTexte")}
+          accueil={{ href: `/${langue}`, libelle: t("accueilLogo") }}
+        >
           {/*
             UN `<a>` NATIF, PAS UN `<Link>`. Ce fichier remplace la racine :
             il n'y a aucun routeur monté au-dessus de lui, et une navigation
@@ -104,8 +118,8 @@ export default async function PageIntrouvable() {
             rediriger, donc payer un aller-retour pour rien.
           */}
           <a href={`/${langue}`} className={CLASSE_ACTION_ERREUR}>
-            {t("introuvableRetour")}
-            <ArrowRight aria-hidden="true" size={18} strokeWidth={1.9} />
+            <span>{t("introuvableRetour")}</span>
+            <ArrowRight aria-hidden="true" className="ic" />
           </a>
         </EcranErreurPublic>
       </body>

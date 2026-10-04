@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
-import { BookOpen } from "lucide-react";
-import { CoquePublique } from "@/components/coque-publique";
+import { ArrowRight, FileText } from "lucide-react";
+import { CoqueSite } from "@/components/public/coque-site";
+import { GrapheJsonLd } from "@/components/seo/graphe-json-ld";
+import { donneesPage } from "@/lib/seo/donnees-structurees";
 import { MetaArticle } from "@/components/blog/meta-article";
 import { estLangueDuBlog, LANGUE_DU_BLOG, tousLesArticles } from "@/lib/blog/articles";
 import { alternatesUneSeuleLangue, openGraphDe } from "@/lib/seo/alternates";
@@ -25,14 +27,28 @@ import { routing } from "@/i18n/routing";
  */
 const CHEMIN = "/blog";
 
-const TITRE = "Le blog — DropLink";
+/** Le nom de la page, tel que l'étiquette l'affiche et que le fil d'Ariane le dit. */
+const NOM = "Le blog";
+const TITRE = "Le blog DropLink : vendre en direct, sans boutique";
 const DESCRIPTION =
-  "Ce qu'on apprend en parlant à des vendeurs qui envoient leurs commandes en message privé : les outils, les pièges, et ce qui fait qu'un client cesse de demander où en est son colis.";
+  "Ce qu'on apprend en parlant à des vendeurs qui envoient leurs commandes en message privé : les outils, les pièges, et ce qui fait qu'un client cesse de demander où en est son colis.";
+/** La description de RECHERCHE : celle de la page (le chapeau) dépasse 160 caractères. */
+const DESCRIPTION_META =
+  "Ce qu'on apprend auprès des vendeurs qui envoient leurs commandes en message privé : les outils, les pièges, et comment ne plus entendre « où est mon colis ? ».";
 
 /**
  * ⚠️ ON NE PRÉREND QUE LA LANGUE DU BLOG. Rendre les trois créerait deux pages
  * dont le seul travail est d'appeler `notFound()`.
  */
+/**
+ * HORS DE LA LISTE, LA ROUTE N'EXISTE PAS (audit final du 03/10/2026) : une autre langue ou
+ * un article inconnu passait par `notFound()` dans une page prérendue, et c'est la page
+ * générique de Next qui répondait — anglais en dur, Times New Roman, `lang` vide. Une route
+ * inexistante, elle, est servie par `global-not-found`, l'écran introuvable de la refonte.
+ * `notFound()` reste plus bas, en filet.
+ */
+export const dynamicParams = false;
+
 export function generateStaticParams(): Array<{ locale: string }> {
   return routing.locales
     .filter((l) => l === LANGUE_DU_BLOG)
@@ -48,9 +64,9 @@ export async function generateMetadata({
   const langue = estLangueSupportee(locale) ? locale : LANGUE_DEFAUT;
   return {
     title: TITRE,
-    description: DESCRIPTION,
+    description: DESCRIPTION_META,
     alternates: alternatesUneSeuleLangue(langue, CHEMIN),
-    openGraph: openGraphDe(langue, CHEMIN, { titre: TITRE, description: DESCRIPTION }),
+    openGraph: openGraphDe(langue, CHEMIN, { titre: TITRE, description: DESCRIPTION_META }, { uneSeuleLangue: true }),
   };
 }
 
@@ -59,49 +75,54 @@ export default async function Blog({ params }: { params: Promise<{ locale: strin
   const langue = estLangueSupportee(locale) ? locale : LANGUE_DEFAUT;
   if (!estLangueDuBlog(langue)) notFound();
   setRequestLocale(locale);
+  // La durée de lecture se dit par règle de traduction, pas en dur (contre-audit du 03/10/2026).
+  const tc = await getTranslations("commun");
 
   const articles = tousLesArticles();
 
+  /* LA REFONTE (02/10/2026) suit `blog.html` : en-tête de page, puis la grille de cartes,
+     la plus récente « à la une » sur deux colonnes. Le blog n'existe qu'en français : ses
+     textes vivent dans `lib/blog/articles`, pas dans les catalogues. */
   return (
-    <CoquePublique locale={locale} pastille="Blog" enteteSecondaire={false}>
-      {/* `blog/index.html` du design system, écrit le 14/09/2026 avant ce
-          fichier. « Créer un compte » garde le dégradé : l'index n'a pas
-          d'autre action. */}
-      <main
-        id="contenu"
-        className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-8 pb-12 md:px-[34px] md:pt-14 md:pb-[88px]"
-      >
-        <span className="inline-flex items-center gap-2 rounded-ds-pill border border-ds-violet-200 bg-ds-surface-teinte px-3.5 py-[7px] text-[12.5px] font-bold text-ds-accent-encre">
-          <BookOpen aria-hidden="true" size={14} strokeWidth={2} />
-          Le blog
-        </span>
-        <h1 className="mt-5 max-w-[760px] text-[30px] leading-[1.06] font-extrabold tracking-[-0.045em] text-balance text-ds-texte-fort sm:text-[36px] md:text-[44px]">
-          Vendre en direct, sans y passer ses soirées
-        </h1>
-        <p className="mt-[18px] max-w-[680px] text-[16px] leading-[1.65] text-pretty text-ds-texte-corps md:text-[17px]">
-          {DESCRIPTION}
-        </p>
-
-        {/* UNE COLONNE EN TÉLÉPHONE, TROIS EN BUREAU. Deux cartes côte à côte
-            dans 350 px couperaient chaque titre en cinq lignes ; au-delà de
-            trois colonnes, les titres se coupent aussi. */}
-        <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-3.5 md:mt-11 md:grid-cols-3 md:gap-5">
-          {articles.map((a) => (
+    <CoqueSite locale={locale} page="blog">
+      <GrapheJsonLd graphe={donneesPage(langue, CHEMIN, { nom: NOM, description: DESCRIPTION_META }, "CollectionPage")} />
+      <main id="contenu" className="pub">
+        <section className="pub-tete conteneur">
+          <p className="l4-etiquette">
+            <span>
+              <FileText aria-hidden="true" className="ic" />
+            </span>
+            {NOM}
+          </p>
+          <h1 className="pub-titre l4-titre">
+            <span className="l4-ligne" style={{ "--l": 0 } as React.CSSProperties}>Vendre en direct, sans y passer ses soirées</span>
+          </h1>
+          <p className="pub-chapo" data-entree>
+            {DESCRIPTION}
+          </p>
+        </section>
+        <section className="conteneur blog-grille" aria-label="Articles">
+          {articles.map((a, rang) => (
             <Link
               key={a.slug}
               href={`/${locale}/blog/${a.slug}`}
-              className="flex flex-col gap-3 rounded-ds-card-lg border border-ds-filet bg-ds-surface-carte p-6 shadow-ds-card transition-shadow hover:shadow-ds-md"
+              className={"blog-carte v4-carte" + (rang === 0 ? " blog-carte--une" : "")}
+              data-anime
             >
-              <span className="text-[11.5px] font-extrabold tracking-[0.12em] text-ds-accent-encre uppercase md:text-[11px]">
-                {a.etiquette}
+              <span className="blog-carte__etiquette">{a.etiquette}</span>
+              <h2>{a.titre}</h2>
+              <p>{a.resume}</p>
+              <span className="blog-carte__pied">
+                <MetaArticle date={a.date} duree={tc("dureeCourte", { n: a.minutes })} />
+                <span className="blog-carte__lire">
+                  Lire
+                  <ArrowRight aria-hidden="true" className="ic" />
+                </span>
               </span>
-              <h2 className="text-[20px] leading-[1.3] font-bold tracking-[-0.02em] text-balance text-ds-texte-fort">{a.titre}</h2>
-              <p className="flex-1 text-[14.5px] leading-[1.6] text-ds-texte-corps">{a.resume}</p>
-              <MetaArticle date={a.date} duree={`${a.minutes} min`} />
             </Link>
           ))}
-        </div>
+        </section>
       </main>
-    </CoquePublique>
+    </CoqueSite>
   );
 }

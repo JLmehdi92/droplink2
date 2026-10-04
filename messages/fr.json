@@ -1,8 +1,7 @@
 {
   "commun": {
     "chargement": "Chargement…",
-    "fermer": "Fermer",
-    "copie": "Copié"
+    "dureeCourte": "{n} min"
   },
   "navigation": {
     "seConnecter": "Se connecter",
@@ -22,160 +21,28 @@
       "bouton": "Passer au Pro"
     },
     "tableauDeBord": "Tableau de bord",
-    "tableauDeBordCourt": "Accueil",
-    "parametres": "Paramètres"
+    "parametres": "Paramètres",
+    "ouvrirMenu": "Ouvrir le menu",
+    "fermerMenu": "Fermer le menu",
+    "rechercheCourte": "Rechercher…",
+    "accueilDropLink": "DropLink, tableau de bord"
   },
   "landing": {
     "metaTitre": "DropLink — Un seul lien de suivi pour toute la commande",
-    "metaDescription": "Ajoutez vos photos et un numéro de suivi : DropLink crée un lien unique où votre client suit son colis, avec des statuts transporteur mis à jour tout seuls.",
+    "metaDescription": "Ajoutez vos photos et un numéro de suivi : DropLink crée un lien unique où votre client suit son colis, avec des statuts transporteur mis à jour tout seuls.",
     "fonctionnalites": {
       "titre": "Ce que contient la page"
     },
     "menu": {
-      "etapes": "Comment ça marche",
-      "docs": "Documentation"
+      "etapes": "Comment ça marche"
     },
-    "pied": {
-      "conditions": "Conditions",
-      "confidentialite": "Confidentialité",
-      "docs": "Documentation"
-    },
-    "piedCourt": {
-      "conditions": "Conditions",
-      "confidentialite": "Confidentialité",
-      "docs": "Documentation"
-    },
-    "perk1": "Gratuit au lancement",
-    "perk2": "Sans carte bancaire",
-    "perk3": "Prêt en 30 secondes",
-    "piedDroits": "© {annee} DropLink. Tous droits réservés.",
     "kit": {
-      "navFeatures": "Fonctionnalités",
-      "navHow": "Comment ça marche",
-      "navPricing": "Tarifs",
-      "navDocs": "Documentation",
-      "navFaq": "FAQ",
-      "login": "Se connecter",
-      "signup": "Créer un compte",
-      "trust": "+2 500 vendeurs nous font déjà confiance",
-      "heroTitle1": "Un seul lien de suivi",
-      "heroTitle2": "pour toute la ",
-      "heroTitleHl": "commande",
-      "heroLead": "DropLink crée une page de suivi client par commande : vos photos, le statut du transporteur et la date de livraison, mis à jour tout seuls.",
-      "ctaPrimary": "Créer ma première commande",
-      "ctaSecondary": "Voir un exemple de page client",
-      "ctaSecondaryShort": "Voir un exemple",
-      "perk1": "Gratuit au lancement",
-      "perk2": "Sans carte bancaire",
-      "perk3": "Prêt en 30 secondes",
-      "chip1": "Téléversez vos photos",
-      "chip1c": "En un clic",
-      "chip2": "Suivi automatique",
-      "chip2c": "Mise à jour en temps réel",
-      "chip3": "Un lien unique",
-      "chip3c": "Pour votre client",
-      "chip4": "Une expérience pro",
-      "chip4c": "À votre image",
-      "usedOn": "Utilisé par des vendeurs sur",
-      "featEyebrow": "Fonctionnalités",
-      "featTitle": "Le suivi de commande, sans un seul message de",
-      "featHl": "relance",
-      "featSub": "Photos, statut d'expédition, numéro de suivi : tout ce que votre client demande, réuni sur un lien unique.",
-      "f1": "Gestion de commandes",
-      "f1b": "Créez, organisez et suivez toutes vos commandes depuis un seul endroit.",
-      "f2": "Téléversement de photos",
-      "f2b": "Ajoutez plusieurs photos et vidéos en un clic, sans perte de qualité.",
-      "f3": "Suivi automatique",
-      "f3b": "Le suivi se met à jour tout seul et votre client est notifié en temps réel.",
-      "f4": "Page client personnalisée",
-      "f4b": "Un lien unique et une page à votre image (logo, couleurs, nom, réseaux…).",
-      "f5": "Analyses détaillées",
-      "f5b": "Commandes créées, livrées, liens ouverts et délais moyens de livraison.",
-      "f6": "Multi-plateformes",
-      "f6b": "Fonctionne avec Vinted, eBay, Shopify, TikTok Shop, Leboncoin et plus encore.",
-      "howEyebrow": "Comment ça marche ?",
-      "howTitle": "Créer un lien de suivi client en 3",
-      "howHl": "étapes",
-      "howSub": "Aucune installation, aucune intégration transporteur à configurer : votre premier lien part en moins d'une minute.",
-      "s1": "Créez votre commande",
-      "s1b": "Ajoutez le nom du client, ses photos et le numéro de suivi.",
-      "s1c": "Ajouter des photos",
-      "s1d": "Glissez-déposez vos fichiers ou cliquez pour sélectionner",
-      "s2": "Partagez le lien",
-      "s2b": "Un lien unique est généré pour votre client.",
-      "s3": "Votre client suit en temps réel",
-      "s3b": "Le suivi se met à jour automatiquement, sans que vous ayez à intervenir.",
-      "tl1": "Commande créée",
-      "tl2": "En transit",
-      "tl3": "En livraison",
-      "tl4": "Livré",
-      "testiEyebrow": "Témoignages",
-      "testiTitle": "Ils ont arrêté les « où est mon",
-      "testiHl": "colis ? »",
-      "testiSub": "Vendeurs Vinted, e-commerçants et boutiques Shopify : ils envoient un lien au lieu de répondre dix fois par commande.",
-      "q1role": "Vendeur Vinted",
-      "q1": "Franchement incroyable, ça change la vie. Plus besoin de renvoyer 50 photos, le client voit tout sur un seul lien !",
-      "q2role": "Boutique en ligne",
-      "q2": "Interface super propre et simple à utiliser. Mes clients sont beaucoup plus rassurés avec le suivi en temps réel.",
-      "q3role": "Revendeur",
-      "q3": "Ultra rapide à mettre en place, et ça fait vraiment plus pro. Je recommande à 100%.",
-      "bannerTitle1": "Votre prochaine commande",
-      "bannerTitle2": "mérite mieux",
-      "bannerSub": "Gratuit pendant le lancement. Aucune carte demandée.",
-      "footTag": "Un seul lien. Plus de ventes.",
-      "footProduct": "Produit",
-      "footCompany": "Société",
-      "footAbout": "À propos",
-      "footContact": "Contact",
-      "footTerms": "Conditions d'utilisation",
-      "footPrivacy": "Politique de confidentialité",
-      "footFaq": "Questions fréquentes",
-      "footNews": "Restez informé",
-      "footMail": "Votre email",
-      "footRights": "© 2025 DropLink. Tous droits réservés.",
-      "footMade": "Conçu pour les vendeurs, par des vendeurs.",
       "langues": {
         "fr": "Français",
         "en": "English",
         "zh-CN": "中文"
       },
-      "langueChoisir": "Langue",
-      "menu": "Menu",
-      "appHello": "Bonjour Nassim !",
-      "appHelloSub": "Voici un aperçu rapide de votre activité sur DropLink.",
-      "appSearch": "Rechercher une commande...",
-      "appNavHome": "Tableau de bord",
-      "appNavOrders": "Commandes",
-      "appNavShip": "Suivi d'envois",
-      "appNavStats": "Analyses",
-      "appNavBrand": "Ma marque",
-      "appNavSettings": "Paramètres",
-      "appProTitle": "Passez au Pro",
-      "appProBody": "Plus de fonctionnalités, plus de possibilités.",
-      "appProCta": "Passer au Pro",
-      "appAccount": "Mon compte",
-      "appRange": "7 derniers jours",
-      "kpiCreated": "Commandes créées",
-      "kpiDelivered": "Livrées",
-      "kpiTransit": "En transit",
-      "kpiLinks": "Liens clients ouverts",
-      "kpiDelay": "Temps moyen de livraison",
-      "recentOrders": "Commandes récentes",
-      "seeAll": "Voir tout",
-      "colNo": "N°",
-      "colClient": "CLIENT",
-      "colStatus": "STATUT",
-      "colDate": "DATE",
-      "stOrdered": "Commandée",
-      "stTransit": "En transit",
-      "stDelivering": "En livraison",
-      "stDelivered": "Livrée",
-      "ago1": "Il y a 1h",
-      "ago3": "Il y a 3h",
-      "ago5": "Il y a 5h",
-      "ago7": "Il y a 7h",
-      "footBlog": "Blog",
-      "footLegal": "Mentions légales"
+      "langueChoisir": "Langue"
     }
   },
   "legal": {
@@ -184,13 +51,10 @@
     "signalementTitre": "Signaler un contenu",
     "signalementSurTitre": "Notification et retrait",
     "sommaireTitre": "Sommaire",
-    "encartSignalerTitre": "Un contenu à signaler ?",
-    "encartSignalerTexte": "Utilisez le formulaire dédié : nous traitons chaque signalement.",
+    "encartSignalerTitre": "Un contenu à signaler ?",
+    "encartSignalerTexte": "Utilisez le formulaire dédié : nous traitons chaque signalement.",
     "encartSignalerLien": "Signaler un contenu",
     "piedTitre": "Pages légales",
-    "piedConditions": "Conditions",
-    "piedConfidentialite": "Confidentialité",
-    "piedSignaler": "Signaler un contenu",
     "signalement": {
       "intro": "Si une page hébergée chez nous porte atteinte à vos droits ou vous paraît illicite, décrivez-la ici. Chaque signalement est examiné par une personne.",
       "etape1Titre": "Vous envoyez le lien concerné",
@@ -209,27 +73,36 @@
       "cat_autre": "Autre",
       "description": "Description",
       "descriptionExemple": "Précisez ce qui pose problème et à quel titre vous agissez.",
-      "email": "Votre adresse email",
+      "email": "Votre adresse e-mail",
       "emailExemple": "Pour vous répondre",
       "envoyer": "Préparer le signalement",
-      "ouvreMessagerie": "Ce bouton ouvre votre messagerie avec le message déjà rempli. Rien n'est envoyé tant que vous ne l'envoyez pas vous-même.",
-      "adresseDirecte": "Ou écrivez directement à"
+      "ouvreMessagerie": "Ce bouton prépare le message à envoyer. Rien n’est envoyé tant que vous ne l’envoyez pas vous-même.",
+      "adresseDirecte": "Ou écrivez directement à",
+      "pretTitre": "Votre message est prêt",
+      "a": "À",
+      "objet": "Objet",
+      "copier": "Copier le message",
+      "copie": "Message copié",
+      "ouvrir": "Ouvrir la messagerie",
+      "rienEnvoye": "Rien n’est envoyé tant que vous ne l’envoyez pas vous-même.",
+      "erreurLien": "Collez l’adresse complète de la page, commençant par https://.",
+      "erreurDescription": "Précisez ce qui pose problème.",
+      "erreurEmail": "Cette adresse ne semble pas valide.",
+      "copieSelection": "Sélectionné, copiez-le",
+      "sujet": "{titre} : {categorie}"
     },
     "conditionsMetaTitre": "Conditions d'utilisation — DropLink",
-    "conditionsMetaDescription": "Les conditions d'utilisation de DropLink : le service, le compte vendeur, les contenus, l'abonnement Gratuit et Pro, la résiliation et la responsabilité.",
+    "conditionsMetaDescription": "Les conditions d'utilisation de DropLink : le service, le compte vendeur, les contenus, l'abonnement Gratuit et Pro, la résiliation et la responsabilité.",
     "confidentialiteMetaTitre": "Politique de confidentialité — DropLink",
     "confidentialiteMetaDescription": "Les données que DropLink traite, pourquoi, combien de temps, avec quels prestataires, et vos droits — vendeurs comme clients des vendeurs.",
     "signalementMetaTitre": "Signaler un contenu — DropLink",
-    "signalementMetaDescription": "Signaler un contenu hébergé sur DropLink. Décrivez le lien concerné et le motif : chaque signalement est lu, et une page peut être coupée sans délai.",
-    "pastille": "Légal",
-    "accueil": "Accueil",
+    "signalementMetaDescription": "Signaler un contenu hébergé sur DropLink. Décrivez le lien concerné et le motif : chaque signalement est lu, et une page peut être coupée sans délai.",
     "editeurNom": "Mahfoud SEDDIKI",
     "mentionsTitre": "Mentions légales",
-    "piedMentions": "Mentions légales",
-    "mentionsMetaTitre": "Mentions légales — DropLink",
-    "mentionsMetaDescription": "Les mentions légales de DropLink : éditeur, directeur de la publication, hébergeurs et contact.",
-    "misAJourDate": "Dernière mise à jour : {date}",
-    "editeurLigne": "Éditeur : {nom}",
+    "mentionsMetaTitre": "Mentions légales — éditeur et hébergeurs de DropLink",
+    "mentionsMetaDescription": "Les mentions légales de DropLink : l’éditeur du site, le directeur de la publication, les hébergeurs du service et l’adresse à laquelle nous écrire.",
+    "misAJourDate": "Dernière mise à jour : {date}",
+    "editeurLigne": "Éditeur : {nom}",
     "pages": {
       "conditions": {
         "titre": "Conditions générales d'utilisation",
@@ -241,7 +114,7 @@
             "titre": "Objet",
             "blocs": [
               {
-                "p": "Les présentes conditions régissent l'accès au service DropLink, accessible à l'adresse droplink.fr, et son utilisation. Elles constituent un contrat entre Mahfoud SEDDIKI, entrepreneur individuel, éditeur du service (voir les mentions légales), et toute personne qui crée un compte, désignée ci-après « le vendeur »."
+                "p": "Les présentes conditions régissent l'accès au service DropLink, accessible à l'adresse droplink.fr, et son utilisation. Elles constituent un contrat entre Mahfoud SEDDIKI, entrepreneur individuel, éditeur du service (voir les mentions légales), et toute personne qui crée un compte, désignée ci-après « le vendeur »."
               },
               {
                 "p": "Le client du vendeur qui consulte une page de commande n'a pas de compte et n'est pas partie à ce contrat. Sa relation commerciale est établie avec le vendeur, pas avec DropLink."
@@ -253,15 +126,15 @@
             "titre": "Le service",
             "blocs": [
               {
-                "p": "DropLink est un service de suivi et de communication, pas une place de marché. Le vendeur crée une commande, y ajoute des photos ou vidéos et un numéro de suivi ; DropLink génère une page privée, accessible par un lien non devinable, et interroge le transporteur pour mettre le statut à jour."
+                "p": "DropLink est un service de suivi et de communication, pas une place de marché. Le vendeur crée une commande, y ajoute des photos ou vidéos et un numéro de suivi ; DropLink génère une page privée, accessible par un lien non devinable, et interroge le transporteur pour mettre le statut à jour."
               },
               {
                 "h3": "Ce que le service ne comprend pas"
               },
               {
                 "ul": [
-                  "Aucune vente et aucun encaissement entre le vendeur et son client : DropLink ne connaît ni les prix ni les marges du vendeur.",
-                  "Aucun acheminement de colis : DropLink n'est ni transporteur, ni commissionnaire de transport.",
+                  "Aucune vente et aucun encaissement entre le vendeur et son client : DropLink ne connaît ni les prix ni les marges du vendeur.",
+                  "Aucun acheminement de colis : DropLink n'est ni transporteur, ni commissionnaire de transport.",
                   "Aucune garantie sur les délais de livraison, qui relèvent du transporteur choisi par le vendeur."
                 ]
               },
@@ -290,10 +163,10 @@
             "titre": "Vos contenus",
             "blocs": [
               {
-                "p": "Les photos, vidéos et informations que le vendeur dépose restent sa propriété. Le vendeur concède à DropLink la licence strictement nécessaire à l'exécution du service : stocker ces fichiers et les afficher sur la page de commande accessible par le lien. Cette licence prend fin avec la suppression des contenus ou du compte."
+                "p": "Les photos, vidéos et informations que le vendeur dépose restent sa propriété. Le vendeur concède à DropLink la licence strictement nécessaire à l'exécution du service : stocker ces fichiers et les afficher sur la page de commande accessible par le lien. Cette licence prend fin avec la suppression des contenus ou du compte."
               },
               {
-                "p": "Le vendeur garantit détenir les droits sur les contenus publiés, et s'engage à ne pas y faire figurer de données sensibles ni d'éléments identifiants qui ne seraient pas nécessaires au suivi de la commande. DropLink agit en qualité d'hébergeur : il n'exerce aucun contrôle préalable sur les contenus déposés."
+                "p": "Le vendeur garantit détenir les droits sur les contenus publiés, et s'engage à ne pas y faire figurer de données sensibles ni d'éléments identifiants qui ne seraient pas nécessaires au suivi de la commande. DropLink agit en qualité d'hébergeur : il n'exerce aucun contrôle préalable sur les contenus déposés."
               }
             ]
           },
@@ -314,7 +187,7 @@
                 "encart": {
                   "ton": "alerte",
                   "titre": "Sanction",
-                  "texte": "En cas de manquement, l'accès au compte peut être suspendu immédiatement, sans préjudice des actions judiciaires possibles. La suspension est réversible : la réactivation rétablit les pages sur les mêmes liens."
+                  "texte": "En cas de manquement, l'accès au compte peut être suspendu immédiatement, sans préjudice des actions judiciaires possibles. La suspension est réversible : la réactivation rétablit les pages sur les mêmes liens."
                 }
               }
             ]
@@ -324,7 +197,7 @@
             "titre": "Signalement et retrait",
             "blocs": [
               {
-                "p": "Toute personne peut signaler un contenu qu'elle estime illicite en écrivant à contact@droplink.fr. Chaque signalement est examiné par une personne, et le compte concerné peut être suspendu à titre conservatoire : ses pages cessent alors immédiatement d'être servies."
+                "p": "Toute personne peut signaler un contenu qu'elle estime illicite en écrivant à contact@droplink.fr. Chaque signalement est examiné par une personne, et le compte concerné peut être suspendu à titre conservatoire : ses pages cessent alors immédiatement d'être servies."
               },
               {
                 "p": "Le signalement peut aussi se faire depuis la page de signalement, accessible depuis les pages légales du site.",
@@ -365,7 +238,7 @@
                     [
                       "Engagement",
                       "Aucun",
-                      "Aucun : mensuel, sans durée minimale"
+                      "Aucun : mensuel, sans durée minimale"
                     ]
                   ]
                 }
@@ -374,12 +247,12 @@
                 "ul": [
                   "L'abonnement Pro est encaissé par Lemon Squeezy, revendeur et émetteur de la facture, selon ses propres conditions d'achat. DropLink ne voit et ne conserve aucune donnée de carte bancaire.",
                   "Il se renouvelle chaque mois jusqu'à sa résiliation.",
-                  "Un paiement échoué ramène le compte au plan gratuit ; un paiement réussi rétablit le plan Pro.",
+                  "Un paiement échoué ramène le compte au plan gratuit ; un paiement réussi rétablit le plan Pro.",
                   "Aucun remboursement n'est effectué pour une période entamée."
                 ]
               },
               {
-                "p": "Si vous êtes un consommateur, vous bénéficiez du droit de rétractation prévu par la loi ; il s'exerce auprès de Lemon Squeezy, revendeur de l'abonnement, selon ses conditions d'achat."
+                "p": "Si vous êtes un consommateur, vous bénéficiez du droit de rétractation prévu par la loi ; il s'exerce auprès de Lemon Squeezy, revendeur de l'abonnement, selon ses conditions d'achat."
               }
             ]
           },
@@ -388,10 +261,10 @@
             "titre": "Résiliation",
             "blocs": [
               {
-                "p": "Le vendeur peut résilier son abonnement Pro à tout moment depuis son espace client Lemon Squeezy : le plan Pro reste actif jusqu'à la fin de la période déjà payée."
+                "p": "Le vendeur peut résilier son abonnement Pro à tout moment depuis son espace client Lemon Squeezy : le plan Pro reste actif jusqu'à la fin de la période déjà payée."
               },
               {
-                "p": "Le vendeur peut supprimer son compte à tout moment depuis les paramètres, une fois son abonnement éventuel résilié : DropLink refuse la suppression tant qu'un prélèvement peut encore avoir lieu. La suppression est immédiate et emporte les commandes, les médias et les suivis ; les liens déjà envoyés cessent de fonctionner. Restent seulement, comme le décrit la politique de confidentialité : l'adresse e-mail et les dates d'inscription et de suppression, un an au titre des obligations de l'hébergeur, puis effacées automatiquement ; les archives des événements d'abonnement, sans nom, e-mail ni carte, trois ans ; le journal des accès de l'administration. Un compte suspendu ne se supprime pas depuis les paramètres : la demande se fait alors à contact@droplink.fr."
+                "p": "Le vendeur peut supprimer son compte à tout moment depuis les paramètres, une fois son abonnement éventuel résilié : DropLink refuse la suppression tant qu'un prélèvement peut encore avoir lieu. La suppression est immédiate et emporte les commandes, les médias et les suivis ; les liens déjà envoyés cessent de fonctionner. Restent seulement, comme le décrit la politique de confidentialité : l'adresse e-mail et les dates d'inscription et de suppression, un an au titre des obligations de l'hébergeur, puis effacées automatiquement ; les archives des événements d'abonnement, sans nom, e-mail ni carte, trois ans ; le journal des accès de l'administration. Un compte suspendu ne se supprime pas depuis les paramètres : la demande se fait alors à contact@droplink.fr."
               },
               {
                 "p": "DropLink peut résilier un compte en cas de manquement aux présentes conditions, ou avec un préavis raisonnable en cas d'arrêt du service."
@@ -425,7 +298,7 @@
             "blocs": [
               {
                 "ul": [
-                  "DropLink répond de la fourniture du service : hébergement des contenus, génération des liens, restitution des statuts transmis par les transporteurs.",
+                  "DropLink répond de la fourniture du service : hébergement des contenus, génération des liens, restitution des statuts transmis par les transporteurs.",
                   "DropLink ne répond ni de la réalité de la vente, ni de la conformité des produits, ni des délais d'acheminement, ni des litiges entre un vendeur et son client.",
                   "Le vendeur reste seul responsable, à l'égard de ses clients, des informations qu'il publie sur ses pages de commande.",
                   "Sous réserve des dispositions impératives protégeant les consommateurs, la responsabilité de DropLink est limitée aux dommages directs et prévisibles, dans la limite des sommes versées au titre des douze derniers mois."
@@ -444,15 +317,15 @@
                 "h3": "Données des clients du vendeur (article 28 du RGPD)"
               },
               {
-                "p": "Pour les informations que le vendeur saisit ou dépose sur ses clients — nom, photos, numéro de suivi —, le vendeur est responsable du traitement et DropLink agit en sous-traitant, sur ses seules instructions : fournir les pages de commande et le suivi des colis. À ce titre, DropLink :"
+                "p": "Pour les informations que le vendeur saisit ou dépose sur ses clients — nom, photos, numéro de suivi —, le vendeur est responsable du traitement et DropLink agit en sous-traitant, sur ses seules instructions : fournir les pages de commande et le suivi des colis. À ce titre, DropLink :"
               },
               {
                 "ul": [
-                  "n'utilise ces données que pour fournir le service ;",
-                  "les protège par des mesures de sécurité adaptées et impose les mêmes obligations à ses propres prestataires ;",
-                  "fait appel aux prestataires listés dans la politique de confidentialité ;",
-                  "aide le vendeur à répondre aux demandes de ses clients ;",
-                  "supprime les données à la suppression des commandes ou du compte ;",
+                  "n'utilise ces données que pour fournir le service ;",
+                  "les protège par des mesures de sécurité adaptées et impose les mêmes obligations à ses propres prestataires ;",
+                  "fait appel aux prestataires listés dans la politique de confidentialité ;",
+                  "aide le vendeur à répondre aux demandes de ses clients ;",
+                  "supprime les données à la suppression des commandes ou du compte ;",
                   "informe le vendeur de toute violation de données qui le concerne."
                 ]
               },
@@ -475,10 +348,10 @@
             "titre": "Droit applicable et litiges",
             "blocs": [
               {
-                "p": "Les présentes conditions sont soumises au droit français. En cas de différend, les parties recherchent d'abord une solution amiable. À défaut, un litige avec un vendeur professionnel relève des tribunaux du ressort de Nanterre ; un consommateur conserve le bénéfice des règles de compétence et des dispositions protectrices prévues par la loi."
+                "p": "Les présentes conditions sont soumises au droit français. En cas de différend, les parties recherchent d'abord une solution amiable. À défaut, un litige avec un vendeur professionnel relève des tribunaux du ressort de Nanterre ; un consommateur conserve le bénéfice des règles de compétence et des dispositions protectrices prévues par la loi."
               },
               {
-                "p": "Pour toute question sur ces conditions : contact@droplink.fr."
+                "p": "Pour toute question sur ces conditions : contact@droplink.fr."
               }
             ]
           }
@@ -487,20 +360,20 @@
       "confidentialite": {
         "titre": "Politique de confidentialité",
         "pastille": "Politique de confidentialité",
-        "chapeau": "DropLink traite deux catégories de données : celles du vendeur qui possède un compte, et celles des clients de ce vendeur, qui consultent une page de commande sans jamais avoir de compte. Cette page décrit lesquelles, pourquoi, pendant combien de temps, et les droits dont vous disposez.",
+        "chapeau": "DropLink traite deux catégories de données : celles du vendeur qui possède un compte, et celles des clients de ce vendeur, qui consultent une page de commande sans jamais avoir de compte. Cette page décrit lesquelles, pourquoi, pendant combien de temps, et les droits dont vous disposez.",
         "sections": [
           {
             "id": "responsable",
             "titre": "Responsable du traitement",
             "blocs": [
               {
-                "p": "Le responsable des traitements décrits ici est Mahfoud SEDDIKI, entrepreneur individuel, 2 square de l'Avre, 92100 Boulogne-Billancourt, France (SIREN 990 848 004). Pour toute question ou demande sur vos données : contact@droplink.fr."
+                "p": "Le responsable des traitements décrits ici est Mahfoud SEDDIKI, entrepreneur individuel, 2 square de l'Avre, 92100 Boulogne-Billancourt, France (SIREN 990 848 004). Pour toute question ou demande sur vos données : contact@droplink.fr."
               },
               {
                 "encart": {
                   "ton": "info",
                   "titre": "Deux rôles distincts",
-                  "texte": "Pour les données de compte du vendeur, DropLink est responsable de traitement. Pour les données des clients du vendeur (le nom saisi, les photos d'une commande), DropLink agit comme sous-traitant du vendeur : c'est le vendeur qui décide de ce qu'il saisit et de son usage."
+                  "texte": "Pour les données de compte du vendeur, DropLink est responsable de traitement. Pour les données des clients du vendeur (le nom saisi, les photos d'une commande), DropLink agit comme sous-traitant du vendeur : c'est le vendeur qui décide de ce qu'il saisit et de son usage."
                 }
               }
             ]
@@ -524,7 +397,7 @@
                       "Saisis par le vendeur"
                     ],
                     [
-                      "Identifiant et adresse du compte Google en cas de connexion avec Google ; Google transmet aussi le nom et la photo, conservés par notre prestataire de connexion mais ni affichés ni utilisés",
+                      "Identifiant et adresse du compte Google en cas de connexion avec Google ; Google transmet aussi le nom et la photo, conservés par notre prestataire de connexion mais ni affichés ni utilisés",
                       "Google"
                     ],
                     [
@@ -577,7 +450,7 @@
                       "Transmis au vendeur"
                     ],
                     [
-                      "Adresse e-mail, donnée et confirmée par le client lui-même (facultatif)",
+                      "Adresse e-mail, donnée et confirmée par le client lui-même (facultative)",
                       "Trois e-mails de suivi au plus — expédition, transit, livraison —, avec désinscription en un clic"
                     ],
                     [
@@ -595,8 +468,8 @@
               },
               {
                 "ul": [
-                  "Aucune donnée de carte bancaire : l'abonnement est encaissé par Lemon Squeezy, qui ne nous en transmet ni le numéro ni les derniers chiffres.",
-                  "Aucune adresse postale : DropLink n'expédie rien.",
+                  "Aucune donnée de carte bancaire : l'abonnement est encaissé par Lemon Squeezy, qui ne nous en transmet ni le numéro ni les derniers chiffres.",
+                  "Aucune adresse postale : DropLink n'expédie rien.",
                   "Aucun prix, montant de commande ou chiffre d'affaires du vendeur.",
                   "Aucun cookie publicitaire et aucun traceur tiers."
                 ]
@@ -631,20 +504,20 @@
                       "Obligation légale de l'hébergeur"
                     ],
                     [
-                      "Sécuriser le service : limiter les abus, vérifier qu'un mot de passe n'a pas fuité, reconnaître les appareils de confiance, journaliser les accès de l'administration",
-                      "Intérêt légitime : protéger le service et ses utilisateurs"
+                      "Sécuriser le service : limiter les abus, vérifier qu'un mot de passe n'a pas fuité, reconnaître les appareils de confiance, journaliser les accès de l'administration",
+                      "Intérêt légitime : protéger le service et ses utilisateurs"
                     ],
                     [
                       "Compter les vues d'une page de commande pour le vendeur",
-                      "Intérêt légitime : informer le vendeur"
+                      "Intérêt légitime : informer le vendeur"
                     ],
                     [
                       "Mesurer l'usage du service sous forme pseudonyme",
-                      "Intérêt légitime : améliorer le produit"
+                      "Intérêt légitime : améliorer le produit"
                     ],
                     [
                       "Repérer les comptes en double qui affichent les mêmes réseaux sociaux",
-                      "Intérêt légitime : faire respecter les limites du plan gratuit"
+                      "Intérêt légitime : faire respecter les limites du plan gratuit"
                     ],
                     [
                       "Envoyer les e-mails de suivi au client du vendeur",
@@ -663,7 +536,7 @@
             "titre": "Destinataires et sous-traitants",
             "blocs": [
               {
-                "p": "Les données ne sont ni vendues, ni louées, ni cédées à des fins publicitaires. Elles sont transmises uniquement aux prestataires nécessaires au service :"
+                "p": "Les données ne sont ni vendues, ni louées, ni cédées à des fins publicitaires. Elles sont transmises uniquement aux prestataires nécessaires au service :"
               },
               {
                 "table": {
@@ -681,7 +554,7 @@
                     [
                       "Railway",
                       "Hébergement de l'application",
-                      "Serveurs dans l'Union européenne ; société établie aux États-Unis"
+                      "Serveurs dans l'Union européenne ; société établie aux États-Unis"
                     ],
                     [
                       "Cloudflare",
@@ -691,7 +564,7 @@
                     [
                       "Resend",
                       "Envoi des e-mails",
-                      "Envois depuis l'Union européenne ; société établie aux États-Unis"
+                      "Envois depuis l'Union européenne ; société établie aux États-Unis"
                     ],
                     [
                       "PostHog",
@@ -705,7 +578,7 @@
                     ],
                     [
                       "17TRACK",
-                      "Suivi des colis : reçoit uniquement le numéro de suivi et le transporteur",
+                      "Suivi des colis : reçoit uniquement le numéro de suivi et le transporteur",
                       "Hors Union européenne"
                     ],
                     [
@@ -768,7 +641,7 @@
                     ],
                     [
                       "Journal des accès de l'administration",
-                      "Conservé pour la sécurité du service et la défense de nos droits ; il ne peut être modifié et survit à la suppression du compte concerné"
+                      "Conservé pour la sécurité du service et la défense de nos droits ; il ne peut être modifié et survit à la suppression du compte concerné"
                     ]
                   ]
                 }
@@ -780,7 +653,7 @@
             "titre": "Transferts hors Union européenne",
             "blocs": [
               {
-                "p": "Lorsque des données sont traitées par un prestataire établi hors de l'Union européenne, le transfert est encadré par les clauses contractuelles types de la Commission européenne ou, pour les prestataires qui y adhèrent, par le cadre de protection des données UE–États-Unis. 17TRACK ne reçoit aucune donnée nominative : seulement le numéro de suivi et le transporteur."
+                "p": "Lorsque des données sont traitées par un prestataire établi hors de l'Union européenne, le transfert est encadré par les clauses contractuelles types de la Commission européenne ou, pour les prestataires qui y adhèrent, par le cadre de protection des données UE–États-Unis. 17TRACK ne reçoit aucune donnée nominative : seulement le numéro de suivi et le transporteur."
               }
             ]
           },
@@ -831,9 +704,9 @@
               },
               {
                 "ul": [
-                  "Vendeurs : les paramètres permettent de modifier vos informations, de télécharger vos données et de supprimer votre compte.",
-                  "Clients d'un vendeur : chaque e-mail de suivi contient un lien de désinscription. Pour les informations qu'un vendeur a saisies vous concernant, adressez-vous d'abord à lui ; vous pouvez aussi nous écrire et nous transmettrons.",
-                  "Par e-mail : contact@droplink.fr. Une réponse vous est apportée dans un délai d'un mois."
+                  "Vendeurs : les paramètres permettent de modifier vos informations, de télécharger vos données et de supprimer votre compte.",
+                  "Clients d'un vendeur : chaque e-mail de suivi contient un lien de désinscription. Pour les informations qu'un vendeur a saisies vous concernant, adressez-vous d'abord à lui ; vous pouvez aussi nous écrire et nous transmettrons.",
+                  "Par e-mail : contact@droplink.fr. Une réponse vous est apportée dans un délai d'un mois."
                 ]
               }
             ]
@@ -846,7 +719,7 @@
                 "ul": [
                   "Échanges chiffrés en HTTPS sur l'ensemble du service.",
                   "Mots de passe stockés sous forme de condensats, jamais en clair, et vérifiés contre les fuites connues sans jamais être transmis.",
-                  "Données de chaque vendeur cloisonnées en base : un compte ne peut lire que ses propres commandes.",
+                  "Données de chaque vendeur cloisonnées en base : un compte ne peut lire que ses propres commandes.",
                   "Photos et vidéos stockées dans un espace privé, servies par des liens signés à durée limitée.",
                   "Double authentification disponible pour les vendeurs et obligatoire pour l'administration, dont chaque consultation d'un compte est journalisée."
                 ]
@@ -861,7 +734,7 @@
             "titre": "Contact et réclamation",
             "blocs": [
               {
-                "p": "Pour toute question relative à vos données : contact@droplink.fr, ou par courrier à Mahfoud SEDDIKI, 2 square de l'Avre, 92100 Boulogne-Billancourt."
+                "p": "Pour toute question relative à vos données : contact@droplink.fr, ou par courrier à Mahfoud SEDDIKI, 2 square de l'Avre, 92100 Boulogne-Billancourt."
               },
               {
                 "p": "Si la réponse apportée ne vous satisfait pas, vous pouvez introduire une réclamation auprès de la Commission nationale de l'informatique et des libertés (CNIL), 3 place de Fontenoy, 75007 Paris, ou sur cnil.fr."
@@ -884,11 +757,11 @@
               },
               {
                 "ul": [
-                  "SIREN : 990 848 004 — SIRET : 990 848 004 00018",
+                  "SIREN : 990 848 004 — SIRET : 990 848 004 00018",
                   "Immatriculé au Registre national des entreprises",
                   "TVA non applicable, article 293 B du Code général des impôts",
-                  "Téléphone : +33 7 66 96 57 96",
-                  "E-mail : contact@droplink.fr"
+                  "Téléphone : +33 7 66 96 57 96",
+                  "E-mail : contact@droplink.fr"
                 ]
               }
             ]
@@ -970,7 +843,8 @@
           }
         ]
       }
-    }
+    },
+    "confidentialiteChapo": "Ce que nous collectons, pourquoi, et pendant combien de temps."
   },
   "connexion": {
     "titre": "Bon retour",
@@ -979,9 +853,9 @@
     "placeholderEmail": "vous@exemple.com",
     "erreurEmailInvalide": "Cette adresse ne semble pas valide.",
     "erreurTropDeTentatives": "Trop de demandes en peu de temps. Patientez une minute avant de réessayer.",
-    "pasDeCompteTitre": "Pas encore de compte ?",
+    "pasDeCompteTitre": "Pas encore de compte ?",
     "suggestionPrefixe": "Vouliez-vous dire",
-    "suggestionSuffixe": " ?",
+    "suggestionSuffixe": " ?",
     "cgvAvant": "En continuant, vous acceptez nos",
     "cgvEt": "et notre",
     "cgvConditions": "conditions d'utilisation",
@@ -990,19 +864,19 @@
     "ou": "ou",
     "avecGoogle": "Continuer avec Google",
     "motif": {
-      "lien": "Ce lien est incomplet. Certaines messageries le coupent : demandez-en un nouveau ci-dessous.",
+      "lien": "Ce lien est incomplet. Certaines messageries le coupent : demandez-en un nouveau ci-dessous.",
       "expire": "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau ci-dessous.",
       "profil": "Votre compte n'a pas pu être ouvert. Réessayez, et écrivez-nous si cela se reproduit.",
       "suspendu": "Ce compte est suspendu. Écrivez-nous pour en connaître la raison.",
       "indisponible": "La connexion Google est momentanément indisponible. Connectez-vous avec votre adresse et votre mot de passe ci-dessous.",
       "trop": "Trop de tentatives depuis cet appareil. Patientez quelques minutes.",
       "session": "Votre session a expiré. Reconnectez-vous pour continuer.",
-      "service": "Le service est momentanément injoignable. Votre session est intacte : réessayez dans un instant.",
+      "service": "Le service est momentanément injoignable. Votre session est intacte : réessayez dans un instant.",
       "fermees": "Les inscriptions sont momentanément fermées. Les comptes existants ne sont pas affectés.",
-      "confirmez": "Ouvrez votre boîte mail : si un lien de confirmation vous y attend, il termine la création de votre compte. Si vous aviez déjà un compte, connectez-vous ci-dessous."
+      "confirmez": "Ouvrez votre boîte mail : si un lien de confirmation vous y attend, il termine la création de votre compte. Si vous aviez déjà un compte, connectez-vous ci-dessous."
     },
     "labelMotDePasse": "Mot de passe",
-    "motDePasseOublie": "Mot de passe oublié ?",
+    "motDePasseOublie": "Mot de passe oublié ?",
     "bouton": "Se connecter",
     "boutonEnCours": "Connexion…",
     "erreurIdentifiants": "Adresse ou mot de passe incorrect.",
@@ -1012,40 +886,29 @@
       "deconnexion-partielle": "Vous êtes déconnecté de cet appareil, mais nous n’avons pas pu le confirmer auprès du serveur. Sur un appareil partagé, reconnectez-vous et redemandez la déconnexion.",
       "compte-supprime": "Votre compte a été supprimé. Vos commandes, photos et liens clients ont été effacés."
     },
-    "argumentTitreA": "Un seul lien de suivi pour toute la ",
-    "argumentTitreB": "commande",
-    "argumentTexteFort": "Un lien de suivi par commande",
-    "argumentTexteSuite": " : vos clients arrêtent de vous demander où en est leur colis.",
-    "atoutTitre1": "Rapide et simple",
-    "atoutTexte1": "Créez vos commandes en quelques clics.",
-    "atoutTitre2": "Tout au même endroit",
-    "atoutTexte2": "Photos, suivi, statut, client… tout est centralisé.",
-    "atoutTitre3": "Conçu pour les vendeurs",
-    "atoutTexte3": "Une expérience pensée par et pour les e-commerçants.",
-    "ouAvec": "ou continuer avec",
     "placeholderMotDePasse": "Votre mot de passe",
-    "noteSecurite": "Vos données sont sécurisées et confidentielles."
+    "afficherMotDePasse": "Afficher le mot de passe",
+    "masquerMotDePasse": "Masquer le mot de passe",
+    "erreurMdpVide": "Saisissez votre mot de passe."
   },
   "inscription": {
     "titre": "Créer un compte",
-    "badge": "Rejoignez des milliers de vendeurs",
-    "accroche": "Créez votre compte, puis votre premier lien de suivi client : photos, numéro de suivi, statut transporteur, en moins d'une minute.",
-    "dejaCompteTexte": "Déjà un compte ?",
+    "dejaCompteTexte": "Déjà un compte ?",
     "bouton": "Créer mon compte",
     "boutonEnCours": "Création…",
-    "aideMotDePasse": "12 caractères minimum. Prenez plutôt une phrase qu’un mot compliqué.",
     "erreurMdpTropCourt": "Votre mot de passe doit faire au moins 12 caractères.",
     "erreurMdpTropLong": "Votre mot de passe est trop long. Raccourcissez-le un peu.",
-    "erreurMdpContientEmail": "Votre mot de passe ne doit pas contenir votre adresse email.",
+    "erreurMdpContientEmail": "Votre mot de passe ne doit pas contenir votre adresse e-mail.",
     "erreurMdpFuite": "Ce mot de passe figure dans une fuite de données publique. Choisissez-en un autre.",
     "erreurDejaInscrit": "Un compte existe déjà pour cette adresse. Connectez-vous.",
-    "titreCarte": "Créer un compte",
-    "sousTitreCarte": "Commencez gratuitement et en moins d'une minute.",
+    "titreCarte": "Créer votre compte",
+    "sousTitreCarte": "Commencez gratuitement. Votre premier lien de suivi part juste après.",
     "lienSeConnecter": "Se connecter",
-    "atoutTitre1": "Rapide à mettre en place",
-    "atoutTexte1": "Créez votre compte en moins d'une minute."
+    "placeholderMotDePasse": "Une phrase, plutôt qu'un mot",
+    "compteurMotDePasse": "<b>{n}</b> / {min} caractères minimum. Prenez plutôt une phrase qu’un mot compliqué."
   },
   "onboarding": {
+    "apercuEtiquette": "Aperçu de votre page client",
     "titre": "Mettons votre nom sur la page",
     "sousTitre": "C’est ce que verra votre client. Vous pourrez tout changer plus tard.",
     "etape": "Étape 1 sur 2",
@@ -1056,15 +919,16 @@
     "logoRemplacer": "Remplacer",
     "logoFormats": "PNG ou JPG, 512 px minimum",
     "logoRetirer": "Retirer le logo",
-    "logoEnvoi": "Envoi… {pourcent} %",
+    "logoEnvoi": "Envoi… {pourcent} %",
     "logoErreur": {
       "type": "Ce format d’image n’est pas accepté.",
       "taille": "Cette image est trop lourde.",
       "envoi": "L’envoi a échoué. Réessayez.",
-      "confirmation": "Le serveur n’a pas confirmé l’envoi. Réessayez."
+      "confirmation": "Le serveur n’a pas confirmé l’envoi. Réessayez.",
+      "retrait": "Le logo n’a pas pu être retiré. Réessayez."
     },
     "couleurTitre": "Votre couleur",
-    "couleurAide": "Le contraste est ajusté automatiquement : n’importe quelle couleur reste lisible.",
+    "couleurAide": "Le contraste est ajusté automatiquement : n’importe quelle couleur reste lisible.",
     "typeTitre": "Vous vendez plutôt…",
     "type": {
       "supplier": {
@@ -1082,15 +946,25 @@
     "erreurSession": "Votre session a expiré. Reconnectez-vous.",
     "erreurEcriture": "L’enregistrement a échoué. Réessayez.",
     "apercuTitre": "CE QUE VOTRE CLIENT VERRA",
-    "sansNom": "Votre boutique"
+    "couleurChoisir": "Choisir une couleur",
+    "couleursRapides": "Couleurs rapides",
+    "couleurs": {
+      "violet": "Violet",
+      "sapin": "Vert sapin",
+      "corail": "Corail",
+      "encre": "Encre",
+      "ambre": "Ambre"
+    },
+    "erreurCouleur": "Saisissez une couleur hexadécimale à six chiffres, par exemple #5B4BF5.",
+    "nomProvisoire": "Votre boutique"
   },
   "marque": {
     "titre": "Ma marque",
     "sousTitre": "Personnalisez votre page client et renforcez votre image de marque.",
-    "identiteTitre": "1. Identité de la marque",
+    "identiteTitre": "Identité de la marque",
     "nomTitre": "Nom de la boutique",
     "nomAide": "Sans nom ni logo, la page de votre client commence directement par son contenu.",
-    "nomPlaceholder": "Par exemple : Studio Nord",
+    "nomPlaceholder": "Par exemple : Studio Nord",
     "erreurNom": "Le nom ne peut pas dépasser 60 caractères.",
     "logoRemplacer": "Changer le logo",
     "logoRetirer": "Retirer",
@@ -1103,9 +977,10 @@
       "session": "Votre session a expiré. Reconnectez-vous, puis réessayez.",
       "reseau": "L'envoi n'a pas abouti. Vérifiez votre connexion et réessayez.",
       "confirmation": "L'image est partie mais nous n'avons pas pu l'enregistrer. Réessayez.",
-      "illisible": "Cette image n'a pas pu être lue par votre navigateur. Essayez un PNG, un JPG ou un WebP."
+      "illisible": "Cette image n'a pas pu être lue par votre navigateur. Essayez un PNG, un JPG ou un WebP.",
+      "retrait": "Le logo n’a pas pu être retiré. Réessayez."
     },
-    "couleurTitre": "2. Personnalisation",
+    "couleurTitre": "Personnalisation",
     "couleurAide": "Choisissez les couleurs qui représentent votre marque.",
     "couleurHex": "Code de la couleur",
     "couleurAjustee": "Sur la page de vos clients, le texte posé sur cette couleur est légèrement assombri ou éclairci pour rester lisible. Votre couleur, elle, n'est pas modifiée.",
@@ -1119,8 +994,8 @@
     },
     "filigraneTitre": "Filigrane sur les photos",
     "filigraneLabel": "Afficher le nom de ma boutique sur les photos",
-    "filigraneAide": "Votre nom apparaît en discret sur chaque photo agrandie. Cela décourage la réutilisation, mais ne l’empêche pas.",
-    "filigraneSansNom": "Donnez d'abord un nom à votre boutique : sans lui, il n'y a rien à écrire sur les photos.",
+    "filigraneAide": "Votre nom apparaît discrètement sur chaque photo agrandie. Cela décourage la réutilisation, mais ne l’empêche pas.",
+    "filigraneSansNom": "Donnez d'abord un nom à votre boutique : sans lui, il n'y a rien à écrire sur les photos.",
     "apercuTitre": "Aperçu de votre page client",
     "enregistrer": "Enregistrer les modifications",
     "enregistrement": "Enregistrement…",
@@ -1129,13 +1004,13 @@
       "session": "Votre session a expiré. Reconnectez-vous, puis réessayez.",
       "ecriture": "Rien n'a été enregistré. Réessayez dans un instant."
     },
-    "reseauxTitre": "3. Réseaux sociaux",
+    "reseauxTitre": "Réseaux sociaux",
     "reseauxAide": "Ajoutez vos réseaux sociaux pour qu'ils apparaissent sur votre page client.",
     "reseau": {
       "instagram": "Instagram",
       "tiktok": "TikTok",
       "whatsapp": "WhatsApp",
-      "site": "Site web (optionnel)"
+      "site": "Site web (facultatif)"
     },
     "reseauExemple": {
       "instagram": "@votrecompte",
@@ -1151,7 +1026,6 @@
     },
     "logoTitre": "Logo de la marque",
     "contrasteConforme": "Contraste conforme",
-    "contrasteCourt": "Conforme",
     "demoTexte": "Texte sur blanc",
     "demoTexteSeuil": "4,5:1 minimum",
     "demoBouton": "Bouton",
@@ -1160,7 +1034,7 @@
     "demoBandeauSeuil": "Texte inversé",
     "reseauxFacultatif": "facultatif",
     "reseauxNouvelOnglet": "Ces liens s’ouvrent hors de la page de votre client, dans un nouvel onglet. Ils ne créent aucun compte et ne demandent rien à votre client.",
-    "optionsTitre": "4. Options d'affichage",
+    "optionsTitre": "Options d'affichage",
     "apercuDirect": "en direct",
     "apercuPour": "pour votre client",
     "reessayer": "Réessayer",
@@ -1168,26 +1042,32 @@
     "optionsAide": "Choisissez les éléments à afficher sur votre page client.",
     "apercuAide": "Voici un aperçu de ce que verront vos clients.",
     "couleurPrincipale": "Couleur principale",
-    "descriptionTitre": "Description (optionnelle)",
+    "descriptionTitre": "Description (facultative)",
     "descriptionPlaceholder": "Vêtements · Sneakers · Accessoires",
     "descriptionCompteur": "{n} / {max}",
     "descriptionAide": "Une ligne sous votre nom, sur la page de votre client.",
-    "erreurDescription": "Description trop longue : {max} caractères au maximum.",
-    "lienTitre": "5. Lien personnalisé",
-    "lienPro": "(Pro)",
+    "erreurDescription": "Description trop longue : {max} caractères au maximum.",
+    "lienTitre": "Lien personnalisé",
     "lienAide": "Personnalisez votre lien pour un rendu plus professionnel.",
     "lienProBadge": "Pro",
     "lienProTitre": "Fonctionnalité Pro",
     "lienProAide": "Avec un lien personnalisé à votre marque.",
-    "marqueTitre": "6. Marque DropLink",
-    "marqueAide": "Retirez la carte « Propulsé par DropLink » de vos pages client.",
+    "marqueTitre": "Marque DropLink",
+    "marqueAide": "Retirez la carte « Propulsé par DropLink » de vos pages client.",
     "marqueOption": "Masquer la marque DropLink",
     "marqueOptionAide": "Vos clients ne voient plus que votre boutique.",
     "marqueProAide": "Réservé au plan Pro.",
     "lienPlaceholder": "votre-boutique",
-    "erreurLien": "Ce nom ne convient pas : 3 à 40 caractères, en minuscules, chiffres et tirets — sans tiret au début, à la fin, ni deux à la suite.",
+    "erreurLien": "Ce nom ne convient pas : 3 à 40 caractères, en minuscules, chiffres et tirets — sans tiret au début, à la fin, ni deux à la suite.",
     "erreurLienPris": "Ce nom est déjà pris. Choisissez-en un autre.",
-    "erreurLienPro": "Le lien personnalisé est réservé au plan Pro."
+    "erreurLienPro": "Le lien personnalisé est réservé au plan Pro.",
+    "apercuFormats": "Format de l’aperçu",
+    "apercuBureau": "Ordinateur",
+    "apercuMobile": "Mobile",
+    "apercuImageMobile": "Aperçu mobile de la page client",
+    "apercuImageBureau": "Aperçu de la page client sur ordinateur",
+    "voirPageClient": "Voir la page client",
+    "rienEnregistre": "Rien n’a été enregistré."
   },
   "envois": {
     "titre": "Suivi d'envois",
@@ -1200,7 +1080,7 @@
       "abandonnes": "Suivi arrêté",
       "livresCeMois": "Livrés ce mois",
       "preparation": "Pas encore scanné",
-      "ceMois": "ce mois-ci"
+      "evolution": "{valeur} ce mois-ci"
     },
     "filtres": {
       "silencieux": "Sans mouvement",
@@ -1248,11 +1128,10 @@
       "silence": "Sans mouvement"
     },
     "interrogationsFaites": "{n, plural, one {# interrogation} other {# interrogations}}",
-    "aide": "Un numéro tout juste collé n’est souvent pas encore scanné. Ce n’est pas une erreur : le transporteur n’a simplement rien publié.",
-    "aideCourte": "Un numéro tout juste collé n’est souvent pas encore scanné. Ce n’est pas une erreur.",
+    "aide": "Un numéro tout juste collé n’est souvent pas encore scanné. Ce n’est pas une erreur : le transporteur n’a simplement rien publié.",
     "actualiser": "Actualiser",
     "derniereMaj": "Dernière mise à jour",
-    "compteurPage": "Affichage de {de} à {a} sur {total, plural, one {# envoi} other {# envois}}",
+    "compteurPage": "Affichage de {de, number} à {a, number} sur {total, plural, one {# envoi} other {# envois}}",
     "prochaine": {
       "livre": "Colis livré",
       "aujourdhui": "Livraison prévue aujourd’hui",
@@ -1261,18 +1140,25 @@
     },
     "actions": {
       "voirCommande": "Voir la commande {reference}",
-      "siteTransporteur": "Ouvrir le site du transporteur"
+      "siteDe": "Ouvrir le site de {nom} (nouvel onglet)"
     },
     "lot": {
       "titre": "Sélection",
       "selectionner": "Sélectionner le colis {numero}",
-      "aide": "Colis sélectionnés",
-      "exporter": "Exporter la sélection"
-    }
+      "exporter": "Exporter la sélection",
+      "toutSelectionner": "Tout sélectionner",
+      "selectionUn": "# colis sélectionné",
+      "selectionPlusieurs": "# colis sélectionnés",
+      "toutDeselectionner": "Tout désélectionner"
+    },
+    "autresCommandes": "{n, plural, one {et # autre commande} other {et # autres commandes}}",
+    "trier": "Trier",
+    "finDeListe": "Fin de la liste."
   },
   "analyses": {
     "titre": "Analyses",
-    "indisponible": "Cette section est illisible pour l’instant — ce n’est pas « aucune donnée ». Réessayez dans un instant.",
+    "indisponible": "Cette section est illisible pour l’instant — ce n’est pas « aucune donnée ». Réessayez dans un instant.",
+    "indisponibleCourt": "Lecture indisponible",
     "periode": {
       "titre": "Période",
       "7j": "7 jours",
@@ -1296,24 +1182,27 @@
     "frise": {
       "titre": "Évolution des commandes",
       "fenetre": "{n} dernières semaines",
-      "barre": "Semaine du {semaine} : {n, plural, =0 {aucune commande} one {# commande} other {# commandes}}",
       "vide": "Aucune commande créée sur ces douze semaines.",
       "aide": "Nombre de commandes créées par semaine."
     },
     "colis": {
       "titre": "Répartition des statuts",
       "enTransit": "En transit",
+      "expedie": "Expédiés",
       "livre": "Livrés",
       "preparation": "Pas encore scannés",
       "silencieux": "Sans mouvement",
       "vide": "Aucun colis suivi pour le moment.",
-      "aide": "Statut actuel de vos envois."
+      "aide": "Statut actuel de vos envois.",
+      "dontSilencieux": "{n, plural, one {Dont # colis sans mouvement depuis plus de 10 jours} other {Dont # colis sans mouvement depuis plus de 10 jours}}",
+      "suivis": "{n, plural, one {colis suivi} other {colis suivis}}"
     },
     "consultees": {
       "titre": "Vos commandes les plus consultées",
       "aide": "Un client qui revient plusieurs fois sur sa page est un client rassuré.",
       "sansNom": "Sans destinataire",
-      "vide": "Aucun lien n’a encore été ouvert sur cette période."
+      "vide": "Aucun lien n’a encore été ouvert sur cette période.",
+      "vues": "{n, plural, one {vue} other {vues}}"
     },
     "qc": {
       "titre": "Réponses de vos clients",
@@ -1321,13 +1210,15 @@
       "approuve": "Approuvé",
       "refuse": "Refusé",
       "enAttente": "Sans réponse",
-      "vide": "Aucune commande sur cette période."
+      "vide": "Aucune commande sur cette période.",
+      "tauxTexte": "des réponses approuvent les photos",
+      "aucuneReponse": "aucune réponse pour l’instant"
     },
     "sousTitreEcran": "Suivez les performances de votre activité et l'efficacité de vos envois.",
-    "livreesSur": "{n} sur {total} créées",
-    "reponsesSur": "{n} réponse{s} sur {total}",
-    "surColisLivres": "sur {n} colis livré{s}",
-    "jours": "{n} jours",
+    "livreesSur": "{n, number} sur {total, plural, one {# créée} other {# créées}}",
+    "reponsesSur": "{n, plural, one {# réponse} other {# réponses}} sur {total, number}",
+    "surColisLivres": "sur {n, plural, one {# colis livré} other {# colis livrés}}",
+    "jours": "{n, plural, one {# jour} other {# jours}}",
     "evolution": {
       "titre": "Évolution des commandes",
       "aide": "Nombre de commandes créées sur la période sélectionnée."
@@ -1335,7 +1226,8 @@
     "liens": {
       "titre": "Liens clients",
       "aide": "Nombre d'ouvertures des liens de suivi.",
-      "aucun": "Aucun lien n'a été ouvert sur cette période."
+      "aucun": "Aucun lien n'a été ouvert sur cette période.",
+      "ouvertures": "{n, plural, one {# ouverture} other {# ouvertures}}"
     },
     "transporteurs": {
       "titre": "Transporteurs les plus utilisés",
@@ -1351,13 +1243,13 @@
       "commande": "Commande"
     },
     "bandeau": {
+      "aria": "À propos des analyses",
       "titre": "Des analyses simples et utiles",
       "aide": "Suivez l'efficacité de vos envois et améliorez l'expérience de vos clients.",
       "propulse": "Propulsé par",
       "slogan": "Des liens de suivi simples et puissants."
     },
-    "vuesParCommande": "{n} vues par commande ouverte",
-    "ouverturesLe": "{n} ouverture(s) le {jour}"
+    "vuesParCommande": "{n, plural, one {# vue par commande ouverte} other {# vues par commande ouverte}}"
   },
   "commandes": {
     "titre": "Commandes",
@@ -1409,11 +1301,11 @@
     },
     "vide": {
       "compteTitre": "Créez votre première commande",
-      "compteTexte": "Trois minutes suffisent. Votre client recevra un lien à votre nom, sans avoir à créer de compte.",
+      "compteTexte": "Moins d'une minute suffit. Votre client recevra un lien à votre nom, sans avoir à créer de compte.",
       "filtreTitre": "Aucune commande ne correspond",
       "filtreTexte": "Ce compte contient des commandes, mais aucune ne passe les filtres en cours.",
       "archiveTitre": "Tout est archivé",
-      "archiveTexte": "Ce compte n’a aucune commande active : elles sont toutes rangées dans les archives. Leurs liens continuent de fonctionner pour vos clients.",
+      "archiveTexte": "Ce compte n’a aucune commande active : elles sont toutes rangées dans les archives. Leurs liens continuent de fonctionner pour vos clients.",
       "voirArchives": "Voir les archives",
       "etapes": {
         "photos": {
@@ -1422,17 +1314,17 @@
         },
         "suivi": {
           "titre": "Collez le numéro de suivi",
-          "texte": "Une seule fois : la page se met à jour toute seule ensuite."
+          "texte": "Une seule fois : la page se met à jour toute seule ensuite."
         },
         "lien": {
           "titre": "Envoyez le lien",
           "texte": "Et vous n’y revenez plus."
         }
       },
-      "marqueQuestion": "Vous n’avez pas encore configuré votre marque ?",
+      "marqueQuestion": "Vous n’avez pas encore configuré votre marque ?",
       "marqueLien": "Ajoutez votre nom et votre couleur",
       "filtreTexteChiffre": "{total, plural, one {Votre commande est toujours là} other {Vos # commandes sont toujours là}}. Ce sont ces critères, ensemble, qui ne renvoient rien.",
-      "accents": "La recherche ignore les accents : « creme » trouve aussi « Crème »."
+      "accents": "La recherche ignore les accents : « creme » trouve aussi « Crème »."
     },
     "jamaisOuvert": "Jamais ouvert",
     "jamaisOuvertAide": "{client} n’a pas encore ouvert son lien.",
@@ -1447,12 +1339,15 @@
       "desarchiver": "Sortir la sélection des archives",
       "ok": "{n, plural, one {# commande traitée} other {# commandes traitées}}.",
       "vide": "Aucune commande sélectionnée.",
-      "partiel": "Action refusée : rien n’a été modifié. Rechargez la liste.",
+      "partiel": "Action refusée : rien n’a été modifié. Rechargez la liste.",
       "ecriture": "L’action n’a pas pu être traitée. Rien n’a été modifié.",
       "exporter": "Exporter",
-      "exportAvertissement": "Le fichier contient les liens publics de vos commandes : qui l’ouvre peut ouvrir les pages de vos clients.",
+      "exportAvertissement": "Le fichier contient les liens publics de vos commandes : qui l’ouvre peut ouvrir les pages de vos clients.",
       "exportTelecharger": "Télécharger le CSV",
-      "enCours": "En cours…"
+      "enCours": "En cours…",
+      "selectionUn": "# sélectionnée",
+      "selectionPlusieurs": "# sélectionnées",
+      "toutDeselectionner": "Tout désélectionner"
     },
     "vues": {
       "toutes": "Toutes",
@@ -1471,10 +1366,7 @@
     "sansNom": "Sans nom",
     "sousTitreChiffre": "{total, plural, one {# commande} other {# commandes}}, {semaine, plural, one {# créée} other {# créées}} cette semaine",
     "sousTitreVide": "Votre espace est prêt",
-    "rechercherExempleCourt": "Client, référence, suivi…",
-    "nouvelleCourt": "Nouvelle",
-    "photosEtVues": "{photos, plural, one {# photo} other {# photos}} · {vues, plural, one {# vue} other {# vues}}",
-    "surTotal": "Affichage de {n} sur {total, plural, one {# commande} other {# commandes}}",
+    "surTotal": "Affichage de {n, number} sur {total, plural, one {# commande} other {# commandes}}",
     "chargerLaSuite": "Charger la suite",
     "plusDActions": "Plus d’actions pour {client}",
     "dupliquer": "Dupliquer comme gabarit",
@@ -1485,20 +1377,21 @@
       "texte": "Le lien que vous avez suivi pointe vers une commande supprimée, ou qui n’a jamais existé.",
       "retour": "Revenir à mes commandes"
     },
-    "filtresActifsLabel": "Filtres actifs :",
-    "retirerFiltre": "Retirer le filtre : {filtre}",
+    "filtresActifsLabel": "Filtres actifs :",
+    "retirerFiltre": "Retirer le filtre : {filtre}",
     "puce": {
-      "recherche": "Recherche : « {q} »",
-      "statut": "Statut : {valeur}",
-      "qc": "Photos : {valeur}",
-      "periodeEntre": "Période : du {du} au {au}",
-      "periodeDepuis": "Période : à partir du {du}",
-      "periodeJusqua": "Période : jusqu’au {au}",
+      "recherche": "Recherche : « {q} »",
+      "statut": "Statut : {valeur}",
+      "qc": "Photos : {valeur}",
+      "periodeEntre": "Période : du {du} au {au}",
+      "periodeDepuis": "Période : à partir du {du}",
+      "periodeJusqua": "Période : jusqu’au {au}",
       "archivees": "Archives"
     },
     "statutSansMouvement": "Sans mouvement · {jours} j",
     "sousTitreArchives": "Vous consultez vos archives. Les liens continuent de fonctionner.",
     "nouvelleEnCours": "Création…",
+    "creationImpossible": "Création impossible. Réessayez.",
     "plusMedias": "+{n}",
     "vuesCourt": "{n, plural, one {# vue} other {# vues}}",
     "ouvrirCommande": "Ouvrir la commande {reference}",
@@ -1509,20 +1402,33 @@
     "lienBloque": "Lien bloqué",
     "quota": {
       "gratuitTitre": "Quota du compte gratuit atteint",
-      "gratuitTexte": "Le compte gratuit comprend {n} commandes au total : ce quota est à vie, il ne se recharge pas. Passez au Pro pour continuer à créer des commandes.",
-      "gratuitTexteSansNombre": "Vous avez atteint le quota de votre compte gratuit : il est à vie, il ne se recharge pas. Passez au Pro pour continuer à créer des commandes.",
+      "gratuitTexte": "Le compte gratuit comprend {n, plural, one {# commande} other {# commandes}} au total : ce quota est à vie, il ne se recharge pas. Passez au Pro pour continuer à créer des commandes.",
+      "gratuitTexteSansNombre": "Vous avez atteint le quota de votre compte gratuit : il est à vie, il ne se recharge pas. Passez au Pro pour continuer à créer des commandes.",
       "mensuelTitre": "Plafond du mois atteint",
       "mensuelTexte": "Vous avez créé vos {n} commandes de ce mois-ci. Le plafond se recharge le 1er du mois.",
       "mensuelTexteSansNombre": "Vous avez atteint votre plafond de commandes pour ce mois-ci. Il se recharge le 1er du mois.",
       "passerPro": "Passer au Pro"
-    }
+    },
+    "vuesTitre": "Vues",
+    "toutSelectionner": "Tout sélectionner",
+    "aucunSuivi": "Aucun",
+    "frise": {
+      "dernierMouvement": "Dernier mouvement du colis : {date}",
+      "sansInfo": "Pas encore d’information du transporteur",
+      "sansNumero": "Pas encore de numéro de suivi",
+      "silence": "Sans mouvement depuis {jours, plural, one {# jour} other {# jours}}"
+    },
+    "resume": "Résumé",
+    "nbPhotos": "{n, plural, one {# photo} other {# photos}}",
+    "lienCopie": "Lien de {client} copié",
+    "exportTronque": "Export limité à {n, number} lignes. Affinez les filtres pour obtenir le reste."
   },
   "editeur": {
     "historique": {
       "titre": "Historique de la commande",
       "aucun": "Rien ne s'est encore passé sur cette commande.",
       "aHeure": "à {heure}",
-      "commentaire": "« {texte} »",
+      "commentaire": "« {texte} »",
       "types": {
         "commande_creee": "Commande créée",
         "commande_modifiee": "Commande modifiée",
@@ -1538,25 +1444,24 @@
       }
     },
     "titre": "Nouvelle commande",
-    "retour": "Retour aux commandes",
     "voirPage": "Voir la page client",
     "sectionCommande": "La commande",
     "sectionExpedition": "Statut",
     "sectionQc": "État des photos",
     "reference": "Référence produit",
-    "referenceExemple": "Ex : veste bleue taille M",
+    "referenceExemple": "Ex. : veste bleue taille M",
     "suivi": "Numéro de suivi",
     "suiviExemple": "Collez le numéro du transporteur",
-    "suiviAide": "Un numéro tout juste collé n’est souvent pas encore scanné : c’est normal, le transporteur n’a rien publié. Si le colis part de l’étranger, le suivi peut ne commencer qu’à son arrivée — un numéro d’expédition d’origine, lui, suit tout le trajet.",
+    "suiviAide": "Un numéro tout juste collé n’est souvent pas encore scanné : c’est normal, le transporteur n’a rien publié. Si le colis part de l’étranger, le suivi peut ne commencer qu’à son arrivée ; un numéro d’expédition d’origine, lui, suit tout le trajet.",
     "notes": "Notes internes",
     "notesExemple": "Prix d’achat, remarques, tout ce qui ne doit pas sortir d’ici.",
     "notesPrivees": "Jamais visible par le client, et absent de l’export.",
     "client": "Nom ou pseudo du client",
-    "clientExemple": "Ex : Yanis, ou @pseudo",
+    "clientExemple": "Ex. : Yanis, ou @pseudo",
     "clientAide": "Texte libre. Votre client n’a pas de compte.",
     "enregistre": "Enregistré",
     "enregistrement": "Enregistrement…",
-    "echec": "Non enregistré : {champs}. La valeur affichée est celle qui est en base.",
+    "echec": "Non enregistré : {champs}. La valeur affichée est celle qui est en base.",
     "nomChamp": {
       "customer_label": "nom du client",
       "product_ref": "référence",
@@ -1581,16 +1486,15 @@
     "reessayer": "Réessayer",
     "echecReste": "Le reste de la commande est à jour. Ces champs affichent la dernière valeur confirmée.",
     "copierLien": "Copier le lien",
-    "partager": "Partager",
     "lienCopie": "Lien copié",
     "copieEchouee": "Copie refusée par le navigateur",
     "qcAide": "À renseigner si votre client vous répond ailleurs que sur sa page.",
     "apercuTitre": "Aperçu de la page client",
     "apercuFormat": "Format de l’aperçu",
     "apercuMobile": "Mobile",
-    "apercuDesktop": "Desktop",
+    "apercuDesktop": "Ordinateur",
     "apercuCadreMobile": "Aperçu mobile de la page client",
-    "apercuCadreDesktop": "Aperçu desktop de la page client",
+    "apercuCadreDesktop": "Aperçu de la page client sur ordinateur",
     "creeeLe": "Créée le {quand}",
     "suiviTitre": "Suivi de la commande",
     "suiviAttente": "En attente",
@@ -1598,36 +1502,34 @@
     "transporteur": "Transporteur",
     "transporteurAuto": "Détection automatique",
     "transporteurAide": "Reconnu d’après le numéro. Choisissez-le seulement s’il ne l’est pas.",
-    "suiviNonReconnu": "Le transporteur de ce numéro n’a pas été reconnu. Choisissez-le dans « Transporteur » pour relancer le suivi.",
-    "suiviBloqueGratuit": "Numéro enregistré, mais le suivi automatique n’a pas démarré : vos colis suivis gratuits sont tous utilisés, et ce quota est à vie.",
-    "suiviBloqueMensuel": "Numéro enregistré, mais le suivi automatique n’a pas démarré : le plafond de colis suivis de ce mois est atteint. Il se recharge le 1er ; ressaisissez alors le numéro.",
+    "suiviNonReconnu": "Le transporteur de ce numéro n’a pas été reconnu. Choisissez-le dans « Transporteur » pour relancer le suivi.",
+    "suiviBloqueGratuit": "Numéro enregistré, mais le suivi automatique n’a pas démarré : vos colis suivis gratuits sont tous utilisés, et ce quota est à vie.",
+    "suiviBloqueMensuel": "Numéro enregistré, mais le suivi automatique n’a pas démarré : le plafond de colis suivis de ce mois est atteint. Il se recharge le 1er ; ressaisissez alors le numéro.",
     "suiviBloquePasserPro": "Passer au Pro",
-    "infosTitre": "Informations de la commande",
-    "infosReference": "Référence",
-    "infosCreee": "Date de création",
-    "infosModifiee": "Dernière mise à jour",
-    "infosExpedition": "Méthode d'expédition",
-    "infosSansTransporteur": "Aucun transporteur",
-    "infosLien": "Lien client",
-    "infosSansSuivi": "Aucun numéro",
     "tuileClient": "Client",
     "tuileReference": "Référence produit",
     "tuileVues": "Vues du lien",
     "tuileVuesAucune": "Jamais ouvert",
     "tuileVuesNombre": "{n, plural, one {# consultation} other {# consultations}}",
     "tuileSuivi": "Suivi",
-    "tuileVide": "–",
+    "tuileVide": "Non renseigné",
     "plusActions": "Plus d’actions",
     "dupliquer": "Dupliquer comme gabarit",
     "archiver": "Archiver",
-    "desarchiver": "Sortir des archives"
+    "desarchiver": "Sortir des archives",
+    "tuileDerniereVue": "Dernière ouverture le {quand}",
+    "resume": "Résumé de la commande",
+    "apercuDirect": "en direct",
+    "lienClient": "Lien client",
+    "lienClientAide": "Il existe dès la création et ne change plus : chaque modification arrive sur la même page.",
+    "filCommandes": "Commandes"
   },
   "medias": {
     "titre": "Photos et vidéos",
-    "compteur": "{n} sur {max}",
+    "compteur": "<b>{n}</b> sur {max}",
     "deposer": "Cliquez ou déposez vos fichiers ici",
     "plein": "Plafond atteint pour cette commande.",
-    "formats": "JPEG, PNG, WebP ou MP4 · {videos} vidéos au maximum",
+    "formats": "JPEG, PNG, WebP ou MP4 · {videos, plural, one {# vidéo} other {# vidéos}} au maximum",
     "apercu": "Aperçu du média {position}",
     "estUneVideo": "Vidéo",
     "couverture": "Couverture",
@@ -1663,10 +1565,10 @@
     "echecSuppression": "Ce média n'a pas pu être supprimé. Il est toujours visible sur le lien de votre client.",
     "echecOrdre": "Le nouvel ordre n'a pas pu être enregistré. L'ordre précédent a été rétabli.",
     "videos": "{n, plural, one {# vidéo} other {# vidéos}} sur {max}",
-    "ajouter": "Ajouter",
-    "ajouterFichiers": "Ajouter des fichiers",
     "aideOrdre": "Glissez une vignette par sa poignée pour changer l’ordre. La couverture est la première image que voit votre client.",
-    "aideOrdreTelephone": "Appuyez longuement sur la poignée pour déplacer une photo."
+    "aideOrdreTelephone": "Appuyez longuement sur la poignée pour déplacer une photo.",
+    "annonceSuppression": "Média supprimé.",
+    "annonceCouverture": "Nouvelle couverture."
   },
   "actions": {
     "revocation": {
@@ -1675,7 +1577,8 @@
       "jeComprends": "Je comprends que l’ancien lien cessera définitivement de fonctionner.",
       "confirmer": "Révoquer et régénérer",
       "enCours": "Révocation…",
-      "echec": "Révocation impossible. L’ancien lien reste actif."
+      "echec": "Révocation impossible. L’ancien lien reste actif.",
+      "reussi": "Nouveau lien créé. L’ancien ne fonctionne plus."
     }
   },
   "page-publique": {
@@ -1700,7 +1603,10 @@
       "position": "{n} sur {total}",
       "videTitre": "Pas encore de photos",
       "videTexte": "Elles apparaîtront ici dès que le vendeur les aura ajoutées.",
-      "balayez": "Balayez pour changer de photo"
+      "balayez": "Balayez pour changer de photo",
+      "dialogue": "Photos et vidéos, {n} sur {total}",
+      "tuile": "{action}, {n} sur {total}",
+      "vignette": "Photo {n} sur {total}"
     },
     "details": {
       "reference": "Référence",
@@ -1711,7 +1617,7 @@
       "texte": "Ces photos correspondent-elles à votre commande ?",
       "approuver": "Approuver",
       "refuser": "Refuser",
-      "commentaire": "Un mot à ajouter ? (facultatif)",
+      "commentaire": "Un mot à ajouter ? (facultatif)",
       "envoi": "Envoi…",
       "approuve": "Cette commande est validée.",
       "refuse": "Un problème a été signalé sur cette commande. Le vendeur est prévenu.",
@@ -1737,7 +1643,7 @@
     "lienInvalideTitre": "Ce lien n'est plus valable",
     "erreur": {
       "titre": "Cette page n'a pas pu s'afficher",
-      "texte": "Une erreur est survenue de notre côté. Réessayez dans un instant : votre lien, lui, reste valable.",
+      "texte": "Une erreur est survenue de notre côté. Réessayez dans un instant : votre lien, lui, reste valable.",
       "reessayer": "Réessayer"
     },
     "commandeDe": "Une commande de",
@@ -1760,11 +1666,10 @@
     },
     "historique": {
       "titre": "Historique du suivi",
-      "voirTout": "Voir tout l'historique ({n})",
-      "reduire": "Réduire"
+      "voirTout": "Voir tout l'historique ({n})"
     },
     "contact": {
-      "titre": "Une question ?",
+      "titre": "Une question ?",
       "texte": "Pour toute question concernant votre commande, contactez directement la boutique.",
       "bouton": "Contacter la boutique"
     },
@@ -1775,25 +1680,38 @@
     },
     "pourClient": "pour {nom}",
     "lienInvalideSousTitre": "Ce lien de suivi ne mène plus à aucune commande.",
-    "lienInvalideAideTitre": "Vous pensez qu'il s'agit d'une erreur ?",
-    "lienInvalideAideTexte": "Contactez la boutique qui vous a envoyé le lien : elle peut vous en générer un nouveau en quelques secondes.",
+    "lienInvalideAideTitre": "Vous pensez qu'il s'agit d'une erreur ?",
+    "lienInvalideAideTexte": "Contactez la boutique qui vous a envoyé le lien : elle peut vous en générer un nouveau en quelques secondes.",
     "lienInvalideCommentCaMarche": "Comment fonctionne DropLink",
     "lienInvalideAccueil": "Retour à l'accueil",
     "carteDropLink": {
       "surtitre": "PROPULSÉ PAR DROPLINK",
       "titre": "Des liens de suivi simples et puissants.",
       "texte": "Créez un lien de suivi par commande, en moins d'une minute.",
-      "bouton": "Découvrir DropLink"
+      "bouton": "Découvrir DropLink",
+      "aria": "Propulsé par DropLink. Découvrir DropLink"
+    },
+    "allerAuContenu": "Aller au contenu",
+    "logoAccueil": "DropLink, accueil",
+    "trajetLu": {
+      "etape": "{etape} : {etat}",
+      "enCoursAvec": "{enCours}, {detail}",
+      "estimation": "livraison estimée : {dates}"
+    },
+    "fourchette": {
+      "memeMois": "{jourDu, select, 1 {1er} other {{jourDu}}} au {jourAu, select, 1 {1er} other {{jourAu}}} {moisAu}",
+      "autreMois": "{jourDu, select, 1 {1er} other {{jourDu}}} {moisDu} au {jourAu, select, 1 {1er} other {{jourAu}}} {moisAu}"
     }
   },
   "admin": {
+    "chiffresCles": "Chiffres clés",
+    "dateHeure": "{jour} à {heure}",
     "navigation": "Administration",
     "bandeau": "ADMINISTRATION",
     "comptes": {
       "titre": "Comptes",
-      "sousTitre": "Chaque consultation de cette page est enregistrée avec votre email et l'heure.",
       "recherche": "Rechercher un compte",
-      "recherchePlaceholder": "Adresse email ou nom de boutique…",
+      "recherchePlaceholder": "Adresse e-mail ou nom de boutique…",
       "chercher": "Rechercher",
       "colonnes": {
         "email": "Compte",
@@ -1817,33 +1735,36 @@
         "active": "Actif",
         "suspended": "Suspendu"
       },
+      "statutsPluriel": {
+        "active": "Actifs",
+        "suspended": "Suspendus"
+      },
       "videCompte": "Aucun compte.",
       "videRecherche": "Aucun compte ne correspond à cette recherche.",
       "pageSuivante": "Voir la suite",
+      "surTotal": "{affichees} sur {total, plural, one {# compte} other {# comptes}}",
+      "affichees": "{affichees, plural, one {# compte affiché} other {# comptes affichés}}",
       "trace": "Cette consultation est écrite au journal d'audit, avec les critères employés. Ouvrir un compte y ajoute une entrée.",
       "sansNom": "Pas encore nommée",
       "ouvrir": "Ouvrir",
-      "colisSurSeuil": "{valeur} / {seuil}",
-      "colisSurSeuilLong": "{valeur} / {seuil} colis",
-      "commandesLong": "{n} commandes",
-      "decompte": "{total, plural, one {# compte} other {# comptes}} · {suspendus, plural, one {# suspendu} other {# suspendus}}",
       "tuileTotal": "Comptes totaux",
       "tuileNouveaux": "Nouveaux inscrits",
       "tuileActifs": "Comptes actifs",
       "tuileSuspendus": "Comptes suspendus",
       "surJours": "sur {jours} jours",
-      "partDuTotal": "{part} % du total",
+      "partDuTotal": "{part} % du total",
       "liste": "Liste des comptes",
       "listeTotal": "{total, plural, one {# compte au total} other {# comptes au total}}",
       "filtreStatut": "Filtrer par statut",
       "statutTous": "Tous les statuts",
-      "reinitialiser": "Réinitialiser",
       "repartition": "Statut des comptes",
       "unite": "comptes",
-      "part": "{part} %",
+      "part": "{part} %",
       "videFiltre": "Aucun compte ne correspond à ce filtre.",
       "sousTitreListe": "Gérez et suivez tous les comptes de DropLink.",
-      "tuileTotalAide": "dont {sansType} sans type déclaré"
+      "tuileTotalAide": "dont {sansType} sans type déclaré",
+      "colisInfo": "{valeur} colis pris en charge, seuil d'alerte {seuil}",
+      "ouvrirLong": "Ouvrir le compte {email}"
     },
     "journal": {
       "titre": "Journal d'audit",
@@ -1865,13 +1786,11 @@
         "comptes_doublons": "Consultation des comptes en doublon"
       },
       "vide": "Aucune entrée pour l'instant.",
-      "surTotalAuDela": "{affichees} sur plus de {total, number} entrées",
-      "surTotal": "{affichees} sur {total, plural, one {# entrée} other {# entrées}}",
+      "surTotalAuDela": "{affichees} sur plus de {total, number} entrées · ni modifiables ni effaçables",
+      "surTotal": "{affichees} sur {total, plural, one {# entrée} other {# entrées}} · ni modifiables ni effaçables",
       "pageSuivante": "Voir la suite",
-      "decompteAuDela": "Plus de {total, number} entrées · ni modifiables ni effaçables",
       "decompte": "{total, plural, one {# entrée} other {# entrées}} · ni modifiables ni effaçables",
       "garantie": "Ce journal ne peut être ni modifié ni effacé, et il survit à la suppression des comptes concernés. Le consulter n'y écrit rien.",
-      "filtres": "Filtrer le journal",
       "famille": {
         "toutes": "Toutes",
         "suspension": "Suspensions",
@@ -1884,12 +1803,10 @@
         "30": "30 derniers jours"
       },
       "colonnes": {
-        "quand": "Quand",
-        "quoi": "Ce qui a été fait",
-        "qui": "Par qui"
+        "quoi": "Ce qui a été fait"
       },
-      "cibleAvant": "Compte visé :",
-      "motifAvant": "Motif :",
+      "cibleAvant": "Compte visé :",
+      "motifAvant": "Motif :",
       "parQui": "Par",
       "videFiltre": "Aucune entrée ne correspond à ce filtre.",
       "sousTitreListe": "Consultez toutes les actions d'administration enregistrées sur DropLink.",
@@ -1897,18 +1814,17 @@
       "tuileSuspensions": "Suspensions et réactivations",
       "tuileParametres": "Paramètres modifiés",
       "tuileConsultations": "Consultations de données",
-      "partDuTotal": "{part} % du total",
+      "partDuTotal": "{part} % du total",
       "surLaFenetre": "sur la fenêtre choisie",
       "liste": "Liste des entrées",
       "listeTotal": "{total, plural, one {# entrée au total} other {# entrées au total}}",
-      "listeTotalAuDela": "plus de {total} entrées",
+      "listeTotalAuDela": "plus de {total, number} entrées",
       "repartition": "Répartition du journal",
       "unite": "entrées",
-      "part": "{part} %",
+      "part": "{part} %",
       "repartitionIndisponible": "Répartition indisponible.",
       "filtreFamille": "Filtrer par famille d'action",
-      "filtreFenetre": "Choisir la fenêtre",
-      "reinitialiser": "Réinitialiser"
+      "filtreFenetre": "Choisir la fenêtre"
     },
     "fiche": {
       "identite": "Identité",
@@ -1920,7 +1836,7 @@
       "commandes": "Commandes",
       "colis": "Colis",
       "retour": "Revenir à la liste des comptes",
-      "resume": "{email} · {type} · inscrit le {date}",
+      "typeInscrit": "{type} · inscrit le {date}",
       "trace": "L'ouverture de cette fiche a été écrite au journal d'audit, avec votre identité. Le contenu des commandes de ce vendeur n'est accessible depuis nulle part ici.",
       "medias": "Médias",
       "stockage": "Stockage",
@@ -1966,37 +1882,39 @@
           "pourquoi": "Leur contenu appartient à son client."
         }
       },
-      "email": "Email",
-      "titre": "Fiche de compte"
+      "email": "E-mail",
+      "titre": "Fiche de compte",
+      "couleur": "Couleur"
     },
     "suspension": {
       "ouvrir": "Suspendre ce compte",
       "rouvrir": "Réactiver ce compte",
       "titreSuspension": "Suspendre ce compte",
       "titreReactivation": "Réactiver ce compte",
-      "aideSuspension": "Ses pages publiques cesseront immédiatement d'être servies. Ses liens ne seront pas détruits : une réactivation les rétablit à l'identique.",
+      "aideSuspension": "Ses pages publiques cesseront immédiatement d'être servies. Ses liens ne seront pas détruits : une réactivation les rétablit à l'identique.",
       "aideReactivation": "Ses pages redeviendront accessibles sur les mêmes liens que ceux déjà envoyés à ses clients.",
       "motif": "Motif",
       "motifAide": "Au moins {n} caractères. Il s'affiche en clair dans le journal, et c'est ce qu'on relira si la décision est contestée.",
       "recopier": "Recopiez l'adresse du compte pour confirmer",
-      "collageAide": "Le collage est désactivé : recopier l'adresse est ce qui garantit que vous suspendez le bon compte.",
-      "collageRefuse": "Collage refusé. Recopiez l'adresse à la main : c'est le seul moment où l'on vérifie vraiment quel compte est visé.",
+      "collageAide": "Le collage est désactivé : recopier l'adresse est ce qui garantit que vous suspendez le bon compte.",
+      "collageRefuse": "Collage refusé. Recopiez l'adresse à la main : c'est le seul moment où l'on vérifie vraiment quel compte est visé.",
       "annuler": "Annuler",
       "confirmerSuspension": "Suspendre",
       "confirmerReactivation": "Réactiver",
       "enCours": "En cours…",
-      "fait": "Effectué.",
       "erreur": {
         "saisie": "Le motif est trop court.",
         "confirmation": "L'adresse recopiée ne correspond pas à ce compte.",
         "refuse": "Ce compte ne peut pas être suspendu.",
         "introuvable": "Compte introuvable.",
         "ecriture": "Rien n'a été modifié. Réessayez."
-      }
+      },
+      "annonceSuspendu": "Effectué. Compte suspendu, écrit au journal avec le motif.",
+      "annonceReactive": "Effectué. Compte réactivé, écrit au journal avec le motif."
     },
     "plan": {
       "titre": "Plan",
-      "aide": "Aucun paiement ne passe par DropLink : une fois le paiement reçu, passez le compte en Pro ici. Un vendeur Pro peut retirer la marque DropLink de ses pages client.",
+      "aide": "Aucun paiement ne passe par DropLink : une fois le paiement reçu, passez le compte en Pro ici. Un vendeur Pro peut retirer la marque DropLink de ses pages client.",
       "planActuel": "Plan actuel",
       "plans": {
         "gratuit": "Gratuit",
@@ -2006,31 +1924,31 @@
       "passerPro": "Passer en Pro",
       "passerGratuit": "Repasser en gratuit",
       "motif": "Motif",
-      "motifAide": "Au moins {n} caractères. Par exemple : « paiement reçu le 19/09 par virement ». Il s'affiche en clair dans le journal.",
+      "motifAide": "Au moins {n} caractères. Par exemple : « paiement reçu le 19/09 par virement ». Il s'affiche en clair dans le journal.",
       "annuler": "Annuler",
       "enCours": "En cours…",
-      "fait": "Effectué.",
       "erreur": {
         "saisie": "Le motif est trop court.",
         "deja": "Ce compte est déjà dans ce plan. Rechargez la fiche.",
         "introuvable": "Ce compte est introuvable.",
         "ecriture": "Le plan n'a pas pu être enregistré. Rien n'a changé."
-      }
+      },
+      "annonce": "Effectué. Changement de plan écrit au journal."
     },
     "panneau": {
       "titre": "Vue d'ensemble",
       "aucuneAlerte": "Aucune alerte. Rien ne dépasse les seuils, et les tâches de fond battent normalement.",
-      "alertesIndisponibles": "Alertes illisibles pour l’instant — ce n’est PAS « aucune alerte ». Réessayer dans un instant.",
+      "alertesIndisponibles": "Alertes illisibles pour l’instant — ce n’est PAS « aucune alerte ». Réessayez dans un instant.",
       "compteursIndisponibles": "Compteurs illisibles pour l’instant. Les tirets ne valent pas zéro.",
       "alerte": {
-        "colis_au_dessus_du_seuil": "Un compte dépasse le plafond de colis : {valeur} sur un seuil de {seuil}",
+        "colis_au_dessus_du_seuil": "Un compte dépasse le plafond de colis : {valeur} sur un seuil de {seuil}",
         "veilleur_en_retard": "Une tâche de fond n'a pas battu depuis {valeur} minutes"
       },
       "colisFactures": "Colis pris en charge",
       "comptesActifs": "Comptes actifs",
       "stockage": "Stockage des médias",
       "stockageIndisponible": "Indisponible",
-      "stockageAide": "Somme des tailles relues côté serveur au dépôt, tous comptes confondus.",
+      "stockageAide": "Somme des tailles relues côté serveur au dépôt",
       "stockageValeur": "{valeur} {unite}",
       "sousTitre": "Voici un aperçu global de l'activité sur DropLink.",
       "decision": "Ce qui demande une décision",
@@ -2039,20 +1957,20 @@
       "facture": "FACTURÉ",
       "ceMoisCi": "ce mois-ci",
       "commandes": "Commandes créées",
-      "comptesDont": "dont {sansType} sans type · {suspendus} suspendus, hors de ce total",
+      "comptesDont": "dont {sansType, number} sans type · {suspendus, plural, one {# suspendu} other {# suspendus}}, hors de ce total",
       "dernieresActions": "Dernières actions d'administration",
       "dernieresActionsIndisponibles": "Aperçu indisponible pour l’instant. Le journal complet reste consultable.",
       "toutLeJournal": "Tout le journal",
       "alerteDetail": {
         "colis_au_dessus_du_seuil": "{sujet} · Chaque colis pris en charge nous est facturé.",
-        "veilleur_en_retard": "Seuil d'alerte : {seuil} minutes. Tâche concernée : {sujet}."
+        "veilleur_en_retard": "Seuil d'alerte : {seuil} minutes. Tâche concernée : {sujet}."
       },
       "boutiques": "Boutiques",
       "boutiquesDont": "dont {nommees} avec un nom de boutique",
       "statuts": "Statut des commandes",
       "statutsAide": "Répartition des commandes par statut",
       "statutsIndisponible": "Répartition indisponible.",
-      "statutPart": "{part} %",
+      "statutPart": "{part} %",
       "aucuneCommande": "Aucune commande créée sur la plateforme.",
       "statut": {
         "preparation": "En préparation",
@@ -2065,7 +1983,13 @@
       "courbeIndisponible": "Courbe indisponible.",
       "courbe": "Commandes",
       "periode": "{jours} derniers jours",
-      "periodeEtiquette": "Fenêtre de la courbe"
+      "periodeEtiquette": "Fenêtre de la courbe",
+      "alerteDoublons": "{comptes, plural, one {# compte} other {# comptes}}, sur {identifiants, plural, one {# identifiant partagé} other {# identifiants partagés}}",
+      "alerteContestation": "{n, plural, one {Contestation du blocage de {reference}} other {# contestations de blocage en attente, la plus ancienne pour {reference}}}",
+      "alerteContestationDetail": "Envoyée par le vendeur le {date}.",
+      "contestationsIndisponibles": "Les contestations en attente n’ont pas pu être lues.",
+      "doublonsIndisponibles": "Les comptes en doublon n’ont pas pu être lus.",
+      "barre": "{jour} : {n, plural, one {# commande} other {# commandes}}"
     },
     "parametres": {
       "titre": "Paramètres système",
@@ -2073,12 +1997,18 @@
       "enregistrer": "Enregistrer",
       "enCours": "En cours…",
       "fait": "Enregistré.",
-      "bornes": "Entre {min} et {max}. Valeur par défaut : {defaut}.",
+      "bornes": "Entre {min, number} et {max, number}.",
       "aucunPlafond": "Aucun",
-      "secretsTitre": "Les secrets ne sont pas ici",
+      "unite": {
+        "jours": "{n, plural, one {# jour} other {# jours}}",
+        "minutes": "{n, plural, one {# minute} other {# minutes}}",
+        "megaoctets": "{n, number} Mo",
+        "parMinute": "{n, number} / min"
+      },
+      "secretsTitre": "Les secrets ne sont pas ici.",
       "secretsAide": "Clés d'API, jeton de stockage et clé de service ne passent jamais par cet écran ni par la base. Ils vivent uniquement dans les variables d'environnement du serveur.",
       "origine": {
-        "jamaisDecide": "Valeur par défaut : personne ne l'a jamais modifiée.",
+        "jamaisDecide": "Valeur par défaut : personne ne l'a jamais modifiée.",
         "decide": "Modifié le {date} par {email}.",
         "auteurParti": "Modifié le {date}. Le compte auteur n'existe plus."
       },
@@ -2098,6 +2028,10 @@
         "interrupteurs": {
           "titre": "Interrupteurs",
           "sousTitre": "Effet immédiat sur toute la plateforme."
+        },
+        "constate": {
+          "titre": "Constaté, changé au déploiement",
+          "sousTitre": "Les valeurs grisées se changent au déploiement."
         }
       },
       "cles": {
@@ -2141,7 +2075,7 @@
         },
         "medias_par_commande": {
           "titre": "Médias par commande",
-          "aide": "Dont {videos} vidéos au maximum"
+          "aide": "Dont {videos, plural, one {# vidéo} other {# vidéos}} au maximum"
         },
         "poids_video": {
           "titre": "Poids maximum d'une vidéo",
@@ -2167,10 +2101,6 @@
         },
         "debit_depot": {
           "titre": "Dépôts de médias"
-        },
-        "notifications_email": {
-          "titre": "Notifications par email",
-          "aide": "Non déployées : rien n'est envoyé"
         }
       },
       "erreur": {
@@ -2178,13 +2108,15 @@
         "bornes": "Valeur hors des limites autorisées.",
         "refuse": "Vous n'avez pas les droits pour modifier ce réglage.",
         "panne": "Enregistrement impossible. Le réglage n'a pas changé."
-      }
+      },
+      "faitDetail": "Enregistré. {avant} → {apres}, écrit au journal.",
+      "faitActive": "{nom} : activé, effet immédiat, écrit au journal.",
+      "faitDesactive": "{nom} : désactivé, effet immédiat, écrit au journal."
     },
     "boutiques": {
       "titre": "Boutiques",
-      "sousTitre": "Ce que chaque compte occupe, trié par stockage. Cet écran ne montre aucun contenu : ni nom de client, ni référence, ni note. Chaque consultation est enregistrée avec votre email et l'heure.",
       "recherche": "Rechercher une boutique",
-      "recherchePlaceholder": "Nom de boutique ou adresse email…",
+      "recherchePlaceholder": "Nom de boutique ou adresse e-mail…",
       "chercher": "Rechercher",
       "nonConfiguree": "Boutique non configurée",
       "taille": "{valeur} {unite}",
@@ -2201,8 +2133,8 @@
         "colis": "Colis"
       },
       "decompte": "Une boutique par compte · {total, plural, one {# au total} other {# au total}}",
-      "trace": "Cette consultation est écrite au journal d'audit, avec les critères employés, filtre compris.",
-      "filtres": "Filtrer par type de compte",
+      "stockageInfo": "{taille} relus côté serveur",
+      "trace": "Ce que chaque compte occupe, trié par stockage. Cet écran ne montre aucun contenu : ni nom de client, ni référence, ni note. Cette consultation est écrite au journal d'audit, avec les critères employés, filtre compris.",
       "filtre": {
         "toutes": "Toutes",
         "supplier": "Fournisseurs",
@@ -2217,20 +2149,17 @@
       "listeTotal": "{total, plural, one {# boutique au total} other {# boutiques au total}}",
       "repartition": "Statut des boutiques",
       "unite": "boutiques",
-      "part": "{part} %",
+      "part": "{part} %",
       "tuileTotal": "Boutiques totales",
       "tuileTotalAide": "une par compte, créée à l'inscription",
       "tuileConfigurees": "Boutiques configurées",
-      "partDuTotal": "{part} % du total",
+      "partDuTotal": "{part} % du total",
       "tuileCommandes": "Commandes créées",
       "ceMoisCi": "ce mois-ci",
       "tuileStockage": "Stockage des médias",
       "stockageAide": "relu côté serveur au dépôt",
       "filtreType": "Filtrer par type de compte",
-      "reinitialiser": "Réinitialiser",
       "videFiltre": "Aucune boutique ne correspond à ce filtre.",
-      "colonneProprietaire": "Propriétaire",
-      "colonneCreation": "Création",
       "legendeConfigurees": "Configurées",
       "legendeSansNom": "Sans nom"
     },
@@ -2245,11 +2174,11 @@
       "titre": "Surveillance",
       "sousTitre": "Ce qui tourne sans personne devant.",
       "taches": "Tâches de fond",
-      "tachesIndisponibles": "État des tâches illisible pour l’instant — ce n’est PAS « jamais exécutée ». Réessayer dans un instant.",
+      "tachesIndisponibles": "État des tâches illisible pour l’instant — ce n’est PAS « jamais exécutée ». Réessayez dans un instant.",
       "indicateursIndisponibles": "Consommation illisible pour l’instant. Les tirets ne valent pas zéro.",
       "friseIndisponible": "Historique des colis illisible pour l’instant.",
       "nonMesure": "Non mesuré",
-      "nonMesureAide": "Aucun mécanisme ne relève ces grandeurs aujourd'hui. Elles apparaîtront ici avec le mécanisme qui les mesure, jamais avant : un chiffre inventé sur cet écran ferait douter de tous les autres.",
+      "nonMesureAide": "Aucun mécanisme ne relève ces grandeurs aujourd'hui. Elles apparaîtront ici avec le mécanisme qui les mesure, jamais avant : un chiffre inventé sur cet écran ferait douter de tous les autres.",
       "genre": {
         "suivi": "Suivi de colis",
         "limitation": "Pression sur les limites"
@@ -2259,7 +2188,7 @@
         "colis_pris_en_charge_ce_mois": "Colis pris en charge ce mois",
         "abandons_ce_mois": "Suivis abandonnés ce mois",
         "pic_auth-ip": "Pic — connexions par adresse",
-        "pic_auth-email": "Pic — réinitialisations par adresse email",
+        "pic_auth-email": "Pic — réinitialisations par adresse e-mail",
         "pic_publique-requetes": "Pic — requêtes de page publique",
         "pic_publique-inconnu": "Pic — liens inconnus",
         "pic_publique-ecriture": "Pic — réponses QC"
@@ -2283,7 +2212,7 @@
         "jamais_executee": "Jamais exécutée"
       },
       "actifAide": "{n, plural, =0 {Dernier passage à l’instant} one {Dernier passage il y a # minute} other {Dernier passage il y a # minutes}}",
-      "enRetardAide": "Dernier passage il y a {n} minutes · seuil d'alerte : {seuil} minutes",
+      "enRetardAide": "Dernier passage il y a {n} minutes · seuil d'alerte : {seuil} minutes",
       "jamaisExecuteeAide": "Aucun passage enregistré. La tâche n'a jamais tourné depuis son déploiement — ce n'est pas une panne, et ce n'est pas une alerte.",
       "tache": {
         "cadence-suivi": "Interrogation des transporteurs",
@@ -2295,24 +2224,20 @@
         "admin": "Administration"
       },
       "degradation": {
-        "autorise": "Si le compteur tombe en panne, l'accès reste autorisé : l'incident ne concerne pas les clients d'un vendeur.",
+        "autorise": "Si le compteur tombe en panne, l'accès reste autorisé : l'incident ne concerne pas les clients d'un vendeur.",
         "refuse": "Ici, une panne du compteur refuse l'accès. Ça ne pénalise que nous."
-      }
+      },
+      "barre": "{jour} : {n, plural, one {# colis} other {# colis}}"
     },
     "traceTitre": "Tout est tracé",
     "traceTexte": "Chaque consultation de données d’un vendeur est écrite au journal.",
     "allerAuContenu": "Aller au contenu",
     "roleAdministrateur": "Administrateur",
     "onglets": {
-      "panneau": "Panneau",
       "comptes": "Comptes",
       "boutiques": "Boutiques",
-      "journal": "Journal",
-      "surveillance": "Veille",
       "parametres": "Réglages",
-      "commandes": "Commandes",
-      "statistiques": "Statistiques",
-      "plus": "Plus"
+      "commandes": "Commandes"
     },
     "langues": {
       "fr": "Français",
@@ -2331,7 +2256,7 @@
       "tuileExpediees": "Expédiées",
       "tuileCeMois": "Créées ce mois-ci",
       "tuileCeMoisAide": "depuis le 1er du mois",
-      "partDuTotal": "{part} % du total",
+      "partDuTotal": "{part} % du total",
       "recherche": "Rechercher une commande",
       "recherchePlaceholder": "Référence, boutique ou adresse…",
       "chercher": "Rechercher",
@@ -2349,7 +2274,6 @@
         "30": "30 derniers jours",
         "toutes": "Toutes les dates"
       },
-      "reinitialiser": "Réinitialiser",
       "liste": "Liste des commandes",
       "listeTotal": "{total, plural, one {# commande au total} other {# commandes au total}}",
       "colonnes": {
@@ -2367,10 +2291,14 @@
       "videTout": "Aucune commande n'a encore été créée.",
       "videFiltre": "Aucune commande ne correspond à ces filtres.",
       "pageSuivante": "Voir la suite",
+      "surTotal": "{affichees} sur {total, plural, one {# commande} other {# commandes}}",
+      "affichees": "{affichees, plural, one {# commande affichée} other {# commandes affichées}}",
       "repartition": "Répartition des statuts",
-      "lienBloque": "Lien bloqué"
+      "lienBloque": "Lien bloqué",
+      "aucunTransporteur": "Aucun transporteur"
     },
     "statistiques": {
+      "surFenetre": "sur {jours} jours",
       "titre": "Statistiques",
       "sousTitre": "Analysez la croissance et l'utilisation de DropLink.",
       "vsAvant": "vs période précédente",
@@ -2378,7 +2306,7 @@
       "tuileCommandes": "Commandes créées",
       "tuileLiens": "Liens clients consultés",
       "tuileLiensAide": "ouverts au moins une fois",
-      "tuilePhotos": "Photos uploadées",
+      "tuilePhotos": "Photos déposées",
       "tuileActifs": "Comptes actifs",
       "surComptes": "{total, plural, one {sur # compte} other {sur # comptes}}",
       "tuileNouveaux": "Nouveaux comptes",
@@ -2403,14 +2331,13 @@
       "serieNouveaux": "Nouveaux comptes",
       "serieActifs": "Comptes actifs",
       "typesDeCompte": "Types de compte",
-      "typesTotal": "{total, plural, one {# compte} other {# comptes}}",
       "typeFournisseurs": "Fournisseurs",
       "typeRevendeurs": "Revendeurs",
       "typeSans": "Sans type déclaré",
       "uniteComptes": "comptes",
       "pagesConsultees": "Pages client consultées",
       "tauxConsultes": "Taux de liens consultés",
-      "tauxValeur": "{valeur} %",
+      "tauxValeur": "{valeur} %",
       "delaiLivraison": "Temps moyen de livraison",
       "delaiValeur": "{valeur, plural, one {# jour} other {# jours}}",
       "serieDelai": "Temps moyen (jours)",
@@ -2421,8 +2348,7 @@
       "transporteursTotal": "{total, plural, one {Sur # colis suivi} other {Sur les # colis suivis}}",
       "transporteurInconnu": "Pas encore reconnu",
       "aucunColis": "Aucun colis sur la période.",
-      "part": "{part} %",
-      "nombreEntreParentheses": "({nombre})",
+      "part": "{part} %",
       "croissance": "Croissance globale",
       "croissanceAide": "Trois derniers mois contre les trois précédents",
       "croissanceComptes": "Comptes",
@@ -2430,15 +2356,16 @@
       "croissanceColis": "Colis",
       "croissancePhotos": "Photos",
       "croissanceSansBase": "nouveau",
-      "ecartHausse": "+{ecart} %",
-      "ecartBaisse": "−{ecart} %"
+      "ecartHausse": "+{ecart} %",
+      "ecartBaisse": "−{ecart} %",
+      "delaiAide": "sur les colis livrés de la période"
     },
     "blocage": {
       "bloquer": "Bloquer le lien",
       "debloquer": "Débloquer le lien",
       "bloquerLong": "Bloquer le lien de {reference}",
       "debloquerLong": "Débloquer le lien de {reference}",
-      "aideBlocage": "Son client verra « Ce lien n'est plus valable ». Le lien n'est pas détruit : le débloquer le rétablit à l'identique. Vous ne voyez pas le contenu de la commande.",
+      "aideBlocage": "Son client verra « Ce lien n'est plus valable ». Le lien n'est pas détruit : le débloquer le rétablit à l'identique. Vous ne voyez pas le contenu de la commande.",
       "aideDeblocage": "La page revient sur le même lien, celui que le client a déjà reçu.",
       "motif": "Motif",
       "motifAide": "Au moins {n} caractères. Il s'affiche en clair dans le journal, et c'est ce qu'on relira si la décision est contestée.",
@@ -2450,7 +2377,9 @@
         "introuvable": "Commande introuvable.",
         "ecriture": "Rien n'a été modifié. Réessayez."
       },
-      "motifAideBlocage": "Au moins {n} caractères. Le vendeur le lit dans sa commande, et il s'écrit au journal."
+      "motifAideBlocage": "Au moins {n} caractères. Le vendeur le lit dans sa commande, et il s'écrit au journal.",
+      "annonceBloque": "Lien bloqué. Le vendeur voit le motif dans sa commande.",
+      "annonceDebloque": "Lien débloqué. La page revient sur le même lien."
     },
     "contestation": {
       "pastille": "Contestation",
@@ -2471,7 +2400,10 @@
         "saisie": "La réponse est trop courte.",
         "deja": "Cette contestation a déjà reçu une réponse.",
         "ecriture": "La réponse n’a pas pu être enregistrée. Rien n’a changé."
-      }
+      },
+      "annonceAcceptee": "Contestation acceptée : lien débloqué, réponse envoyée au vendeur.",
+      "annonceRefusee": "Contestation refusée. Le vendeur lit votre réponse ; le lien reste bloqué.",
+      "reponseCourte": "La réponse est trop courte."
     },
     "doublons": {
       "titre": "Comptes en doublon",
@@ -2491,39 +2423,45 @@
       "colCommandes": "Commandes",
       "voir": "Voir la fiche",
       "voirLong": "Voir la fiche de {email}",
-      "enBref": "En bref",
       "identifiants": "Identifiants partagés",
       "concernes": "Comptes concernés",
       "suspendus": "Dont suspendus",
       "reglesTitre": "Comment un doublon est reconnu",
       "regles": {
         "reseauxQ": "Instagram et TikTok.",
-        "reseauxR": "Le même nom de compte, quelle que soit l'écriture du lien : majuscules, www, paramètres de partage.",
+        "reseauxR": "Le même nom de compte, quelle que soit l'écriture du lien : majuscules, www, paramètres de partage.",
         "whatsappQ": "WhatsApp.",
         "whatsappR": "Le même numéro, chiffre pour chiffre. Aucun indicatif n'est deviné.",
         "siteQ": "Site web.",
         "siteR": "Le même domaine et le même chemin. L'accueil d'une plateforme partagée, comme Linktree, ne désigne personne et n'est jamais comparé.",
         "decisionQ": "Rien n'est automatique.",
-        "decisionR": "Un identifiant partagé n'est pas une preuve : deux associés peuvent en partager un. Aucun compte n'est suspendu par cette liste."
+        "decisionR": "Un identifiant partagé n'est pas une preuve : deux associés peuvent en partager un. Aucun compte n'est suspendu par cette liste."
       },
       "vide": "Aucun identifiant n'est partagé entre deux comptes.",
       "plafond": "Les 100 identifiants les plus partagés sont affichés, sur {total, number}.",
-      "panneauVoir": "Voir les doublons",
-      "panneauResume": "{comptes, plural, one {compte} other {comptes}}, sur {identifiants, plural, one {# identifiant partagé} other {# identifiants partagés}}"
+      "panneauVoir": "Voir les doublons"
+    },
+    "accueil": "Administration DropLink",
+    "pastille": "Admin",
+    "infoValeur": "{libelle} : {valeur}",
+    "dialogue": {
+      "motifCourt": "Le motif est trop court.",
+      "recopieDifferente": "L’adresse recopiée ne correspond pas à ce compte."
     }
   },
   "erreurs": {
     "titre": "Cet écran n'a pas pu s'afficher",
-    "texte": "Une erreur est survenue de notre côté. Vos données ne sont pas touchées : rien n'a été enregistré ni supprimé.",
+    "texte": "Une erreur est survenue de notre côté. Vos données ne sont pas touchées : rien n'a été enregistré ni supprimé.",
     "reessayer": "Réessayer",
-    "reference": "Référence de l'incident : {ref}",
+    "reference": "Référence de l'incident : {ref}",
     "introuvableTitre": "Cette page n’existe pas",
     "introuvableTexte": "L’adresse que vous avez suivie ne mène à rien. Elle a peut-être été mal recopiée, ou la page a été retirée.",
-    "introuvableRetour": "Revenir à l’accueil"
+    "introuvableRetour": "Revenir à l’accueil",
+    "accueilLogo": "DropLink, accueil"
   },
   "motDePasse": {
     "oublieTitre": "Mot de passe oublié",
-    "oublieSousTitre": "Entrez votre adresse. Si un compte existe, vous recevez un lien pour en choisir un nouveau.",
+    "oublieSousTitre": "Entrez votre adresse. Si un compte existe, vous recevrez un lien pour en choisir un nouveau.",
     "bouton": "Envoyer le lien",
     "boutonEnCours": "Envoi…",
     "envoyeTitre": "Regardez votre boîte mail",
@@ -2538,7 +2476,7 @@
   },
   "alertes": {
     "titre": "Alertes",
-    "titreAvec": "Alertes ({n})",
+    "titreAvec": "Alertes ({n, number})",
     "rien": "Rien ne demande votre attention.",
     "jamaisOuvertes": {
       "titre": "{n, plural, one {# commande jamais ouverte} other {# commandes jamais ouvertes}}",
@@ -2552,18 +2490,19 @@
   "docs": {
     "etiquette": "Documentation",
     "titre": "Comment fonctionne DropLink",
+    "metaTitre": "Comment fonctionne DropLink : le guide complet",
     "auteur": "Équipe produit DropLink",
     "source": "Rédigé à partir de l'application en production",
     "duree": "7 min de lecture",
     "misAJour": "Mis à jour le",
-    "resume": "DropLink transforme une commande en un lien de suivi que vous envoyez à votre client. Vous ajoutez vos photos et le numéro de suivi ; DropLink interroge le transporteur et met le statut à jour tout seul. Ce guide couvre chaque écran, de la création du compte à la lecture des <analyses>analyses</analyses>.",
+    "resume": "DropLink transforme une commande en un lien de suivi que vous envoyez à votre client. Vous ajoutez vos photos et le numéro de suivi ; DropLink interroge le transporteur et met le statut à jour tout seul. Ce guide couvre chaque écran, de la création du compte à la lecture des <analyses>analyses</analyses>.",
     "grCommencer": "Commencer",
     "grUtiliser": "Utiliser DropLink",
     "grPiloter": "Piloter",
     "grCompte": "Compte",
     "grAide": "Aide",
     "presentation": "Présentation",
-    "presentationTexte": "DropLink répond à un seul problème : les clients qui demandent dix fois où en est leur colis. Le principe tient en une ligne.",
+    "presentationTexte": "DropLink répond à un seul problème : les clients qui demandent dix fois où en est leur colis. Le principe tient en une ligne.",
     "fluxClient": "Client",
     "fluxMedias": "Photos / vidéos",
     "fluxSuivi": "Numéro de suivi",
@@ -2572,9 +2511,9 @@
     "fait1": "Créer une commande à partir du nom du client, de ses photos et d'un numéro de suivi.",
     "fait2": "Générer une page de suivi unique, à votre image, que le client consulte sans compte.",
     "fait3": "Récupérer les informations du transporteur et faire évoluer le statut automatiquement.",
-    "fait4": "Vous donner une vue d'ensemble : envois en cours, colis sans mouvement, liens ouverts.",
+    "fait4": "Vous donner une vue d'ensemble : envois en cours, colis sans mouvement, liens ouverts.",
     "ceQueFaitPas": "Ce que DropLink ne fait pas",
-    "faitPasTexte": "DropLink n'est pas une marketplace et ne gère pas votre catalogue. Vous ne trouverez ni produits, ni quantités, ni prix, ni panier, ni chiffre d'affaires : ces données appartiennent à votre boutique, pas à votre suivi.",
+    "faitPasTexte": "DropLink n'est pas une marketplace et ne gère pas votre catalogue. Vous ne trouverez ni produits, ni quantités, ni prix, ni panier, ni chiffre d'affaires : ces données appartiennent à votre boutique, pas à votre suivi.",
     "demarrer": "Créer son compte",
     "etape1": "Ouvrez un compte",
     "etape1Texte": "Par e-mail ou avec Google depuis la <lien>page d'inscription</lien>. Aucune carte bancaire n'est demandée.",
@@ -2585,7 +2524,7 @@
     "combienTitre": "Combien de temps",
     "combienTexte": "Un compte se crée en moins d'une minute, et le premier lien de suivi part dans la même session. Il n'y a aucune intégration transporteur à configurer au préalable.",
     "marque": "Configurer sa marque",
-    "marqueTexte": "L'écran <b>Ma marque</b> est un éditeur de votre <lien>page client</lien>, pas un simple formulaire : chaque modification s'affiche immédiatement dans l'aperçu.",
+    "marqueTexte": "L'écran <b>Ma marque</b> est un éditeur de votre <lien>page client</lien>, pas un simple formulaire : chaque modification s'affiche immédiatement dans l'aperçu.",
     "colReglage": "Réglage",
     "colEffet": "Effet sur la page client",
     "regLogo": "Logo",
@@ -2593,7 +2532,7 @@
     "regNom": "Nom et description",
     "regNomE": "Identifient votre boutique auprès du client.",
     "regCouleur": "Couleur d'accent",
-    "regCouleurE": "Appliquée aux accents de la page. Valeur par défaut : #5B4BF5. Le contraste est ajusté automatiquement pour rester lisible.",
+    "regCouleurE": "Appliquée aux accents de la page. Valeur par défaut : #5B4BF5. Le contraste est ajusté automatiquement pour rester lisible.",
     "regSociaux": "Réseaux sociaux",
     "regSociauxE": "Instagram, TikTok, WhatsApp et site web, affichés s'ils sont renseignés.",
     "regFiligrane": "Filigrane",
@@ -2601,50 +2540,50 @@
     "commande": "Créer une commande",
     "commandeTexte": "Le bouton <b>Créer une commande</b> est disponible depuis la liste des commandes. Le formulaire tient en trois blocs, et l'aperçu de la page client s'affiche en parallèle.",
     "blocClient": "Informations du client",
-    "blocClientTexte": "Nom ou pseudo du client, et e-mail facultatif. L'e-mail sert uniquement à envoyer le lien ; il ne crée aucun compte.",
+    "blocClientTexte": "Nom ou pseudo du client, en texte libre : il ne crée aucun compte.",
     "blocMedias": "Photos et vidéos",
-    "blocMediasTexte": "Glissez vos fichiers : commande, préparation, colis fermé.",
+    "blocMediasTexte": "Glissez vos fichiers : commande, préparation, colis fermé.",
     "blocSuivi": "Suivi et expédition",
     "blocSuiviTexte": "Collez le numéro de suivi. DropLink reconnaît le transporteur et commence à l'interroger.",
-    "sauvegardeTitre": "Il n'y a pas de bouton « enregistrer »",
+    "sauvegardeTitre": "Il n'y a pas de bouton « enregistrer »",
     "sauvegardeTexte": "La commande s'enregistre toute seule pendant que vous la remplissez. Un numéro de suivi ajouté plus tard suffit à lancer le suivi.",
     "medias": "Photos et vidéos",
-    "mediasTexte": "Les médias sont le cœur de DropLink : ce sont eux qui remplacent les échanges de messages. Ils s'ajoutent par glisser-déposer ou par la sélection de fichiers, et se réordonnent à la souris comme au clavier.",
+    "mediasTexte": "Les médias sont le cœur de DropLink : ce sont eux qui remplacent les échanges de messages. Ils s'ajoutent par glisser-déposer ou par la sélection de fichiers, et se réordonnent à la souris comme au clavier.",
     "media1": "Photos et vidéos acceptées. La première image sert de couverture.",
     "media2": "Vingt médias par commande, dont trois vidéos.",
     "media3": "Le client ouvre chaque photo en plein écran, et lit les vidéos sans quitter la page.",
     "suivi": "Transporteur et suivi",
-    "suiviTexte": "Vous n'avez aucun statut à saisir. Collez le numéro de suivi : DropLink interroge le transporteur et met la page à jour.",
+    "suiviTexte": "Vous n'avez aucun statut à saisir. Collez le numéro de suivi : DropLink interroge le transporteur et met la page à jour.",
     "suiviAlerteTitre": "Un numéro tout juste collé n'est pas encore scanné",
-    "suiviAlerteTexte": "Ce n'est pas une erreur : le transporteur n'a simplement rien publié. La page le dit ainsi, et jamais « numéro introuvable ».",
+    "suiviAlerteTexte": "Ce n'est pas une erreur : le transporteur n'a simplement rien publié. La page le dit ainsi, et jamais « numéro introuvable ».",
     "statuts": "Statuts de commande",
     "statutsTexte": "La frise compte quatre étapes, et elle ne recule jamais. La granularité fine vit dans le détail du suivi, pas dans la frise.",
-    "stPreparation": "Pas encore scanné",
-    "stPreparationE": "Le numéro est enregistré, le transporteur n'a encore rien publié.",
+    "stPreparation": "Préparation",
+    "stPreparationE": "Le vendeur prépare la commande ; le transporteur n'a encore rien publié.",
     "stExpedie": "Expédié",
     "stExpedieE": "Le transporteur a pris le colis en charge.",
     "stTransit": "En transit",
-    "stTransitE": "Le colis avance, chaque mouvement s'affiche sur la page client.",
+    "stTransitE": "Le colis avance : chaque mouvement s'affiche sur la page client.",
     "stLivre": "Livré",
     "stLivreE": "Le transporteur a confirmé la remise du colis.",
     "silenceTitre": "Le silence est nommé au-delà de dix jours",
-    "silenceTexte": "Un colis sans mouvement depuis plus de dix jours est signalé, sur l'écran Envois comme sur la page client. Un silence nommé est une information ; un silence subi se lit comme une panne.",
+    "silenceTexte": "Un colis sans mouvement depuis plus de dix jours est signalé, sur l'écran Suivi d'envois comme sur la page client. Un silence nommé est une information ; un silence subi se lit comme une panne.",
     "lien": "Le lien client",
     "lienTexte": "Chaque commande possède son propre lien. Votre client l'ouvre sans compte, sur mobile comme sur ordinateur, et il y retrouve vos photos, le statut du colis, l'historique des mouvements et vos coordonnées si vous les avez renseignées.",
     "lienAlerteTitre": "Le lien ne change jamais tout seul",
-    "lienAlerteTexte": "Vous pouvez modifier une commande déjà envoyée : le client voit la mise à jour sur le même lien. Seule l'action « révoquer et régénérer » crée une nouvelle adresse, et elle coupe définitivement l'ancienne.",
+    "lienAlerteTexte": "Vous pouvez modifier une commande déjà envoyée : le client voit la mise à jour sur le même lien. Seule l'action « révoquer et régénérer » crée une nouvelle adresse, et elle coupe définitivement l'ancienne.",
     "envois": "Suivi d'envois",
-    "envoisTexte": "L'écran <b>Suivi d'envois</b> regroupe tous vos colis, indépendamment des commandes. C'est la vue à ouvrir quand vous cherchez ce qui ne bouge plus : le tri par défaut remonte les colis immobiles.",
+    "envoisTexte": "L'écran <b>Suivi d'envois</b> regroupe tous vos colis, indépendamment des commandes. C'est la vue à ouvrir quand vous cherchez ce qui ne bouge plus : le tri par défaut remonte les colis immobiles.",
     "analyses": "Analyses",
-    "analysesTexte": "Les analyses mesurent l'usage de DropLink et l'efficacité de votre suivi. Aucune donnée de chiffre d'affaires n'y figure : DropLink ne connaît pas vos prix.",
+    "analysesTexte": "Les analyses mesurent l'usage de DropLink et l'efficacité de votre suivi. Aucune donnée de chiffre d'affaires n'y figure : DropLink ne connaît pas vos prix.",
     "notifications": "Notifications",
     "notificationsTexte": "Votre client peut demander lui-même, depuis sa page de commande, à être prévenu par e-mail. Il confirme son adresse, puis reçoit au plus trois messages — expédition, transit, livraison —, chacun avec un lien de désinscription. Il ne crée jamais de compte.",
     "parametres": "Paramètres",
     "plans": "Gratuit et Pro",
-    "plansTexte": "DropLink a un plan gratuit et un plan Pro. Le gratuit permet de créer {gratuit} commandes au total — c’est un quota à vie, il ne se recharge pas chaque mois. Le Pro le porte à {pro} commandes par mois et retire la mention DropLink de la page que voit votre client.",
-    "plansTexteSansNombre": "DropLink a un plan gratuit et un plan Pro. Le gratuit permet de créer un nombre limité de commandes au total — c’est un quota à vie, il ne se recharge pas chaque mois. Le Pro le remplace par un plafond mensuel et retire la mention DropLink de la page que voit votre client.",
+    "plansTexte": "DropLink a un plan gratuit et un plan Pro. Le gratuit permet de créer {gratuit} commandes au total : c’est un quota à vie, qui ne se recharge pas chaque mois. Le Pro le porte à {pro} commandes par mois et retire la mention DropLink de la page que voit votre client.",
+    "plansTexteSansNombre": "DropLink a un plan gratuit et un plan Pro. Le gratuit permet de créer un nombre limité de commandes au total : c’est un quota à vie, qui ne se recharge pas chaque mois. Le Pro le remplace par un plafond mensuel et retire la mention DropLink de la page que voit votre client.",
     "planGratuit": "Gratuit",
-    "planPro": "Pro — {prix}/mois",
+    "planPro": "Pro, {prix}/mois",
     "plCommandes": "Commandes",
     "plCommandesG": "{n} au total",
     "plCommandesP": "{n} par mois",
@@ -2652,35 +2591,32 @@
     "plPageG": "Avec la mention DropLink",
     "plPageP": "Sans la mention DropLink",
     "faq": "Questions fréquentes",
-    "faqQ1": "Mon client doit-il créer un compte ?",
+    "faqQ1": "Mon client doit-il créer un compte ?",
     "faqR1": "Non. Il ouvre le lien et voit sa commande immédiatement, sans inscription ni application à installer.",
-    "faqQ2": "Dois-je mettre le statut à jour moi-même ?",
-    "faqR2": "Non. Le numéro de suivi suffit : DropLink interroge le transporteur et fait évoluer le statut tout seul.",
-    "faqQ3": "Puis-je créer une commande sans numéro de suivi ?",
-    "faqR3": "Oui. Créez-la, partagez le lien, et ajoutez le numéro dès que le colis est expédié : le client verra la mise à jour sur le même lien.",
-    "faqQ4": "Est-ce que DropLink vend mes produits ?",
-    "faqR4": "Non. DropLink ne gère ni catalogue, ni paiement, ni prix : uniquement le suivi et la communication client.",
-    "faqQ5": "Combien de temps mon lien reste-t-il actif ?",
-    "faqR5": "Aussi longtemps que vous le souhaitez. Un lien ne s'éteint pas tout seul : seule l'action « révoquer et régénérer » le remplace.",
-    "faqQ6": "Que voit mon client si j'ai révoqué le lien ?",
+    "faqQ2": "Dois-je mettre le statut à jour moi-même ?",
+    "faqR2": "Non. Le numéro de suivi suffit : DropLink interroge le transporteur et fait évoluer le statut tout seul.",
+    "faqQ3": "Puis-je créer une commande sans numéro de suivi ?",
+    "faqR3": "Oui. Créez-la, partagez le lien, et ajoutez le numéro dès que le colis est expédié : le client verra la mise à jour sur le même lien.",
+    "faqQ4": "Est-ce que DropLink vend mes produits ?",
+    "faqR4": "Non. DropLink ne gère ni catalogue, ni paiement, ni prix : uniquement le suivi et la communication client.",
+    "faqQ5": "Combien de temps mon lien reste-t-il actif ?",
+    "faqR5": "Aussi longtemps que vous le souhaitez. Un lien ne s'éteint pas tout seul : seule l'action « révoquer et régénérer » le remplace.",
+    "faqQ6": "Que voit mon client si j'ai révoqué le lien ?",
     "faqR6": "Une page DropLink lui expliquant que le lien n'est plus valable et l'invitant à vous contacter. Elle ne divulgue rien de votre boutique.",
     "support": "Contacter le support",
-    "supportTexte": "Une question qui n'a pas sa réponse ici ? Écrivez-nous à contact@droplink.fr : chaque message arrive à l'équipe produit.",
-    "ctaTitre": "Prêt à créer votre premier lien ?",
+    "supportTexte": "Une question qui n'a pas sa réponse ici ? Écrivez-nous à <courriel>contact@droplink.fr</courriel> : chaque message arrive à l'équipe produit.",
+    "supportSignaler": "Signaler un contenu",
+    "ctaTitre": "Prêt à créer votre premier lien ?",
     "ctaTexte": "Compte gratuit, sans carte bancaire, prêt en moins d'une minute.",
     "ctaBouton": "Créer mon compte",
-    "metaDescription": "Le guide complet de DropLink : créer une commande, ajouter ses photos, coller le numéro de suivi et partager un lien client.",
-    "pastille": "Docs",
-    "accueil": "Accueil",
-    "seConnecter": "Se connecter",
-    "piedContact": "Contact",
-    "resumeEtiquette": "En résumé :",
-    "param1": "Compte : nom, e-mail et mot de passe — l'e-mail et le mot de passe ne changent qu'avec votre mot de passe actuel.",
-    "param2": "Préférences : langue de l'interface. La langue des pages client se règle dans Ma marque.",
-    "param3": "Sécurité : authentification à deux facteurs, sessions actives, suppression du compte.",
-    "param4": "Données : export de vos données, suppression complète — chaque action destructive demande une confirmation.",
-    "param5": "Abonnement : plan en cours. Pendant la phase de validation, DropLink est gratuit.",
-    "param6": "Support : centre d'aide.",
+    "metaDescription": "Le guide complet de DropLink : créer une commande, ajouter ses photos, coller le numéro de suivi et partager un lien client.",
+    "resumeEtiquette": "En résumé :",
+    "param1": "Compte : nom, e-mail et mot de passe ; l'e-mail et le mot de passe ne changent qu'avec votre mot de passe actuel.",
+    "param2": "Préférences : langue de l'interface. La langue des pages client se règle dans Ma marque.",
+    "param3": "Sécurité : double authentification, sessions actives, suppression du compte.",
+    "param4": "Données : export de vos données, suppression complète ; chaque action destructive demande une confirmation.",
+    "param5": "Abonnement : votre plan actuel, Gratuit ou Pro, et le passage au Pro.",
+    "param6": "Support : centre d'aide.",
     "colIndicateur": "Indicateur",
     "colMesure": "Ce qu'il mesure",
     "kpiCrees": "Commandes créées",
@@ -2694,7 +2630,7 @@
     "analysesSuite": "S'y ajoutent l'évolution des commandes sur 7, 30 ou 90 jours, la répartition des statuts, l'usage des transporteurs et l'activité récente.",
     "clientVoit1": "Votre logo, le nom de la boutique et vos réseaux sociaux.",
     "clientVoit2": "La référence de commande et la date de livraison estimée.",
-    "clientVoit3": "Une frise de suivi : Pas encore scanné, Expédié, En transit, Livré.",
+    "clientVoit3": "Une frise de suivi : Préparation, Expédié, En transit, Livré.",
     "clientVoit4": "Vos photos et vidéos de la commande.",
     "clientVoit5": "Le transporteur et le numéro de suivi.",
     "clientVoit6": "L'historique détaillé des événements de suivi.",
@@ -2703,13 +2639,9 @@
   },
   "tableau": {
     "titre": "Tableau de bord",
-    "bonjour": "Bonjour !",
-    "bonjourNom": "Bonjour {nom} !",
+    "bonjour": "Bonjour !",
+    "bonjourNom": "Bonjour {nom} !",
     "sousTitre": "Voici un aperçu rapide de votre activité sur DropLink.",
-    "lancement": {
-      "titre": "Prêt à faire grandir votre activité ?",
-      "texte": "Créez une commande, déposez vos photos et partagez un seul lien : votre client suit tout lui-même, sans compte."
-    },
     "dernieres": {
       "titre": "Dernières commandes",
       "voirTout": "Voir tout",
@@ -2722,27 +2654,33 @@
       "envois": "Voir mes envois",
       "analyses": "Accéder aux analyses"
     },
-    "pro": {
-      "titre": "Passez au Pro",
-      "lien": "Le lien à votre nom",
-      "marque": "Sans la carte DropLink",
-      "plafond": "Plafond mensuel, pas à vie",
-      "colis": "Colis suivis au mois",
-      "bouton": "Découvrir les offres"
-    }
+    "graphe": {
+      "bascule": "Graphique affiché",
+      "commandes": "Commandes",
+      "liens": "Liens clients",
+      "aideSemaines": "Nombre de commandes créées par semaine, sur les {n} dernières semaines.",
+      "voirValeurs": "Voir les valeurs",
+      "semaineDu": "Semaine du",
+      "semaineDuDate": "Semaine du {date}",
+      "cetteSemaine": "Cette sem.",
+      "creees": "Commandes créées",
+      "jour": "Jour",
+      "ouvertures": "Ouvertures",
+      "zoneSemaines": "Évolution des commandes sur {n} semaines. Flèches gauche et droite pour lire chaque semaine.",
+      "zoneLiens": "Liens clients : {n, plural, one {# ouverture} other {# ouvertures}}. Flèches gauche et droite pour lire chaque jour."
+    },
+    "colisTotal": "{n, plural, one {# colis} other {# colis}}",
+    "silenceJours": "Sans mouvement · {n} j"
   },
   "parametres": {
     "titre": "Paramètres",
     "sousTitre": "Gérez votre compte, vos préférences et la configuration de DropLink.",
     "compte": {
-      "titre": "Informations du compte",
-      "aide": "Gérez vos informations personnelles et votre compte.",
       "nom": "Nom complet",
       "enregistrer": "Enregistrer",
       "enregistrement": "Enregistrement…",
       "enregistre": "Enregistré.",
       "adresse": "Adresse e-mail",
-      "modifier": "Modifier",
       "nouvelleAdresse": "Nouvelle adresse e-mail",
       "motDePasse": "Mot de passe",
       "actuel": "Mot de passe actuel",
@@ -2751,47 +2689,45 @@
       "envoyerLien": "Envoyer le lien de confirmation",
       "envoi": "Envoi…",
       "adresseEnvoyee": "Si cette adresse peut recevoir un e-mail, un lien de confirmation vient d'y être envoyé. Votre adresse ne change qu'une fois ce lien suivi.",
-      "adresseSuivie": "Lien suivi. Si une seconde confirmation vous est demandée sur votre ancienne adresse, suivez-la aussi : l'adresse affichée ici est celle que votre compte porte réellement.",
+      "adresseSuivie": "Lien suivi. Si une seconde confirmation vous est demandée sur votre ancienne adresse, suivez-la aussi : l'adresse affichée ici est celle que votre compte porte réellement.",
       "changerMotDePasse": "Changer le mot de passe",
       "changement": "Changement…",
       "motDePasseChange": "Mot de passe modifié. Vos autres appareils ont été déconnectés.",
-      "sansMotDePasse": "Vous vous connectez avec Google ? Définissez d'abord un mot de passe avec « Mot de passe oublié ».",
-      "annuler": "Annuler"
+      "sansMotDePasse": "Vous vous connectez avec Google ? Définissez d'abord un mot de passe avec « Mot de passe oublié ».",
+      "annuler": "Annuler",
+      "nomAide": "Le nom affiché dans votre espace, et ses initiales.",
+      "nomMax": "80 caractères maximum.",
+      "adresseAide": "L’adresse de connexion de votre compte. Un lien de confirmation part vers la nouvelle adresse.",
+      "adresseNote": "Votre adresse ne change qu’une fois ce lien suivi.",
+      "motDePasseAide": "Changer le mot de passe déconnecte vos autres appareils."
     },
     "preferences": {
-      "titre": "Préférences",
       "aide": "Personnalisez votre expérience sur DropLink.",
       "langue": "Langue",
       "appliquer": "Appliquer",
       "languePubliqueAide": "La langue des pages que voient vos clients se règle dans Ma marque."
     },
     "securite": {
-      "titre": "Sécurité",
-      "aide": "Protégez votre compte et vos données.",
       "sessions": "Sessions actives",
       "sessionsAide": "Gérez vos appareils connectés.",
       "fermer": "Déconnecter les autres appareils",
       "fermeture": "Déconnexion…",
       "ferme": "Vos autres appareils ont été déconnectés.",
-      "voir": "Voir les sessions",
-      "masquer": "Masquer les sessions",
       "cetAppareil": "Cet appareil",
-      "activeLe": "Dernière activité : {date}",
+      "activeLe": "Dernière activité : {date}",
       "appareilInconnu": "Appareil non reconnu",
       "lectureImpossible": "Impossible de lire vos sessions pour le moment. Réessayez.",
       "fermerAide": "Déconnectez tous vos autres appareils. Celui-ci reste connecté.",
       "appareilsFiables": {
         "titre": "Appareils fiables",
         "aide": "Les appareils qui ne redemandent pas votre code.",
-        "voir": "Voir les appareils",
-        "masquer": "Masquer les appareils",
         "actifJusqu": "Fiable jusqu’au {date}",
         "aucun": "Aucun appareil fiable pour le moment.",
         "revoquer": "Révoquer",
         "revocation": "Révocation…"
       },
       "deuxEtapes": {
-        "titre": "Authentification à deux facteurs (2FA)",
+        "titre": "Double authentification (2FA)",
         "aide": "Sécurisez votre compte avec un code de vérification.",
         "activer": "Activer",
         "annuler": "Annuler",
@@ -2803,7 +2739,7 @@
         "scanner": "Scannez ce code avec votre application d'authentification, puis saisissez le code qu'elle affiche.",
         "qrAlt": "Code QR à scanner avec votre application d'authentification",
         "cle": "Clé de secours",
-        "cleAide": "Notez-la en lieu sûr : c'est la seule façon de retrouver l'accès si vous perdez votre appareil.",
+        "cleAide": "Notez-la en lieu sûr : c'est la seule façon de retrouver l'accès si vous perdez votre appareil.",
         "code": "Code à 6 chiffres",
         "confirmer": "Confirmer l'activation",
         "confirmation": "Vérification…",
@@ -2812,7 +2748,9 @@
         "desactiverBouton": "Désactiver la double authentification",
         "desactivation": "Désactivation…",
         "desactiveeOk": "Double authentification désactivée.",
-        "fermer": "Fermer"
+        "fermer": "Fermer",
+        "desactivee": "Désactivée",
+        "lectureImpossible": "Impossible de lire l’état de la double authentification pour le moment."
       }
     },
     "abonnement": {
@@ -2830,11 +2768,11 @@
       "proMarque": "Sans la carte DropLink",
       "proPlafond": "Plafond mensuel, pas à vie",
       "bouton": "Passer au Pro",
-      "nonInclus": "Non inclus :"
+      "nonInclus": "Non inclus :",
+      "detail": "Ce que le plan Pro change"
     },
     "support": {
-      "titre": "Support",
-      "aide": "Besoin d'aide ?",
+      "aide": "Besoin d'aide ?",
       "centre": "Centre d'aide",
       "centreAide": "Consultez nos guides et tutoriels.",
       "ouvrir": "Ouvrir"
@@ -2847,29 +2785,26 @@
       "mdpTropCourt": "12 caractères minimum.",
       "mdpTropLong": "Ce mot de passe est trop long.",
       "mdpContientEmail": "Le mot de passe ne doit pas contenir votre adresse e-mail.",
-      "mdpFuite": "Ce mot de passe figure dans une fuite de données publique : choisissez-en un autre.",
+      "mdpFuite": "Ce mot de passe figure dans une fuite de données publique : choisissez-en un autre.",
       "mdpIdentique": "Le nouveau mot de passe doit être différent de l'actuel.",
       "adresseIdentique": "C'est déjà l'adresse de votre compte.",
       "indisponible": "Le service est momentanément indisponible. Réessayez.",
       "code": "Code incorrect ou expiré. Saisissez le code affiché maintenant.",
       "dejaActive": "La double authentification est déjà activée sur ce compte.",
       "confirmation": "L'adresse recopiée ne correspond pas à celle du compte.",
-      "abonnementEnCours": "Votre abonnement Pro est encore actif : supprimer votre compte ici ne l'arrêterait pas chez Lemon Squeezy, qui continuerait de vous prélever. Résiliez-le d'abord depuis votre espace client Lemon Squeezy, puis revenez supprimer votre compte."
+      "abonnementEnCours": "Votre abonnement Pro est encore actif : supprimer votre compte ici ne l'arrêterait pas chez Lemon Squeezy, qui continuerait de vous prélever. Résiliez-le d'abord depuis votre espace client Lemon Squeezy, puis revenez supprimer votre compte."
     },
     "donnees": {
-      "titre": "Données",
       "aide": "Gérez vos données et exportez vos informations.",
       "exporter": "Exporter mes données",
       "exporterAide": "Commandes, colis, médias et vues, au format JSON. Sans vos notes internes.",
       "bouton": "Exporter",
-      "avertissement": "Le fichier contient les liens publics de vos commandes : quiconque les obtient voit les pages de vos clients. Rangez-le comme tel."
+      "avertissement": "Le fichier contient les liens publics de vos commandes : quiconque les obtient voit les pages de vos clients. Rangez-le comme tel."
     },
     "suppression": {
       "compte": {
         "titre": "Supprimer le compte",
-        "aide": "Supprimez définitivement votre compte et toutes vos données.",
         "bouton": "Supprimer",
-        "question": "Supprimer le compte ?",
         "avertissement": "Cette action est définitive. Votre compte, vos commandes, vos envois et vos liens clients seront supprimés et ne pourront pas être restaurés.",
         "conservation": "Seules votre adresse e-mail et les dates d'inscription et de suppression sont conservées un an, comme la loi l'impose à un hébergeur, puis effacées.",
         "soumettre": "Supprimer le compte",
@@ -2881,38 +2816,47 @@
         "titre": "Supprimer toutes les données",
         "aide": "Supprimez toutes vos données de manière définitive.",
         "bouton": "Supprimer",
-        "question": "Supprimer toutes les données ?",
         "avertissement": "Toutes vos commandes, photos, vidéos et liens clients seront supprimés définitivement. Votre compte restera actif mais vide.",
         "soumettre": "Tout supprimer",
         "enCours": "Suppression…",
         "ok": "Toutes vos données ont été supprimées."
       },
-      "recopier": "Recopiez votre adresse e-mail pour confirmer : {adresse}",
+      "recopier": "Recopiez votre adresse e-mail pour confirmer : {adresse}",
       "annuler": "Annuler"
+    },
+    "onglets": {
+      "titre": "Sections des paramètres",
+      "compte": "Compte",
+      "preferences": "Préférences",
+      "securite": "Sécurité",
+      "abonnement": "Abonnement",
+      "donnees": "Données",
+      "support": "Support"
     }
   },
   "verification": {
-    "titre": "Vérification en deux étapes",
+    "titre": "Double authentification",
     "souvenirAppareil": "Se souvenir de cet appareil pendant 30 jours",
     "sousTitre": "Saisissez le code à 6 chiffres de votre application d'authentification.",
     "libelle": "Code de vérification",
     "bouton": "Vérifier",
     "enCours": "Vérification…",
-    "perdu": "Appareil perdu ? Ajoutez la clé de secours notée à l'activation dans une nouvelle application d'authentification.",
-    "pasVous": "Ce n'est pas votre compte ?",
+    "perdu": "Appareil perdu ? Ajoutez la clé de secours notée à l'activation dans une nouvelle application d'authentification.",
+    "pasVous": "Ce n'est pas votre compte ?",
     "erreurs": {
       "code": "Code incorrect ou expiré. Saisissez le code affiché maintenant.",
       "invalide": "Saisissez les 6 chiffres affichés par votre application.",
       "trop": "Trop de tentatives. Réessayez dans quelques minutes.",
       "indisponible": "Le service est momentanément indisponible. Réessayez."
-    }
+    },
+    "chiffre": "Chiffre {n} sur 6"
   },
   "blocageVendeur": {
     "titre": "Lien bloqué par DropLink",
-    "texte": "Depuis le {date}, votre client voit « Ce lien n’est plus valable » à la place de sa commande. Si c’est une erreur, contestez le blocage : expliquez pourquoi, une image peut aider.",
+    "texte": "Depuis le {date}, votre client voit « Ce lien n’est plus valable » à la place de sa commande. Si c’est une erreur, contestez le blocage : expliquez pourquoi, une image peut aider.",
     "contester": "Contester le blocage",
     "explication": "Votre explication",
-    "explicationAide": "Au moins {n} caractères. L’équipe DropLink la lit avec l’image que vous joignez.",
+    "explicationAide": "Au moins {n, number} caractères. L’équipe DropLink la lit avec l’image que vous joignez.",
     "image": "Une image (facultative)",
     "joindre": "Joindre une image",
     "changer": "Changer d’image",
@@ -2930,9 +2874,9 @@
     "aucuneRestante": "Les trois contestations de ce blocage ont été utilisées.",
     "recontester": "Contester à nouveau",
     "erreur": {
-      "saisie": "L’explication doit compter au moins 20 caractères.",
+      "saisie": "L’explication doit compter au moins {n, number} caractères.",
       "image": "L’image n’a pas pu être jointe. Réessayez, ou envoyez sans image.",
-      "type": "Ce format d’image n’est pas accepté : JPEG, PNG ou WebP.",
+      "type": "Ce format d’image n’est pas accepté : JPEG, PNG ou WebP.",
       "taille": "Cette image dépasse la taille permise.",
       "cadence": "Trop d’envois en peu de temps. Réessayez dans une minute.",
       "deja": "Une contestation attend déjà une réponse.",
@@ -2942,56 +2886,59 @@
       "session": "Votre session a expiré. Reconnectez-vous.",
       "ecriture": "La contestation n’a pas pu être enregistrée. Rien n’a été envoyé."
     },
-    "motif": "Motif :"
+    "motif": "Motif :"
   },
   "passerPro": {
+    "comparaisonCourt": "Gratuit et Pro",
     "titre": "Passer au Pro",
     "sousTitre": "Ce que le plan Pro change, et ce qu'il ne change pas.",
     "eyebrow": "Plan Pro",
     "accroche": "Vos liens, à votre nom",
-    "intro": "Quatre choses changent, et ce sont les seules. Tout le reste — les photos, les vidéos, le suivi automatique, vos couleurs — est déjà inclus dans le plan gratuit.",
+    "intro": "Quatre choses changent, et ce sont les seules. Tout le reste, les photos, les vidéos, le suivi automatique et vos couleurs, est déjà inclus dans le plan gratuit.",
     "gratuit": "Gratuit",
     "pro": "Pro",
     "parMois": "{prix} / mois",
     "passer": "Passer au Pro",
     "dejaPro": "Votre plan Pro est actif",
     "pasEncoreOuvert": "L'abonnement n'est pas encore ouvert. Écrivez-nous pour activer votre compte.",
-    "facture": "Le paiement est traité par Lemon Squeezy, qui émet la facture. Résiliable à tout moment : votre plan reste actif jusqu'à la fin de la période déjà payée.",
+    "facture": "Le paiement est traité par Lemon Squeezy, qui émet la facture. Résiliable à tout moment : votre plan reste actif jusqu'à la fin de la période déjà payée.",
     "features": {
       "lien": {
         "titre": "Le lien à votre nom",
-        "texte": "droplink.fr/votre-boutique/… au lieu de droplink.fr/p/…. Vos anciens liens continuent de répondre, même si vous renommez votre boutique."
+        "texte": "droplink.fr/votre-boutique/… au lieu de droplink.fr/p/… Vos anciens liens continuent de répondre, même si vous renommez votre boutique."
       },
       "marque": {
         "titre": "Votre page, sans la nôtre",
-        "texte": "La carte « Propulsé par DropLink » disparaît de vos pages client."
+        "texte": "La carte « Propulsé par DropLink » disparaît de vos pages client."
       },
       "commandes": {
         "titre": "Un plafond qui se recharge",
         "texte": "Un compte gratuit est borné à un total de commandes à vie. En Pro, le plafond redevient mensuel.",
-        "texteNombre": "Un compte gratuit est borné à {n} commandes À VIE. En Pro, le plafond redevient mensuel."
+        "texteNombre": "Un compte gratuit est borné à {n, plural, one {# commande} other {# commandes}} à vie. En Pro, le plafond redevient mensuel."
       },
       "colis": {
         "titre": "Le suivi qui suit",
-        "texte": "Même règle pour les colis suivis : un total à vie en gratuit, un plafond mensuel en Pro."
+        "texte": "Même règle pour les colis suivis : un total à vie en gratuit, un plafond mensuel en Pro."
       }
     },
     "tableau": {
       "commandes": "Commandes",
       "colis": "Colis suivis",
       "adresse": "Adresse de la page client",
-      "carte": "Carte « Propulsé par DropLink »",
+      "carte": "Carte « Propulsé par DropLink »",
       "medias": "Photos, vidéos et suivi automatique",
-      "couleurs": "Page brandée à vos couleurs",
-      "aVie": "{n} au total, à vie",
-      "parMois": "{n} par mois",
+      "couleurs": "Page à vos couleurs",
+      "aVie": "<b>{n}</b> au total, à vie",
+      "parMois": "<b>{n}</b> par mois",
       "mensuel": "Plafond mensuel",
       "adresseGratuit": "droplink.fr/p/xK9…",
       "adressePro": "droplink.fr/votre-boutique/xK9…",
       "carteGratuit": "Affichée",
       "cartePro": "Retirée",
       "inclus": "Inclus"
-    }
+    },
+    "filParametres": "Paramètres",
+    "comparaison": "Comparaison des plans Gratuit et Pro"
   },
   "notifications": {
     "carte": {
@@ -2999,7 +2946,7 @@
       "texte": "Recevez un e-mail à l'expédition, pendant le transit et à la livraison. Trois e-mails au plus, rien d'autre.",
       "champ": "Votre adresse e-mail",
       "bouton": "Me prévenir",
-      "envoye": "Presque fini : ouvrez l'e-mail que nous venons d'envoyer pour confirmer.",
+      "envoye": "Presque fini : ouvrez l'e-mail que nous venons d'envoyer pour confirmer.",
       "invalide": "Cette adresse e-mail n'est pas valide.",
       "trop": "Trop de demandes pour cette commande. Réessayez dans une heure.",
       "erreur": "La demande n'a pas pu être enregistrée. Réessayez dans un instant."
@@ -3007,7 +2954,7 @@
     "boutiqueSansNom": "votre vendeur",
     "confirmation": {
       "sujet": "Confirmez le suivi de votre commande — {boutique}",
-      "corps": "Bonjour,\n\nVous avez demandé à être prévenu par e-mail de l'avancement de votre commande chez {boutique}.\n\nPour confirmer, ouvrez ce lien puis appuyez sur « Confirmer » :\n{lien}\n\nLe lien est valable 24 heures. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : rien ne vous sera envoyé.\n\n—\nDropLink, pour {boutique}"
+      "corps": "Bonjour,\n\nVous avez demandé à être prévenu par e-mail de l'avancement de votre commande chez {boutique}.\n\nPour confirmer, ouvrez ce lien puis appuyez sur « Confirmer » :\n{lien}\n\nLe lien est valable 24 heures. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : rien ne vous sera envoyé.\n\n—\nDropLink, pour {boutique}"
     },
     "etape": {
       "sujet": {
@@ -3016,11 +2963,11 @@
         "livre": "Votre commande est livrée — {boutique}"
       },
       "phrase": {
-        "expedie": "Bonne nouvelle : votre commande a été expédiée.",
-        "en_transit": "Votre commande est en route : le transporteur l'a prise en charge.",
+        "expedie": "Bonne nouvelle : votre commande a été expédiée.",
+        "en_transit": "Votre commande est en route : le transporteur l'a prise en charge.",
         "livre": "Votre commande est indiquée comme livrée."
       },
-      "corps": "Bonjour,\n\n{phrase}\n\nSuivez votre commande, photos et suivi du colis :\n{lien}\n\n—\nVous recevez cet e-mail parce que vous avez demandé à être prévenu pour cette commande. Pour ne plus en recevoir :\n{desinscription}\n\nDropLink, pour {boutique}"
+      "corps": "Bonjour,\n\n{phrase}\n\nSuivez votre commande, photos et suivi du colis :\n{lien}\n\n—\nVous recevez cet e-mail parce que vous avez demandé à être prévenu pour cette commande. Pour ne plus en recevoir :\n{desinscription}\n\nDropLink, pour {boutique}"
     },
     "page": {
       "titre": "Suivi par e-mail",
@@ -3048,17 +2995,16 @@
       },
       "indisponible": {
         "titre": "Service momentanément indisponible",
-        "texte": "Votre lien reste valable : réessayez dans quelques minutes."
+        "texte": "Votre lien reste valable : réessayez dans quelques minutes."
       }
     }
   },
   "tarifs": {
-    "metaTitre": "Tarifs — DropLink",
-    "metaDescription": "Commencez gratuitement, sans carte bancaire. Le plan Pro à {prix} par mois, sans engagement : votre lien à votre nom, une page sans mention DropLink et un plafond qui se recharge chaque mois.",
-    "pastille": "Tarifs",
+    "metaTitre": "Tarifs DropLink : plan gratuit et plan Pro",
+    "metaDescription": "Commencez gratuitement, sans carte bancaire. Le Pro à {prix} par mois, sans engagement : lien à votre nom, page sans mention DropLink, plafond mensuel.",
     "eyebrow": "Tarifs",
     "titre": "Gratuit pour commencer, Pro quand vous grandissez",
-    "intro": "Photos, vidéos, suivi automatique et page à vos couleurs : tout ce qui fait DropLink est déjà dans le plan gratuit. Le Pro ajoute quatre choses, et seulement quatre.",
+    "intro": "Photos, vidéos, suivi automatique et page à vos couleurs : tout ce qui fait DropLink est déjà dans le plan gratuit. Le Pro ajoute quatre choses, et seulement quatre.",
     "gratuitSous": "Sans carte bancaire",
     "gratuitQuota": "{n} commandes au total, à vie",
     "gratuitQuotaSansNombre": "Un total de commandes à vie",
@@ -3069,9 +3015,253 @@
     "ctaGratuit": "Créer un compte gratuit",
     "ctaPro": "Commencer avec Pro",
     "noteCompte": "Le Pro s'active depuis votre espace, une fois le compte créé.",
-    "dejaInscrit": "Déjà un compte ?",
+    "dejaInscrit": "Déjà un compte ?",
     "comparer": "Comparer les deux plans",
-    "question": "Une question sur les plans ?",
+    "question": "Une question sur les plans ?",
     "voirDocs": "Tout est expliqué dans la documentation"
+  },
+  "accueil": {
+    "nav": {
+      "comment": "Comment ça marche",
+      "client": "La page client",
+      "tarifs": "Tarifs",
+      "questions": "Questions",
+      "principale": "Navigation principale"
+    },
+    "accueil": "DropLink, accueil",
+    "heros": {
+      "pastillePro": "Pro",
+      "pastille": "Le lien à votre nom",
+      "pastilleUrl": ", droplink.fr/votre-boutique",
+      "titre1": "Un seul lien.",
+      "titre2": "Toute la commande.",
+      "chapo": "Photos, numéro de suivi et date de livraison sur une page à vos couleurs. Votre client suit tout seul, sans compte et sans vous écrire.",
+      "cta": "Commencer gratuitement",
+      "cta2": "Voir une page client"
+    },
+    "garanties": {
+      "offertes": "{n, plural, one {# commande offerte} other {# commandes offertes}}",
+      "offertesSansNombre": "Commandes offertes pour commencer",
+      "carte": "Sans carte bancaire",
+      "compte": "Aucun compte pour votre client"
+    },
+    "scene": {
+      "description": "Un lien envoyé dans une conversation se déplie en page client : la commande 6A4D21 d’Atelier Nord, son suivi en transit avec une livraison estimée du 1er au 2 octobre, et quatre photos approuvées par Léa M.",
+      "boutique": "Atelier Nord",
+      "pour": "Une commande pour Léa M.",
+      "pourCourt": "pour Léa M.",
+      "commande": "Commande",
+      "dates": "1er au 2 octobre",
+      "direct": "Mis à jour automatiquement",
+      "mouvementHier": "Colissimo · Mouvement hier",
+      "mouvementAujourdhui": "Colissimo · Mouvement aujourd’hui",
+      "photos": "Photos",
+      "etVideos": " et vidéos",
+      "approuvees": "Approuvées",
+      "parLea": "par Léa M.",
+      "aLea": "à Léa M.",
+      "message": "Ta commande est prête, tout est sur ce lien :",
+      "commandeRef": "Commande {ref}",
+      "vu": "Vu",
+      "description2": "Sneakers et streetwear, expédiés avec soin."
+    },
+    "chiffres": {
+      "titre": "DropLink en chiffres",
+      "medias": "photos ou vidéos par commande",
+      "etapes": "étapes de suivi, datées",
+      "langues": "langues pour la page client",
+      "compte": "compte à créer pour votre client"
+    },
+    "probleme": {
+      "titre1": "Dix messages par commande.",
+      "titre2": "Toujours les mêmes.",
+      "q1": "Il est où mon colis ?",
+      "q2": "Tu peux me renvoyer les photos ?",
+      "q3": "C'est quoi le numéro de suivi ?",
+      "q4": "Ça arrive quand ?",
+      "q5": "T'as bien envoyé ?",
+      "q6": "Il a bougé depuis hier ?",
+      "q7": "Je peux voir la taille sur la photo ?",
+      "q8": "C'est quel transporteur ?",
+      "reponse1": "Avec DropLink, la réponse est déjà dans le lien.",
+      "reponse2": "Vous l'envoyez une fois, il se met à jour tout seul."
+    },
+    "studio": {
+      "etiquette": "Comment ça marche",
+      "titre1": "Vous remplissez.",
+      "titre2": "Votre client voit.",
+      "chapo": "Une commande prête à partager en quatre gestes. Chaque modification arrive sur la page client, et le lien ne change jamais.",
+      "gestes": "Les quatre gestes",
+      "g1": "Le client",
+      "g1t": "Un nom ou un pseudo suffit. Pas d'adresse à saisir, pas de compte à lui créer.",
+      "g2": "Les photos",
+      "g2t": "Glissez vos photos et vidéos, jusqu'à {n} par commande. La première sert de couverture.",
+      "g3": "Le suivi",
+      "g3t": "Collez le numéro : le transporteur est reconnu et les étapes se mettent à jour seules.",
+      "g4": "Le lien",
+      "g4t": "Un clic sur Partager et le lien est copié. Il ne change plus, même quand vous modifiez la commande.",
+      "commandes": "Commandes",
+      "enregistre": "Enregistré",
+      "partager": "Partager",
+      "copie": "Lien copié",
+      "laCommande": "La commande",
+      "champClient": "Nom ou pseudo du client",
+      "exClient": "Ex. : Léa M.",
+      "aideClient": "Texte libre. Votre client n'a pas de compte.",
+      "champRef": "Référence produit",
+      "valeurRef": "Sneakers T39, sweat, jogging et casquette",
+      "champSuivi": "Numéro de suivi",
+      "collez": "Collez le numéro",
+      "champTransporteur": "Transporteur",
+      "detection": "Détection automatique",
+      "medias": "Photos et vidéos",
+      "compteMedias": "{n} sur {max}",
+      "couverture": "Couverture",
+      "ajouter": "Ajouter",
+      "lienFixe": "Ce lien ne changera plus.",
+      "apercu": "Aperçu de la page client"
+    },
+    "client": {
+      "etiquette": "La page client",
+      "titre": "Ce que votre client ouvre.",
+      "chapo": "Une page par commande, sans application ni compte. Il y trouve tout, vous n'avez plus rien à renvoyer.",
+      "couleursTitre": "À vos couleurs, lisible quoi qu'il arrive",
+      "couleursTexte": "Choisissez n'importe quelle teinte. Si elle est trop claire pour du texte, la page l'ajuste toute seule pour rester lisible.",
+      "nuancier": "Couleur de la boutique",
+      "violet": "Violet",
+      "corail": "Corail",
+      "vert": "Vert",
+      "jaune": "Jaune",
+      "libre": "Choisir votre couleur",
+      "choisie": "Couleur choisie",
+      "ajuste": "Texte ajusté :",
+      "livraisonTitre": "Une date, pas un « bientôt »",
+      "livraisonTexte": "La fourchette de livraison estimée et les quatre étapes du colis, datées.",
+      "validationTitre": "Il valide les photos avant l'envoi",
+      "validationTexte": "Un bouton, et vous savez que c'est la bonne pièce, la bonne taille. Essayez.",
+      "languesTitre": "Dans la langue de votre choix",
+      "languesTexte": "Français, anglais ou chinois simplifié.",
+      "historiqueTitre": "Chaque passage du colis",
+      "historiqueTexte": "L'historique du transporteur, relevé automatiquement. Vous n'avez plus à aller le chercher pour lui.",
+      "historiqueEtiquette": "Exemple d'historique de suivi",
+      "h1": "Colis en cours d'acheminement",
+      "h1lieu": "Wissous",
+      "h2": "Pris en charge par La Poste",
+      "h2lieu": "Paris",
+      "h3": "Commande préparée"
+    },
+    "vendeur": {
+      "etiquette": "Côté vendeur",
+      "titre1": "Rien ne vous échappe.",
+      "titre2": "Même pas un colis immobile.",
+      "chapo": "Votre espace repère ce qui cloche avant votre client, et vous dit qui a ouvert son lien.",
+      "alertesTitre": "Des alertes, pas des surprises",
+      "alertesTexte": "Un lien jamais ouvert, un colis sans nouvelle depuis dix jours : la cloche vous le dit.",
+      "vuesTitre": "Qui a regardé, et combien de fois",
+      "vuesTexte": "Chaque ouverture de lien est comptée. Un client qui revient souvent est un client rassuré.",
+      "ouvertures": "ouvertures sur 30 jours",
+      "vues": "{n, plural, one {# vue} other {# vues}}",
+      "envoisTitre": "Tous vos colis sur un écran",
+      "envoisTexte": "Le dernier point de chaque colis, relevé chez le transporteur. Vous n'ouvrez plus dix sites de suivi.",
+      "enTransit": "En transit",
+      "livre": "Livré",
+      "sansMouvement": "Sans mouvement",
+      "e1": "Colis en cours d’acheminement",
+      "e2": "Arrivé sur le site de distribution",
+      "e3": "Votre colis a été livré",
+      "e4": "12 jours sans information"
+    },
+    "tarifs": {
+      "etiquette": "Tarifs",
+      "titre1": "Gratuit pour commencer.",
+      "titre2": "Pro quand vous grandissez.",
+      "legende": "Comparaison des plans Gratuit et Pro",
+      "coin": "Les deux plans suivent vos colis tout seuls et gardent le même lien du début à la fin.",
+      "gratuit": "Gratuit",
+      "sansCarte": "Sans carte bancaire",
+      "pro": "Pro",
+      "parMois": "/ mois",
+      "sansEngagement": "Sans engagement",
+      "ctaGratuit": "Commencer gratuitement",
+      "ctaPro": "Commencer avec Pro",
+      "commandes": "Commandes",
+      "colis": "Colis suivis",
+      "auTotal": "<b>{n}</b> au total",
+      "parMoisN": "<b>{n}</b> par mois",
+      "medias": "Photos et vidéos",
+      "parCommande": "{n} par commande",
+      "suiviAuto": "Suivi automatique du transporteur",
+      "couleurs": "Page à vos couleurs",
+      "lien": "Le lien à votre nom",
+      "lienUrl": "droplink.fr/votre-boutique/…",
+      "sansMention": "Votre page, sans la mention DropLink",
+      "inclus": "Inclus",
+      "nonInclus": "Non inclus"
+    },
+    "questions": {
+      "etiquette": "Questions",
+      "titre": "Questions fréquentes",
+      "q1": "Mon client doit-il créer un compte ?",
+      "r1": "Non. Il ouvre le lien et voit sa commande, sur téléphone comme sur ordinateur. Aucune application, aucun mot de passe.",
+      "q2": "Quels transporteurs sont suivis ?",
+      "r2": "Collez le numéro de suivi : le transporteur est détecté automatiquement, et vous pouvez le choisir à la main s'il ne l'est pas. Les étapes se mettent à jour sans que vous ayez à revenir sur la commande.",
+      "q3": "Je peux modifier la commande après avoir envoyé le lien ?",
+      "r3": "Oui, autant que vous voulez. Photos, numéro, statut : votre client voit la version à jour sur le même lien, qui ne change jamais.",
+      "q4": "Que se passe-t-il après {n, plural, one {la commande gratuite} other {les # commandes gratuites}} ?",
+      "q4SansNombre": "Que se passe-t-il après les commandes gratuites ?",
+      "r4": "Le plan gratuit compte {gratuit} commandes au total. Pour en créer de nouvelles, passez au Pro : {pro} commandes par mois pour {prix}, sans engagement.",
+      "r4SansNombre": "Le plan gratuit compte un nombre limité de commandes au total. Pour en créer de nouvelles, passez au Pro, pour {prix} par mois, sans engagement."
+    },
+    "final": {
+      "titre": "Votre prochain colis part avec un lien.",
+      "slugs": "atelier-nord|votre-boutique|studio-kaia|maison-lou"
+    },
+    "pied": {
+      "devise": "Un seul lien de suivi pour toute la commande.",
+      "produit": "Produit",
+      "legal": "Légal",
+      "documentation": "Documentation",
+      "blog": "Blog",
+      "contact": "Contact",
+      "conditions": "Conditions",
+      "confidentialite": "Confidentialité",
+      "mentions": "Mentions légales",
+      "signalement": "Signaler un contenu",
+      "droits": "© {annee} DropLink"
+    }
+  },
+  "acces": {
+    "film": {
+      "absence": {
+        "surtitre": "Pendant votre absence",
+        "titre1": "Vos clients",
+        "titre2": "ont suivi leurs colis.",
+        "n1": "Pris en charge par La Poste",
+        "n1lieu": "Paris",
+        "n2": "Colis en cours d’acheminement",
+        "n2lieu": "Wissous",
+        "consulte": "Lien consulté",
+        "consultations": "consultations",
+        "derniere": "Dernière ouverture le {quand}",
+        "valide1": "Photos validées",
+        "valide2": "par votre client.",
+        "mouvementHier": "Mouvement hier",
+        "mouvementAujourdhui": "Mouvement aujourd’hui"
+      },
+      "minute": {
+        "titre1": "Dans une minute,",
+        "titre2": "votre premier lien.",
+        "b1": "Vous remplissez.",
+        "b2": "DropLink s’occupe du reste.",
+        "c1": "Votre client suit",
+        "c2": "son colis tout seul.",
+        "pourLea": "Pour Léa M.",
+        "photos": "4 photos",
+        "transit": "Colissimo · En transit",
+        "fin": "Moins d’une minute.",
+        "offre": "{n, plural, one {# commande offerte} other {# commandes offertes}} · sans carte bancaire",
+        "offreSansNombre": "Commandes offertes · sans carte bancaire"
+      }
+    }
   }
 }

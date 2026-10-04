@@ -1,0 +1,73 @@
+"use client";
+
+import { annoncer } from "@/components/app/annonce";
+import { useEffect, useRef, useState } from "react";
+import { Check, Copy, TriangleAlert } from "lucide-react";
+
+/**
+ * COPIER LE LIEN D'UNE LIGNE (maquette, `.action-ligne[data-copier]`).
+ *
+ * L'ÉTAT « COPIÉ » N'EST AFFICHÉ QU'APRÈS SUCCÈS de l'écriture. Un retour
+ * optimiste serait un pari sur le presse-papiers : refusé par le navigateur, le
+ * vendeur collerait le contenu précédent dans sa conversation en croyant envoyer
+ * le lien de son client. L'échec est donc DIT (icône d'alerte, et le libellé du
+ * bouton le nomme).
+ */
+export function CopierLienLigne({
+  lien,
+  libelles,
+}: {
+  readonly lien: string;
+  /** `copie` : « Lien de {client} copié », dit par la bulle (maquette `commandes.js`). */
+  readonly libelles: { readonly copier: string; readonly echec: string; readonly copie?: string };
+}) {
+  const [etat, setEtat] = useState<"repos" | "copie" | "echec">("repos");
+  // UNE SEULE MINUTERIE, annulée à chaque nouvel état (audit final du 03/10/2026).
+  const minuterie = useRef(0);
+  useEffect(() => () => window.clearTimeout(minuterie.current), []);
+  const poser = (e: "copie" | "echec"): void => {
+    window.clearTimeout(minuterie.current);
+    setEtat(e);
+    // L'échec aussi revient au repos (1,6 s, comme le succès) : resté posé, il accusait
+    // encore la copie suivante, réussie (contre-audit du 03/10/2026).
+    minuterie.current = window.setTimeout(() => setEtat("repos"), 1600);
+  };
+  const copier = async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(lien);
+      poser("copie");
+      if (libelles.copie !== undefined) annoncer(libelles.copie);
+    } catch {
+      poser("echec");
+      // L'échec passe AUSSI par la bulle partagée, comme `copier-fiche` : le statut monté déjà
+      // rempli puis retiré en 1,6 s n'était pas lu de façon fiable (revue a11y ECC du 03/10/2026).
+      annoncer(libelles.echec);
+    }
+  };
+  const libelle = etat === "echec" ? libelles.echec : libelles.copier;
+  return (
+    <>
+    <button
+      type="button"
+      className={"action-ligne" + (etat === "copie" ? " est-copie" : "") + (etat === "echec" ? " est-echec" : "")}
+      aria-label={libelle}
+      title={libelle}
+      onClick={() => void copier()}
+    >
+      {etat === "copie" ? (
+        <Check aria-hidden="true" className="ic" />
+      ) : etat === "echec" ? (
+        <TriangleAlert aria-hidden="true" className="ic" />
+      ) : (
+        <Copy aria-hidden="true" className="ic" />
+      )}
+    </button>
+    {/* L'échec se LIT, pas seulement au survol : au doigt, un `title` est invisible. */}
+    {etat === "echec" ? (
+      <span className="action-ligne__echec" role="status">
+        {libelles.echec}
+      </span>
+    ) : null}
+    </>
+  );
+}

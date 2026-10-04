@@ -1,5 +1,6 @@
 "use client";
 
+import { annoncer } from "@/components/app/annonce";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -20,17 +21,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  CirclePlus,
-  GripVertical,
-  Image as ImageIcon,
-  Info,
-  Play,
-  Star,
-  TriangleAlert,
-  Upload,
-  X,
-} from "lucide-react";
+import { GripVertical, Image as ImageIcon, Play, Star, Trash2, TriangleAlert, Upload } from "lucide-react";
 import {
   definirCouverture,
   demanderDepot,
@@ -43,7 +34,6 @@ import {
 import { apercuDepuisVideo, couvertureDepuisImage, vignetteDepuisImage } from "@/lib/medias/vignette";
 import { limites } from "@/lib/storage/limites";
 import { creerSuiviDeCouverture } from "@/lib/commandes/suivi-couverture";
-import { CLASSE_ACTION_DETAIL } from "@/components/app/panneau";
 
 /**
  * La carte des médias, porté sur le canevas Claude Design : zone de
@@ -144,6 +134,9 @@ export function CarteMedias({
   );
 
   const [medias, setMedias] = useState<readonly MediaAffiche[]>(initiaux);
+  // Les médias déjà là à l'ouverture de la fiche n'entrent pas : seuls ceux qu'on
+  // ajoute ensuite (maquette, `commande.js` : 420 ms, léger rebond).
+  const [presents] = useState<ReadonlySet<string>>(() => new Set(initiaux.map((m) => m.id)));
   const [enCours, setEnCours] = useState<readonly EnCours[]>([]);
 
   /**
@@ -195,7 +188,6 @@ export function CarteMedias({
    */
   const [echecAction, setEchecAction] = useState<string | null>(null);
   const [survol, setSurvol] = useState(false);
-  const champFichier = useRef<HTMLInputElement>(null);
   const compteur = useRef(0);
 
   const capteurs = useSensors(
@@ -233,160 +225,166 @@ export function CarteMedias({
         { cleLocale, nom: fichier.name, progression: 0, echec: null },
       ]);
 
-      const estVideo = fichier.type.startsWith("video/");
-
-      // La vignette est produite AVANT de demander la signature : si le
-      // navigateur ne sait pas décoder le fichier, autant le savoir maintenant.
-      // Son échec n'est PAS bloquant — refuser un média parce qu'on n'a pas su
-      // en faire une vignette ferait payer au vendeur une limite qui est la
-      // nôtre.
-      // Les deux chemins sont ramenés à LA MÊME FORME. Une union dont un membre
-      // porte `dimensions` et l'autre non oblige chaque lecture à se demander
-      // dans quelle branche elle se trouve — et c'est exactement le genre de
-      // question qu'on finit par trancher de travers.
-      const rendu: {
-        vignette: { blob: Blob } | null;
-        couverture: { blob: Blob } | null;
-        dureeSecondes: number | null;
-        dimensions: { largeur: number; hauteur: number } | null;
-      } = estVideo
-        ? { ...(await apercuDepuisVideo(fichier)), couverture: null, dimensions: null }
-        : await vignetteDepuisImage(fichier).then(async (r) =>
-            r === null
-              ? { vignette: null, couverture: null, dureeSecondes: null, dimensions: null }
-              : {
-                  vignette: r.vignette,
-                  /*
-                   * LA COUVERTURE EST PRODUITE ICI, avec la vignette, et pas
-                   * ailleurs : c'est le seul instant où le fichier est déjà
-                   * décodé en mémoire. La fabriquer à la lecture ferait payer ce
-                   * coût à CHAQUE consultation, pour toujours — et la page
-                   * publique est vue en 4G sur un téléphone d'entrée de gamme.
-                   *
-                   * PAS POUR LES VIDÉOS : leur couverture serait l'image
-                   * capturée, déjà servie comme vignette et comme poster. Une
-                   * dérivée 900 px d'une capture vidéo coûterait du stockage
-                   * pour un gain que personne ne verrait.
-                   */
-                  couverture: await couvertureDepuisImage(fichier, limites().couvertureOctets).then(
-                    (c) => (c === null ? null : { blob: c.blob }),
-                  ),
-                  dureeSecondes: null,
-                  dimensions: r.dimensions,
-                },
-          );
-
-      const dimensions = rendu.dimensions;
-
-      const preparation = await demanderDepot({
-        orderId,
-        typeMime: fichier.type,
-        tailleAnnoncee: fichier.size,
-        ...(rendu.dureeSecondes === null
-          ? {}
-          : { dureeSecondes: rendu.dureeSecondes }),
-      });
-
-      if (preparation.statut !== "ok") {
-        const motif = "motif" in preparation ? preparation.motif : "inconnu";
-        majEnCours(cleLocale, { echec: libelleRefus(motif) });
-        return;
-      }
-
+      // ⚠️ UN REJET (réseau coupé, action qui lève) n'abandonne plus la ligne sur sa barre, ni
+      // la SÉRIE : chaque fichier échoue seul, avec son motif (revue ECC du 03/10/2026).
       try {
-        await envoyer(preparation.url, preparation.enTetes, fichier, (p) =>
-          majEnCours(cleLocale, { progression: p }),
-        );
-      } catch {
-        majEnCours(cleLocale, { echec: libelleRefus("reseau") });
-        return;
-      }
+        const estVideo = fichier.type.startsWith("video/");
 
-      // Les deux dérivées partent ensuite, et leur échec ne compromet pas le
-      // média : la page publique retombe sur ce qu'elle a.
-      for (const [derivee, demander] of [
-        [rendu.vignette, demanderDepotVignette],
-        [rendu.couverture, demanderDepotCouverture],
-      ] as const) {
-        if (derivee === null) continue;
-        const signature = await demander({
+        // La vignette est produite AVANT de demander la signature : si le
+        // navigateur ne sait pas décoder le fichier, autant le savoir maintenant.
+        // Son échec n'est PAS bloquant — refuser un média parce qu'on n'a pas su
+        // en faire une vignette ferait payer au vendeur une limite qui est la
+        // nôtre.
+        // Les deux chemins sont ramenés à LA MÊME FORME. Une union dont un membre
+        // porte `dimensions` et l'autre non oblige chaque lecture à se demander
+        // dans quelle branche elle se trouve — et c'est exactement le genre de
+        // question qu'on finit par trancher de travers.
+        const rendu: {
+          vignette: { blob: Blob } | null;
+          couverture: { blob: Blob } | null;
+          dureeSecondes: number | null;
+          dimensions: { largeur: number; hauteur: number } | null;
+        } = estVideo
+          ? { ...(await apercuDepuisVideo(fichier)), couverture: null, dimensions: null }
+          : await vignetteDepuisImage(fichier).then(async (r) =>
+              r === null
+                ? { vignette: null, couverture: null, dureeSecondes: null, dimensions: null }
+                : {
+                    vignette: r.vignette,
+                    /*
+                     * LA COUVERTURE EST PRODUITE ICI, avec la vignette, et pas
+                     * ailleurs : c'est le seul instant où le fichier est déjà
+                     * décodé en mémoire. La fabriquer à la lecture ferait payer ce
+                     * coût à CHAQUE consultation, pour toujours — et la page
+                     * publique est vue en 4G sur un téléphone d'entrée de gamme.
+                     *
+                     * PAS POUR LES VIDÉOS : leur couverture serait l'image
+                     * capturée, déjà servie comme vignette et comme poster. Une
+                     * dérivée 900 px d'une capture vidéo coûterait du stockage
+                     * pour un gain que personne ne verrait.
+                     */
+                    couverture: await couvertureDepuisImage(fichier, limites().couvertureOctets).then(
+                      (c) => (c === null ? null : { blob: c.blob }),
+                    ),
+                    dureeSecondes: null,
+                    dimensions: r.dimensions,
+                  },
+            );
+
+        const dimensions = rendu.dimensions;
+
+        const preparation = await demanderDepot({
+          orderId,
+          typeMime: fichier.type,
+          tailleAnnoncee: fichier.size,
+          ...(rendu.dureeSecondes === null
+            ? {}
+            : { dureeSecondes: rendu.dureeSecondes }),
+        });
+
+        if (preparation.statut !== "ok") {
+          const motif = "motif" in preparation ? preparation.motif : "inconnu";
+          majEnCours(cleLocale, { echec: libelleRefus(motif) });
+          return;
+        }
+
+        try {
+          await envoyer(preparation.url, preparation.enTetes, fichier, (p) =>
+            majEnCours(cleLocale, { progression: p }),
+          );
+        } catch {
+          majEnCours(cleLocale, { echec: libelleRefus("reseau") });
+          return;
+        }
+
+        // Les deux dérivées partent ensuite, et leur échec ne compromet pas le
+        // média : la page publique retombe sur ce qu'elle a.
+        for (const [derivee, demander] of [
+          [rendu.vignette, demanderDepotVignette],
+          [rendu.couverture, demanderDepotCouverture],
+        ] as const) {
+          if (derivee === null) continue;
+          const signature = await demander({
+            orderId,
+            mediaId: preparation.mediaId,
+            typeMime: fichier.type,
+            tailleAnnoncee: derivee.blob.size,
+            // La preuve que ce `mediaId` vient de `demanderDepot`. Sans elle,
+            // l'identifiant serait libre et le stockage écrivable sans mesure.
+            laissezPasser: preparation.laissezPasser,
+          });
+          if (signature.statut === "ok") {
+            await envoyer(signature.url, signature.enTetes, derivee.blob, () => undefined).catch(
+              () => undefined,
+            );
+          }
+        }
+
+        const confirmation = await validerDepot({
           orderId,
           mediaId: preparation.mediaId,
           typeMime: fichier.type,
-          tailleAnnoncee: derivee.blob.size,
-          // La preuve que ce `mediaId` vient de `demanderDepot`. Sans elle,
-          // l'identifiant serait libre et le stockage écrivable sans mesure.
-          laissezPasser: preparation.laissezPasser,
+          ...(dimensions === null
+            ? {}
+            : { largeur: dimensions.largeur, hauteur: dimensions.hauteur }),
+          ...(rendu.dureeSecondes === null
+            ? {}
+            : { dureeSecondes: rendu.dureeSecondes }),
         });
-        if (signature.statut === "ok") {
-          await envoyer(signature.url, signature.enTetes, derivee.blob, () => undefined).catch(
-            () => undefined,
-          );
+
+        if (confirmation.statut !== "ok") {
+          const motif = "motif" in confirmation ? confirmation.motif : "inconnu";
+          majEnCours(cleLocale, { echec: libelleRefus(motif) });
+          return;
         }
-      }
 
-      const confirmation = await validerDepot({
-        orderId,
-        mediaId: preparation.mediaId,
-        typeMime: fichier.type,
-        ...(dimensions === null
-          ? {}
-          : { largeur: dimensions.largeur, hauteur: dimensions.hauteur }),
-        ...(rendu.dureeSecondes === null
-          ? {}
-          : { dureeSecondes: rendu.dureeSecondes }),
-      });
+        // La ligne existe : on peut afficher. L'URL locale sert de vignette en
+        // attendant le prochain rendu serveur — elle décrit le fichier que le
+        // serveur vient d'accepter, pas un pari sur ce qu'il aurait accepté.
+        // LE COMPTE EST LU AVANT L'AJOUT, et une seule fois : c'est ce qui rend
+        // « le premier du lot » vrai pour un seul fichier, et non pour tous.
+        const premier = suiviCouverture.current.ajouter();
 
-      if (confirmation.statut !== "ok") {
-        const motif = "motif" in confirmation ? confirmation.motif : "inconnu";
-        majEnCours(cleLocale, { echec: libelleRefus(motif) });
-        return;
-      }
+        const apercu =
+          rendu.vignette === null
+            ? null
+            : URL.createObjectURL(rendu.vignette.blob);
+        if (apercu !== null) apercusLocaux.current.add(apercu);
+        setMedias((liste) => [
+          ...liste,
+          {
+            id: confirmation.mediaId,
+            type: estVideo ? "video" : "photo",
+            urlVignette: apercu,
+            // Rien n'est affirmé ici : la couverture n'est posée à l'écran
+            // qu'APRÈS que la base l'a confirmée, quelques lignes plus bas.
+            estCouverture: false,
+            dureeS: rendu.dureeSecondes,
+          },
+        ]);
+        setEnCours((liste) => liste.filter((e) => e.cleLocale !== cleLocale));
+        onEnregistre?.();
 
-      // La ligne existe : on peut afficher. L'URL locale sert de vignette en
-      // attendant le prochain rendu serveur — elle décrit le fichier que le
-      // serveur vient d'accepter, pas un pari sur ce qu'il aurait accepté.
-      // LE COMPTE EST LU AVANT L'AJOUT, et une seule fois : c'est ce qui rend
-      // « le premier du lot » vrai pour un seul fichier, et non pour tous.
-      const premier = suiviCouverture.current.ajouter();
-
-      const apercu =
-        rendu.vignette === null
-          ? null
-          : URL.createObjectURL(rendu.vignette.blob);
-      if (apercu !== null) apercusLocaux.current.add(apercu);
-      setMedias((liste) => [
-        ...liste,
-        {
-          id: confirmation.mediaId,
-          type: estVideo ? "video" : "photo",
-          urlVignette: apercu,
-          // Rien n'est affirmé ici : la couverture n'est posée à l'écran
-          // qu'APRÈS que la base l'a confirmée, quelques lignes plus bas.
-          estCouverture: false,
-          dureeS: rendu.dureeSecondes,
-        },
-      ]);
-      setEnCours((liste) => liste.filter((e) => e.cleLocale !== cleLocale));
-      onEnregistre?.();
-
-      if (premier) {
-        // La première photo devient la couverture — mais l'écran ne le dit
-        // qu'une fois la base d'accord. `definirCouverture` NE LÈVE PAS : elle
-        // rend un statut. Le `.catch()` qui vivait ici ne pouvait donc rien
-        // attraper, et l'échec était jeté en silence.
-        const resultat = await definirCouverture(orderId, confirmation.mediaId);
-        if (resultat.statut === "ok") {
-          setMedias((liste) =>
-            liste.map((m) => ({
-              ...m,
-              estCouverture: m.id === confirmation.mediaId,
-            })),
-          );
-          onEnregistre?.();
-        } else {
-          setEchecAction(t("echecCouverture"));
+        if (premier) {
+          // La première photo devient la couverture — mais l'écran ne le dit
+          // qu'une fois la base d'accord. `definirCouverture` NE LÈVE PAS : elle
+          // rend un statut. Le `.catch()` qui vivait ici ne pouvait donc rien
+          // attraper, et l'échec était jeté en silence.
+          const resultat = await definirCouverture(orderId, confirmation.mediaId);
+          if (resultat.statut === "ok") {
+            setMedias((liste) =>
+              liste.map((m) => ({
+                ...m,
+                estCouverture: m.id === confirmation.mediaId,
+              })),
+            );
+            onEnregistre?.();
+          } else {
+            setEchecAction(t("echecCouverture"));
+          }
         }
+      } catch {
+        majEnCours(cleLocale, { echec: libelleRefus("reseau") });
       }
     },
     [orderId, libelleRefus, majEnCours, onEnregistre, t],
@@ -408,8 +406,9 @@ export function CarteMedias({
 
   const supprimer = useCallback(
     async (id: string): Promise<void> => {
-      const resultat = await retirerMedia(orderId, id);
-      if (resultat.statut !== "ok") {
+      // Un rejet (réseau) est un échec DIT, comme un statut d'erreur (revue ECC du 03/10/2026).
+      const resultat = await retirerMedia(orderId, id).catch(() => null);
+      if (resultat === null || resultat.statut !== "ok") {
         setEchecAction(t("echecSuppression"));
         return;
       }
@@ -420,6 +419,7 @@ export function CarteMedias({
         if (retire !== null && apercusLocaux.current.delete(retire)) URL.revokeObjectURL(retire);
         return liste.filter((m) => m.id !== id);
       });
+      annoncer(t("annonceSuppression"));
       onEnregistre?.();
     },
     [orderId, onEnregistre, t],
@@ -427,8 +427,8 @@ export function CarteMedias({
 
   const couvrir = useCallback(
     async (id: string): Promise<void> => {
-      const resultat = await definirCouverture(orderId, id);
-      if (resultat.statut !== "ok") {
+      const resultat = await definirCouverture(orderId, id).catch(() => null);
+      if (resultat === null || resultat.statut !== "ok") {
         setEchecAction(t("echecCouverture"));
         return;
       }
@@ -436,6 +436,7 @@ export function CarteMedias({
       setMedias((liste) =>
         liste.map((m) => ({ ...m, estCouverture: m.id === id })),
       );
+      annoncer(t("annonceCouverture"));
       onEnregistre?.();
     },
     [orderId, onEnregistre, t],
@@ -454,16 +455,18 @@ export function CarteMedias({
       const apres = arrayMove([...avant], depuis, vers);
       setMedias(apres);
 
+      // Un rejet (réseau) perd le pari comme un refus : sans ce `catch`, l'ordre parié restait
+      // à l'écran (revue ECC du 03/10/2026).
       const resultat = await ordonnerMedias(
         orderId,
         apres.map((m) => m.id),
-      );
+      ).catch(() => null);
 
       // PARI PERDU : retour à l'état confirmé. Un réordonnancement optimiste
       // laissé à l'écran après un appel échoué est l'un des trois défauts qui
       // ont fait adopter la règle — il ne casse rien, n'apparaît nulle part, et
       // se manifeste chez le destinataire.
-      if (resultat.statut !== "ok") {
+      if (resultat === null || resultat.statut !== "ok") {
         setMedias(avant);
         setEchecAction(t("echecOrdre"));
         return;
@@ -479,124 +482,39 @@ export function CarteMedias({
   const videos = medias.filter((m) => m.type === "video").length;
 
   return (
-    <section className="rounded-ds-card-lg border border-ds-filet bg-ds-surface-carte p-5 shadow-ds-card lg:p-6">
-      {/*
-        L'EN-TETE DU `Panel` DU KIT : `flex-wrap`, ecart 16, 20 px en dessous,
-        titre a gauche, action a droite. Le repli n'est pas decoratif — en
-        chinois le titre est court et le libelle du bouton long, en francais
-        c'est l'inverse, et c'est lui qui evite la troncature.
-      */}
-      <div className="mb-4 flex flex-wrap items-center gap-4 lg:mb-5">
-        {/*
-          ⚠️ 18 px EN -0,025em ETAIENT LES VALEURS DU SOURCE, PAS CELLES DU
-          RENDU. Ce titre est le seul de l'ecran a ne pas passer par `Panneau` :
-          il portait donc, seul, les valeurs lues dans `OrderDetail.jsx` — que
-          le sixieme piege rend fausses. Le kit SERVI rend 19 px en -0,03em sur
-          une interligne de 1,1, comme les cinq autres panneaux.
-        */}
-        <div className="min-w-0 flex-[1_1_210px]">
-          <h2 className="text-[18px] leading-[1.1] font-bold tracking-[-0.03em] text-ds-texte-titre lg:text-[19px]">
-            {t("titre")}
-          </h2>
-        </div>
-        <span className="flex-1" />
-        {/* LE COMPTE DES VIDEOS N'EST DIT QU'AU BUREAU. La planche telephone
-            ecrit « 7 sur 20 » et rien de plus : la ligne n'a pas la place, et
-            c'est le plafond global qu'on approche en premier. */}
-        <span className="shrink-0 text-[13px] text-ds-texte-sourdine">
-          {t("compteur", { n: medias.length, max: plafondMedias })}
-          <span className="hidden lg:inline">
+    <section className="bloc ed-carte ed-carte--medias" aria-labelledby="ed-medias">
+      <header className="ed-carte__tete">
+        <h2 id="ed-medias">{t("titre")}</h2>
+        <p className="ed-compteur">
+          {t.rich("compteur", { n: medias.length, max: plafondMedias, b: (c) => <b>{c}</b> })}
+          <span>
             {" \u00b7 "}
             {t("videos", { n: videos, max: plafondVideos })}
           </span>
-        </span>
-        {/*
-          « AJOUTER DES FICHIERS » — le `DetailAction` que le kit pose dans
-          l'en-tete de ce panneau, et qui manquait.
-
-          Il DOUBLE la case « + Ajouter » de la grille, et le kit les dessine
-          tous les deux : a vingt medias, la case de depot est en bas d'une
-          grille de quatre rangees, donc hors de vue au moment meme ou l'on
-          decide d'ajouter. Le bouton d'en-tete, lui, ne bouge pas.
-
-          Au telephone il n'est pas rendu : la bande d'action collee en bas de
-          l'ecran porte deja les deux gestes que le pouce doit atteindre, et un
-          troisieme bouton pleine largeur y pousserait la grille hors de vue.
-        */}
-        <button
-          type="button"
-          onClick={() => champFichier.current?.click()}
-          disabled={complet}
-          className={CLASSE_ACTION_DETAIL + " hidden shrink-0 disabled:opacity-50 lg:flex"}
-        >
-          <CirclePlus aria-hidden="true" size={17} strokeWidth={1.9} className="text-ds-accent" />
-          {t("ajouterFichiers")}
-        </button>
-      </div>
-
-      {/* L'ECHEC EST DIT, ET IL EST DIT ICI — au-dessus de la grille, pas
-          replie dans une case qui vient de disparaitre. `role="alert"` pour
-          qu'un lecteur d'ecran l'annonce sans que l'utilisateur ait a le
-          chercher : c'est le retour d'une action qu'il vient de declencher. */}
-      {echecAction !== null && (
-        <p
-          role="alert"
-          className="mb-3.5 rounded-ds-card border border-transparent bg-ds-erreur-fond px-4 py-3.5 text-[13px] leading-5 text-ds-erreur-encre"
-        >
-          {echecAction}
         </p>
-      )}
+      </header>
+      <div className="ed-medias">
+        {/* L'ÉCHEC EST DIT ICI, au-dessus de la grille, pas replié dans une case qui
+            vient de disparaître. `role="alert"` : c'est le retour d'un geste qu'on
+            vient de faire. */}
+        {echecAction === null ? null : (
+          <p role="alert" className="ed-medias__echec">
+            {echecAction}
+          </p>
+        )}
 
-      <input
-        ref={champFichier}
-        type="file"
-        multiple
-        accept={typesAcceptes.join(",")}
-        className="hidden"
-        onChange={(e) => {
-          ajouter(e.target.files);
-          // Sans cette remise a zero, redeposer le MEME fichier ne declenche
-          // aucun evenement : la valeur n'a pas change.
-          e.target.value = "";
-        }}
-      />
-
-      {/*
-        LA ZONE DE DEPOT EST UNE CASE DE LA GRILLE, pas un grand rectangle
-        au-dessus. C'est ce que dessinent les deux planches, et la raison se voit
-        a vingt medias : un rectangle de depot de cent pixels de haut pose
-        au-dessus de la grille repousse chaque photo d'autant, sur l'ecran ou le
-        vendeur passe son temps. En case, il occupe la place d'une vignette.
-
-        Le depot par glisser reste accepte sur TOUTE la grille, et pas seulement
-        sur cette case : viser un carre de cent pixels avec un fichier au bout du
-        curseur est un geste que personne ne reussit du premier coup.
-      */}
-      <DndContext
-        sensors={capteurs}
-        collisionDetection={closestCenter}
-        onDragEnd={(e) => void deplacer(e)}
-        accessibility={{
-          announcements: {
-            onDragStart: ({ active }) =>
-              t("annonce.debut", { position: rang(medias, active.id) }),
-            onDragOver: ({ active, over }) =>
-              over === null
-                ? t("annonce.horsZone")
-                : t("annonce.survol", {
-                    position: rang(medias, active.id),
-                    cible: rang(medias, over.id),
-                  }),
-            onDragEnd: ({ over }) =>
-              over === null
-                ? t("annonce.annule")
-                : t("annonce.depose", { cible: rang(medias, over.id) }),
-            onDragCancel: () => t("annonce.annule"),
-          },
-        }}
-      >
-        <SortableContext items={medias.map((m) => m.id)} strategy={rectSortingStrategy}>
-          <ul
+        {/*
+          LA ZONE DE DÉPÔT DE LA MAQUETTE (`.ed-depot`) : un `<label>` autour du champ
+          fichier, donc un clic ou Entrée l'ouvre sans script. Elle disparaît au plafond,
+          qui se dit alors en toutes lettres. Le dépôt par glisser est AUSSI accepté sur
+          la grille : viser un rectangle avec un fichier au bout du curseur ne réussit
+          pas toujours du premier coup.
+        */}
+        {complet ? (
+          <p className="ed-medias__plein">{t("plein")}</p>
+        ) : (
+          <label
+            className={"ed-depot" + (survol ? " est-survolee" : "")}
             onDragOver={(e) => {
               e.preventDefault();
               setSurvol(true);
@@ -607,117 +525,122 @@ export function CarteMedias({
               setSurvol(false);
               ajouter(e.dataTransfer.files);
             }}
-            /* ⚠️ SIX COLONNES À PARTIR DE `2xl` SEULEMENT. Posées dès `lg`, elles
-               donnaient des vignettes de 51 px à 1 024 et de 75 à 1 280 dans la
-               colonne de la fiche : la pastille « Couverture » y était COUPÉE
-               (balayage du 18/09/2026). La planche, mesurée à 1 690, garde ses six. */
-            className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:gap-[9px] xl:grid-cols-4 2xl:grid-cols-6"
           >
-            {medias.map((media, index) => (
-              <Case
-                key={media.id}
-                media={media}
-                index={index}
-                onSupprimer={() => void supprimer(media.id)}
-                onCouvrir={() => void couvrir(media.id)}
-              />
-            ))}
+            <input
+              type="file"
+              multiple
+              accept={typesAcceptes.join(",")}
+              className="sr"
+              onChange={(e) => {
+                ajouter(e.target.files);
+                // Sans cette remise à zéro, redéposer le MÊME fichier ne déclenche
+                // aucun événement : la valeur n'a pas changé.
+                e.target.value = "";
+              }}
+            />
+            <span className="ed-depot__icone" aria-hidden="true">
+              <Upload className="ic" />
+            </span>
+            <b>{t("deposer")}</b>
+            <small>{t("formats", { videos: plafondVideos })}</small>
+          </label>
+        )}
 
-            {enCours.map((e) => (
-              <li
-                key={e.cleLocale}
-                className="flex aspect-square flex-col items-center justify-center gap-2 rounded-ds-card border border-ds-filet bg-ds-surface-creux p-2"
-              >
-                {e.echec === null ? (
-                  <>
-                    <Upload aria-hidden="true" size={20} strokeWidth={1.8} className="text-ds-texte-tenu" />
-                    <div
-                      role="progressbar"
-                      aria-valuenow={e.progression}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label={t("enCours", { nom: e.nom })}
-                      className="h-1.5 w-full overflow-hidden rounded-ds-pill bg-ds-ink-100"
-                    >
+        <DndContext
+          sensors={capteurs}
+          collisionDetection={closestCenter}
+          onDragEnd={(e) => void deplacer(e)}
+          accessibility={{
+            announcements: {
+              onDragStart: ({ active }) => t("annonce.debut", { position: rang(medias, active.id) }),
+              onDragOver: ({ active, over }) =>
+                over === null
+                  ? t("annonce.horsZone")
+                  : t("annonce.survol", {
+                      position: rang(medias, active.id),
+                      cible: rang(medias, over.id),
+                    }),
+              onDragEnd: ({ over }) =>
+                over === null ? t("annonce.annule") : t("annonce.depose", { cible: rang(medias, over.id) }),
+              onDragCancel: () => t("annonce.annule"),
+            },
+          }}
+        >
+          <SortableContext items={medias.map((m) => m.id)} strategy={rectSortingStrategy}>
+            <ol
+              className="ed-grille"
+              aria-label={t("titre")}
+              onDragOver={(e) => {
+                if (e.dataTransfer.types.includes("Files")) e.preventDefault();
+              }}
+              onDrop={(e) => {
+                if (e.dataTransfer.files.length === 0) return;
+                e.preventDefault();
+                ajouter(e.dataTransfer.files);
+              }}
+            >
+              {medias.map((media, index) => (
+                <Case
+                  key={media.id}
+                  media={media}
+                  index={index}
+                  nouvelle={!presents.has(media.id)}
+                  onSupprimer={() => void supprimer(media.id)}
+                  onCouvrir={() => void couvrir(media.id)}
+                />
+              ))}
+
+              {enCours.map((e) => (
+                <li key={e.cleLocale} className="ed-vignette ed-vignette--envoi">
+                  {e.echec === null ? (
+                    <>
+                      <Upload aria-hidden="true" className="ic" />
                       <div
-                        className="h-full rounded-ds-pill bg-ds-accent transition-[width]"
-                        style={{ width: e.progression + "%" }}
-                      />
-                    </div>
-                    <span className="text-[11.5px] text-ds-texte-sourdine">{e.progression} %</span>
-                  </>
-                ) : (
-                  <>
-                    <TriangleAlert aria-hidden="true" size={20} strokeWidth={1.9} className="text-ds-erreur-encre" />
-                    {/* LE MOTIF ET LA TAILLE REELLE, TOUJOURS LES DEUX : sans la
-                        taille, le vendeur ne sait pas de combien il s'est
-                        trompe, donc ne sait pas quoi faire du fichier. */}
-                    {/* `role="alert"` : pendant un dépôt en lot, le vendeur est ailleurs
-                        dans la page — un échec qui ne s'annonce pas ne s'entend pas
-                        (WCAG 4.1.3, audit du 24/09/2026). */}
-                    <p role="alert" className="text-center text-[11.5px] leading-4 text-ds-erreur-encre">
-                      {e.echec}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEnCours((liste) => liste.filter((x) => x.cleLocale !== e.cleLocale))
-                      }
-                      className="text-[11.5px] font-semibold text-ds-erreur-encre underline"
-                    >
-                      {t("ecarter")}
-                    </button>
-                  </>
-                )}
-              </li>
-            ))}
+                        role="progressbar"
+                        aria-valuenow={e.progression}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={t("enCours", { nom: e.nom })}
+                        className="ed-vignette__barre"
+                      >
+                        <i style={{ width: e.progression + "%" }} />
+                      </div>
+                      <span className="ed-vignette__pourcent">{e.progression} %</span>
+                    </>
+                  ) : (
+                    <>
+                      <TriangleAlert aria-hidden="true" className="ic ed-vignette__alerte" />
+                      {/* LE MOTIF ET LA TAILLE RÉELLE, TOUJOURS LES DEUX : sans la taille, le
+                          vendeur ne sait pas de combien il s'est trompé. `role="alert"` :
+                          pendant un dépôt en lot, il est ailleurs dans la page (WCAG 4.1.3). */}
+                      <p role="alert" className="ed-vignette__refus">
+                        {e.echec}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setEnCours((liste) => liste.filter((x) => x.cleLocale !== e.cleLocale))}
+                        className="ed-lien"
+                      >
+                        {t("ecarter")}
+                      </button>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </SortableContext>
+        </DndContext>
 
-            {complet ? null : (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => champFichier.current?.click()}
-                  aria-label={t("deposer")}
-                  title={t("formats", { videos: plafondVideos })}
-                  className={
-                    // `Dropzone` du kit : filet POINTILLÉ de marque sur fond
-                    // teinté, et le violet plein dès qu'un fichier survole.
-                    "flex aspect-square w-full flex-col items-center justify-center gap-1.5 rounded-ds-card border border-dashed transition-colors " +
-                    (survol
-                      ? "border-ds-accent bg-ds-violet-100"
-                      : "border-ds-filet-marque bg-ds-surface-teinte hover:bg-ds-lavender-200")
-                  }
-                >
-                  <Upload aria-hidden="true" size={20} strokeWidth={1.8} className="text-ds-accent" />
-                  {/* 12/600 AU BUREAU, comme le kit ; 11,5 en dessous, plancher
-                      de la règle 5. Les deux valeurs sont justes, chacune à sa
-                      largeur — 12 px n'est pas sous le plancher, mais la graisse
-                      700 compensait une taille trop petite qu'on n'avait pas. */}
-                  <span className="text-[11.5px] leading-[normal] font-bold text-ds-accent-encre lg:text-[12px] lg:font-semibold">
-                    {t("ajouter")}
-                  </span>
-                </button>
-              </li>
-            )}
-          </ul>
-        </SortableContext>
-      </DndContext>
-
-      {complet ? (
-        <p className="mt-3.5 text-[13px] text-ds-alerte-encre">{t("plein")}</p>
-      ) : null}
-
-      {/* L'AIDE AU DEPLACEMENT, et elle ne dit pas la meme chose selon l'engin :
-          au doigt, il faut MAINTENIR la poignee 200 ms avant que le deplacement
-          demarre — sans quoi chaque effleurement de la grille pendant qu'on fait
-          defiler la page deplacerait une photo. */}
-      <div className="mt-3.5 hidden items-center gap-[9px] rounded-ds-card bg-ds-surface-creux px-[13px] py-[11px] lg:flex">
-        <Info aria-hidden="true" size={16} strokeWidth={1.8} className="shrink-0 text-ds-texte-tenu" />
-        <span className="text-[13px] text-ds-texte-corps">{t("aideOrdre")}</span>
+        {/* L'AIDE AU DÉPLACEMENT, dès qu'il y a un ordre à changer — et elle ne dit pas
+            la même chose au doigt : il faut y MAINTENIR la poignée avant que le
+            déplacement démarre, sans quoi chaque défilement déplacerait une photo. */}
+        {medias.length < 2 ? null : (
+          <>
+            <p className="ed-aide ed-aide--souris">{t("aideOrdre")}</p>
+            <p className="ed-aide ed-aide--doigt">{t("aideOrdreTelephone")}</p>
+          </>
+        )}
       </div>
-      <p className="mt-3 text-[13px] leading-[18px] text-ds-texte-sourdine lg:hidden">
-        {t("aideOrdreTelephone")}
-      </p>
     </section>
   );
 }
@@ -745,11 +668,14 @@ function rang(medias: readonly MediaAffiche[], id: string | number): number {
 function Case({
   media,
   index,
+  nouvelle,
   onSupprimer,
   onCouvrir,
 }: {
   readonly media: MediaAffiche;
   readonly index: number;
+  /** Ajoutée depuis l'ouverture de la fiche : elle entre (maquette). */
+  readonly nouvelle: boolean;
   readonly onSupprimer: () => void;
   readonly onCouvrir: () => void;
 }) {
@@ -757,113 +683,93 @@ function Case({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: media.id,
   });
-
-  // 24 px au bureau, 26 au téléphone : les deux planches ne posent pas la même
-  // valeur, et au doigt deux pixels de plus se sentent.
-  const coin =
-    "absolute flex h-[26px] w-[26px] items-center justify-center rounded-ds-xs bg-white/94 lg:h-6 lg:w-6 lg:bg-white/92";
+  const caseLi = useRef<HTMLLIElement | null>(null);
+  const entree = useRef(nouvelle);
+  useEffect(() => {
+    const li = caseLi.current;
+    if (!entree.current || li === null || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    entree.current = false;
+    li.animate(
+      [
+        { opacity: 0, transform: "translateY(-10px) scale(.92)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 420, easing: "cubic-bezier(.2,.9,.25,1.15)", fill: "backwards" },
+    );
+  }, []);
 
   return (
     <li
-      ref={setNodeRef}
+      ref={(el) => {
+        setNodeRef(el);
+        caseLi.current = el;
+      }}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={
-        "group/case relative aspect-square overflow-hidden rounded-ds-card bg-ds-surface-creux " +
-        (media.estCouverture ? "shadow-[0_0_0_2px_var(--color-ds-accent)] " : "") +
-        (isDragging ? "z-10 opacity-80 shadow-ds-lg" : "")
+        "ed-vignette" + (media.estCouverture ? " est-couverture" : "") + (isDragging ? " est-saisie" : "")
       }
     >
       {media.urlVignette !== null ? (
-        /* URL SIGNÉE À EXPIRATION : l'optimiseur de `next/image` la mettrait en
-           cache au-delà de sa validité, et l'écran servirait ensuite des images
-           mortes. La vignette fait 200 × 200 et pèse au plus 20 Ko — il n'y a
-           rien à optimiser. */
+        /* URL SIGNÉE À EXPIRATION : l'optimiseur de `next/image` la garderait en cache
+           au-delà de sa validité. La vignette fait 200 × 200 : rien à optimiser. */
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={media.urlVignette}
           alt={t("apercu", { position: index + 1 })}
           width={200}
           height={200}
-          className="h-full w-full object-cover"
+          className="ed-vignette__photo"
           loading="lazy"
         />
+      ) : media.type === "video" ? (
+        <Play aria-hidden="true" className="ic ed-vignette__vide" />
       ) : (
-        <span className="flex h-full w-full items-center justify-center text-ds-texte-tenu">
-          {media.type === "video" ? (
-            <Play aria-hidden="true" size={24} strokeWidth={1.8} />
-          ) : (
-            <ImageIcon aria-hidden="true" size={24} strokeWidth={1.8} />
-          )}
-        </span>
+        <ImageIcon aria-hidden="true" className="ic ed-vignette__vide" />
       )}
 
+      {/* LA DURÉE N'EST ÉCRITE QUE SI ELLE A ÉTÉ MESURÉE : « 0:00 » affirmerait une mesure
+          qu'on n'a pas faite. */}
       {media.type === "video" ? (
-        <>
-          {media.urlVignette !== null ? (
-            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-white drop-shadow-[0_1px_3px_rgba(11,11,24,0.6)]">
-              <Play aria-hidden="true" size={24} strokeWidth={2} fill="currentColor" />
-              <span className="sr-only">{t("estUneVideo")}</span>
-            </span>
-          ) : null}
-
-          {/* LA DURÉE N'EST ÉCRITE QUE SI ELLE A ÉTÉ MESURÉE. Une vidéo dont la
-              capture a échoué n'a pas de durée connue, et « 0:00 » affirmerait
-              une mesure qu'on n'a pas faite. */}
-          {media.dureeS !== null ? (
-            <span className="absolute right-[5px] bottom-[5px] rounded-ds-xs bg-[rgba(11,11,24,0.72)] px-[6px] py-[2px] text-[11.5px] font-bold text-white lg:right-1.5 lg:bottom-1.5">
-              {duree(media.dureeS)}
-            </span>
-          ) : null}
-        </>
+        <span className="ed-vignette__video">
+          <Play aria-hidden="true" className="ic" />
+          {media.dureeS === null ? null : duree(media.dureeS)}
+          <span className="sr">{t("estUneVideo")}</span>
+        </span>
       ) : null}
 
       {media.estCouverture ? (
-        <span className="absolute bottom-[5px] left-[5px] rounded-ds-pill bg-ds-accent px-[7px] py-[3px] text-[11.5px] font-bold text-ds-texte-sur-marque lg:bottom-1.5 lg:left-1.5 lg:px-2">
-          {t("couverture")}
-        </span>
+        <span className="ed-vignette__couverture">{t("couverture")}</span>
       ) : (
-        /*
-          ⚠️ IL ÉTAIT INVISIBLE AU DOIGT, ET TOUCHABLE. `opacity-0` puis
-          `group-hover:opacity-100` : au téléphone il n'y a pas de survol, donc
-          le bouton restait transparent dans le coin de chaque photo — un
-          pouce changeait la couverture sans avoir vu de bouton, ou ne savait
-          pas qu'on pouvait la changer (audit du 18/09/2026, rebranchement
-          n° 8). Il ne se cache désormais qu'avec une SOURIS (`pointer-fine`),
-          et la planche téléphone le montre toujours, en étoile.
-        */
-        <button
-          type="button"
-          onClick={onCouvrir}
-          className={
-            coin +
-            " bottom-[5px] left-[5px] text-ds-texte-corps transition-opacity pointer-fine:opacity-0 pointer-fine:group-hover/case:opacity-100 pointer-fine:focus-visible:opacity-100 lg:bottom-1.5 lg:left-1.5"
-          }
-          title={t("definirCouverture")}
-        >
-          <Star aria-hidden="true" size={14} strokeWidth={2} />
-          <span className="sr-only">{t("definirCouverture")}</span>
+        <button type="button" onClick={onCouvrir} className="ed-vignette__geste ed-vignette__etoile" aria-label={t("definirCouverture")} title={t("definirCouverture")}>
+          <Star aria-hidden="true" className="ic" />
         </button>
       )}
 
+      {/*
+        LA POIGNÉE DE DÉPLACEMENT, SEULE DE SON CÔTÉ (décision 19). La maquette fait
+        glisser toute la vignette ; ici une case entière qui démarrerait un déplacement
+        rendrait chaque clic sur « supprimer » hasardeux au doigt, et la poignée porte le
+        clavier (Espace, flèches) — que le glisser natif de la maquette n'offre pas.
+      */}
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className={coin + " top-[5px] left-[5px] cursor-grab text-ds-texte-corps lg:top-1.5 lg:left-1.5"}
+        className="ed-vignette__geste ed-vignette__poignee"
+        aria-label={t("deplacer", { position: index + 1 })}
         title={t("deplacer", { position: index + 1 })}
       >
-        <GripVertical aria-hidden="true" size={14} strokeWidth={2} />
-        <span className="sr-only">{t("deplacer", { position: index + 1 })}</span>
+        <GripVertical aria-hidden="true" className="ic" />
       </button>
 
       <button
         type="button"
         onClick={onSupprimer}
-        className={coin + " top-[5px] right-[5px] text-ds-erreur-encre lg:top-1.5 lg:right-1.5"}
+        className="ed-vignette__geste ed-vignette__geste--suppr"
+        aria-label={t("supprimer")}
         title={t("supprimer")}
       >
-        <X aria-hidden="true" size={14} strokeWidth={2.4} />
-        <span className="sr-only">{t("supprimer")}</span>
+        <Trash2 aria-hidden="true" className="ic" />
       </button>
     </li>
   );
@@ -920,7 +826,9 @@ function envoyer(
       }
       rejeter(new Error("dépôt refusé : " + requete.status));
     };
-    requete.onerror = () => rejeter(new Error("réseau"));
+    // Interrompu ou expiré aussi : sans eux, la promesse ne se résolvait jamais et la ligne
+    // restait sur sa barre (revue ECC du 03/10/2026).
+    requete.onerror = requete.onabort = requete.ontimeout = () => rejeter(new Error("réseau"));
     requete.send(corps);
   });
 }

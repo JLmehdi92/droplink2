@@ -28,7 +28,7 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
-import { poserPreuveAppareil, confirmerAppareilSiPresent } from "@/lib/auth/appareil-fiable";
+import { poserPreuveAppareil, confirmerAppareilSiPresent, retenirAppareil } from "@/lib/auth/appareil-fiable";
 
 type ClientFactice = { rpc: ReturnType<typeof vi.fn> };
 function client(reponse: { data: unknown; error: unknown }): ClientFactice {
@@ -117,5 +117,23 @@ describe("confirmerAppareilSiPresent", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect(await confirmerAppareilSiPresent(c as any)).toBe(false);
     expect(etat.effaces).toHaveLength(0);
+  });
+});
+
+/**
+ * QUI PEUT RETENIR SON APPAREIL. ⚠️ Constat de la revue de sécurité ECC du 04/10/2026 :
+ * l'action acceptait la case sur TOUTE suite autre que la réinitialisation, donc aussi sur
+ * le retour à l'ADMINISTRATION — l'interface ne montre la case que sans suite, mais un POST
+ * forgé posait la preuve. Aucune élévation (l'admin exige aal2 en base), mais l'action doit
+ * exécuter la règle que l'interface affiche, pas s'en remettre à elle (L-014).
+ */
+describe("retenirAppareil", () => {
+  test("CONTRE-TEST : la connexion ordinaire avec la case cochée retient l'appareil", () => {
+    expect(retenirAppareil("on", undefined)).toBe(true);
+  });
+  test("ni la réinitialisation, ni l'administration, ni une case absente", () => {
+    expect(retenirAppareil("on", "mot-de-passe")).toBe(false);
+    expect(retenirAppareil("on", "admin")).toBe(false);
+    expect(retenirAppareil(undefined, undefined)).toBe(false);
   });
 });

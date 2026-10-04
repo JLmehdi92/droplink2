@@ -34,7 +34,9 @@
  *      en oublie un. Un Markdown mal formé, lui, rend du texte cassé en
  *      silence.
  *   3. **Rien n'est interprété.** Aucun HTML brut ne traverse ce chemin, donc
- *      aucun `dangerouslySetInnerHTML` — le seul du produit reste le JSON-LD.
+ *      aucun `dangerouslySetInnerHTML` ici. Ceux du produit ne portent que du
+ *      JSON-LD ou de courts scripts STATIQUES (refonte, 03/10/2026) — jamais une
+ *      donnée venue d'un utilisateur.
  *
  * ⚠️ CE QUE ÇA COÛTE, ET C'EST ASSUMÉ : écrire un article est plus verbeux
  * qu'en Markdown. C'est le prix d'un contenu qui ne peut pas se rendre à

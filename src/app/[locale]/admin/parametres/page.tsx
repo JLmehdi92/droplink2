@@ -1,12 +1,8 @@
-import {
-  getFormatter,
-  getTranslations,
-  setRequestLocale,
-} from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormateur } from "@/lib/format/formateur";
 import type { Metadata } from "next";
 import { CarteReglages } from "@/components/admin/carte-reglages";
-import type { LucideIcon } from "lucide-react";
-import { Gauge, Lock, Timer, ToggleRight, Truck } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { EnTeteAdmin } from "@/components/admin/en-tete-admin";
 import { RangeeConstatee, type FormeConstatee } from "@/components/admin/rangee-constatee";
 import { ReglageInterrupteur } from "@/components/admin/reglage-interrupteur";
@@ -42,7 +38,7 @@ export async function generateMetadata({
  * LA DÉCISION QUI STRUCTURE TOUT L'ÉCRAN
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * La planche dessine QUATORZE réglages ; le produit n'en lisait que trois
+ * L'ancienne planche dessinait QUATORZE réglages ; le produit n'en lisait que trois
  * depuis `system_settings`. La conformité au dessin aurait donc pu s'obtenir en
  * ouvrant les onze autres à l'écriture — et c'est exactement le défaut que
  * `lib/audit/parametres.ts` existe pour empêcher : une clé qu'aucun chemin de
@@ -50,10 +46,10 @@ export async function generateMetadata({
  * crédibles, et ne substitue rien. Une valeur qui a la FORME d'une
  * configuration franchit toutes les validations de présence.
  *
- * L'écran rend donc les quatorze rangées, dans TROIS états qui ne se
- * confondent pas :
+ * L'écran rend donc ses rangées (dix-sept le 03/10/2026), dans TROIS états qui ne
+ * se confondent pas :
  *
- *   MODIFIABLE — cinq réglages de l'inventaire clos, écrits en base, tracés par
+ *   MODIFIABLE — huit réglages de l'inventaire clos, écrits en base, tracés par
  *                un déclencheur avec l'ancienne ET la nouvelle valeur.
  *   CONSTATÉ   — huit valeurs que le produit applique vraiment, lues À LEUR
  *                SOURCE et non recopiées, mais qui se changent ailleurs :
@@ -67,10 +63,9 @@ export async function generateMetadata({
  *
  * DEUX INTERRUPTEURS SONT NÉS AVEC CET ÉCRAN (migration 117) parce que la
  * planche les dessine et qu'ils coupent deux choses réelles : la facturation à
- * la prise en charge, et la porte d'entrée. Le troisième que la planche dessine
- * — les notifications par email — reste ÉTEINT ET NON CLIQUABLE : rien ne les
- * envoie encore, et rendre cliquable ce qui ne pilote rien est la façon la plus
- * courante de faire croire qu'un réglage existe.
+ * la prise en charge, et la porte d'entrée. La rangée « Notifications par email —
+ * rien n'est envoyé » est RETIRÉE (audit final du 03/10/2026) : la maquette ne la
+ * dessine plus, et elle était fausse depuis les e-mails de suivi (188-189).
  *
  * AUCUN SECRET NE PASSE PAR CET ÉCRAN. Clés d'API, secret du planificateur, clé
  * service-role restent dans l'environnement. Une valeur en base est lisible par
@@ -84,8 +79,7 @@ type Rangee =
   // qu'un titre. Une glose sous « Jeton inconnu » n'apprendrait rien et ferait
   // de la carte un mur de texte.
   | { readonly genre: "constate"; readonly id: string; readonly sansAide?: true }
-  | { readonly genre: "absent"; readonly id: string }
-  | { readonly genre: "eteint"; readonly id: string };
+  | { readonly genre: "absent"; readonly id: string };
 
 /*
  * L ICÔNE DE CHAQUE CARTE, comme le kit en pose une. Elle ne porte AUCUNE
@@ -95,44 +89,38 @@ type Rangee =
  */
 const CARTES: readonly {
   readonly id: string;
-  readonly colonne: "gauche" | "droite";
-  readonly icone: LucideIcon;
+  /**
+   * LA RANGÉE DE LA MAQUETTE (`admin-parametres.html`, contre-audit du 03/10/2026) :
+   * Plafonds | Suivi, puis Interrupteurs | Débit, puis « Constaté, changé au
+   * déploiement » sur toute la largeur — les valeurs qu'aucun écran ne change.
+   */
+  readonly rangee: 1 | 2 | 3;
   readonly rangees: readonly Rangee[];
 }[] = [
   {
     id: "plafonds",
-    colonne: "gauche",
-    icone: Gauge,
+    rangee: 1,
     rangees: [
       /*
        * LES DEUX QUOTAS, ET ILS NE MESURENT PAS LA MÊME CHOSE. Le premier
-       * s'applique aux comptes GRATUITS et compte toute leur vie ; le second
-       * aux comptes PRO et compte le mois. Les montrer côte à côte est
+       * s'applique aux comptes PRO et compte le mois ; le second aux comptes
+       * GRATUITS et compte toute leur vie. Les montrer côte à côte est
        * délibéré : c'est la seule façon de voir qu'un vendeur n'est jamais
        * soumis aux deux, et lequel des deux on est en train de changer.
        */
-      { genre: "reglage", cle: "plafond_commandes_gratuit_a_vie" },
       { genre: "reglage", cle: "plafond_commandes_mensuel" },
-      { genre: "absent", id: "stockage_par_compte" },
-      { genre: "constate", id: "medias_par_commande" },
-      { genre: "constate", id: "poids_video" },
+      { genre: "reglage", cle: "plafond_commandes_gratuit_a_vie" },
     ],
   },
   {
     id: "suivi",
-    colonne: "gauche",
-    icone: Truck,
+    rangee: 1,
     rangees: [
-      { genre: "reglage", cle: "seuil_colis_par_compte" },
       /*
-       * LE BUDGET DE SUIVI — ÉCART ASSUMÉ, comme le retard du veilleur juste
-       * plus bas : la planche ne le dessine pas.
-       *
-       * Il est ici parce que c'est le SEUL budget du produit qui ne se recharge
-       * pas — 200 prises en charge à vie, pour tous les comptes réunis — et
-       * qu'aucun plafond par compte ne peut le voir. Le laisser sans écran
-       * ferait d'un nombre décisif une valeur qu'il faut une migration pour
-       * corriger le jour où le palier change.
+       * LE BUDGET DE SUIVI — c'est le SEUL budget du produit qui ne se recharge
+       * pas, pour tous les comptes réunis, et aucun plafond par compte ne peut
+       * le voir. Le laisser sans écran ferait d'un nombre décisif une valeur
+       * qu'il faut une migration pour corriger le jour où le palier change.
        */
       { genre: "reglage", cle: "budget_suivi_total" },
       /*
@@ -142,19 +130,21 @@ const CARTES: readonly {
        * fournisseur ne coincident pas.
        */
       { genre: "reglage", cle: "budget_suivi_deja_consomme" },
-      { genre: "constate", id: "silence_jours" },
-      { genre: "constate", id: "abandon_jours" },
-      { genre: "constate", id: "purge_jours" },
-      // ÉCART ASSUMÉ : la planche ne dessine pas ce réglage. Le retirer le
-      // rendrait inatteignable alors qu'il est modifiable et qu'il pilote une
-      // alerte — un réglage réel sans écran est pire qu'un écran sans réglage.
+      { genre: "reglage", cle: "seuil_colis_par_compte" },
       { genre: "reglage", cle: "retard_veilleur_minutes" },
     ],
   },
   {
+    id: "interrupteurs",
+    rangee: 2,
+    rangees: [
+      { genre: "reglage", cle: "inscriptions_ouvertes" },
+      { genre: "reglage", cle: "suivi_actif" },
+    ],
+  },
+  {
     id: "debit",
-    colonne: "droite",
-    icone: Timer,
+    rangee: 2,
     rangees: [
       { genre: "constate", id: "debit_inconnu", sansAide: true },
       { genre: "constate", id: "debit_valide", sansAide: true },
@@ -162,13 +152,17 @@ const CARTES: readonly {
     ],
   },
   {
-    id: "interrupteurs",
-    colonne: "droite",
-    icone: ToggleRight,
+    // L'abandon du suivi (`abandon_jours`) n'est pas dessiné par la maquette : c'est une
+    // valeur réelle du produit, constatée comme les autres, et elle reste dite.
+    id: "constate",
+    rangee: 3,
     rangees: [
-      { genre: "reglage", cle: "inscriptions_ouvertes" },
-      { genre: "reglage", cle: "suivi_actif" },
-      { genre: "eteint", id: "notifications_email" },
+      { genre: "absent", id: "stockage_par_compte" },
+      { genre: "constate", id: "medias_par_commande" },
+      { genre: "constate", id: "poids_video" },
+      { genre: "constate", id: "silence_jours" },
+      { genre: "constate", id: "abandon_jours" },
+      { genre: "constate", id: "purge_jours" },
     ],
   },
 ];
@@ -188,7 +182,7 @@ export default async function ParametresAdmin({
   const parametres = await lireParametres(supabase);
 
   const t = await getTranslations("admin.parametres");
-  const format = await getFormatter();
+  const format = await getFormateur();
 
   const parCle = new Map<string, ParametreAffiche>(parametres.map((p) => [p.cle, p]));
   const constates = new Map(reglagesConstates().map((r) => [r.id, r]));
@@ -203,9 +197,9 @@ export default async function ParametresAdmin({
     !p.ecrit
       ? t("origine.jamaisDecide")
       : p.modifiePar === null
-        ? t("origine.auteurParti", { date: format.dateTime(new Date(p.modifieLe ?? 0), "long") })
+        ? t("origine.auteurParti", { date: format.dateTime(new Date(p.modifieLe ?? 0), "origine") })
         : t("origine.decide", {
-            date: format.dateTime(new Date(p.modifieLe ?? 0), "long"),
+            date: format.dateTime(new Date(p.modifieLe ?? 0), "origine"),
             email: p.modifiePar,
           });
 
@@ -258,13 +252,14 @@ export default async function ParametresAdmin({
                   interrogations: details.interrogationsVides ?? 0,
                 }),
               })}
-          etat={{ forme: "valeur", valeur: format.number(c.valeur) }}
+          // L'UNITÉ FAIT PARTIE DE LA VALEUR (« 20 / min », « 20 Mo », « 10 jours »), comme la
+          // maquette — un nombre nu ne dit pas ce qu'il borne (audit final du 03/10/2026).
+          etat={{ forme: "valeur", valeur: c.unite === "nombre" ? format.number(c.valeur) : t("unite." + c.unite, { n: c.valeur }) }}
         />
       );
     }
 
-    const etat: FormeConstatee =
-      r.genre === "absent" ? { forme: "absent", mention: t("aucunPlafond") } : { forme: "eteint" };
+    const etat: FormeConstatee = { forme: "absent", mention: t("aucunPlafond") };
     return (
       <RangeeConstatee
         key={r.id}
@@ -275,55 +270,37 @@ export default async function ParametresAdmin({
     );
   };
 
-  const cartesDe = (cote: "gauche" | "droite") =>
-    CARTES.filter((c) => c.colonne === cote).map((c) => (
+  const cartesDe = (rangee: 1 | 2 | 3) =>
+    CARTES.filter((c) => c.rangee === rangee).map((c) => (
       <CarteReglages
         key={c.id}
+        id={c.id}
         titre={t("carte." + c.id + ".titre")}
         sousTitre={t("carte." + c.id + ".sousTitre")}
-        icone={c.icone}
       >
-        {c.rangees.map(rendreRangee)}
+        {/* La carte pleine largeur range ses valeurs sur deux colonnes, comme la maquette. */}
+        {rangee === 3 ? <div className="adm-constates">{c.rangees.map(rendreRangee)}</div> : c.rangees.map(rendreRangee)}
       </CarteReglages>
     ));
 
   return (
-    <main id="contenu" className="md:px-8 md:pt-0 md:pb-8">
+    <main id="contenu" className="tableau adm">
       <EnTeteAdmin titre={t("titre")} sousTitre={t("sousTitre")} />
-
-      {/* ⚠️ SANS CE PROVIDER, L'ÉCRAN LÈVE AU RENDU. Les deux composants de
-          réglage sont CLIENTS et appellent `useTranslations` ; la racine
-          `[locale]` n'a délibérément aucun provider — le catalogue entier ne
-          part pas dans chaque page. Il manquait ici, l'écran des paramètres
-          était cassé, et aucune sonde ne pouvait le voir puisque `pnpm fumee`
-          n'interroge que les pages atteignables SANS session. */}
+      {/* ⚠️ SANS CE PROVIDER, L'ÉCRAN LÈVE AU RENDU : les deux composants de
+          réglage sont CLIENTS et appellent `useTranslations`. */}
       <TraductionsClient espaces={["admin.parametres"]}>
-        {/* LES CARTES SONT RÉPARTIES EXPLICITEMENT, deux à gauche et trois à
-            droite, parce que c'est ce qui aligne leurs bas sur la planche. Une
-            grille qui répartirait par ordre d'apparition laisserait une colonne
-            dépasser de la hauteur d'une carte entière. */}
-        <div className="grid grid-cols-1 gap-4 px-4 py-3.5 md:mt-5 md:px-0 md:py-0 xl:grid-cols-2 xl:items-start">
-          <div className="flex flex-col gap-4">{cartesDe("gauche")}</div>
-          <div className="flex flex-col gap-4">
-            {cartesDe("droite")}
-
-            {/* CE QUI N'EST PAS ICI EST DIT, plutôt que laissé à deviner. Un
-                écran de paramètres muet sur les secrets laisse chercher où les
-                régler — et la recherche finit par une clé collée quelque part. */}
-            <section className="flex gap-3 rounded-ds-card border border-ds-filet bg-ds-surface-teinte p-4 md:rounded-ds-card-lg md:p-[22px]">
-              <Lock size={18} strokeWidth={1.9} aria-hidden="true" className="mt-px shrink-0 text-ds-accent-encre" />
-              <div>
-                <p className="text-[14px] font-bold leading-[18px] text-ds-accent-encre">
-                  {t("secretsTitre")}
-                </p>
-                <p className="mt-1 text-[13px] leading-[20px] text-ds-accent-encre">
-                  {t("secretsAide")}
-                </p>
-              </div>
-            </section>
-          </div>
-        </div>
+        <div className="adm-rangee adm-rangee--2">{cartesDe(1)}</div>
+        <div className="adm-rangee adm-rangee--2">{cartesDe(2)}</div>
+        {cartesDe(3)}
       </TraductionsClient>
+      {/* CE QUI N'EST PAS ICI EST DIT, plutôt que laissé à deviner : un écran de
+          paramètres muet sur les secrets laisse chercher où les régler. */}
+      <p className="adm-garantie">
+        <KeyRound aria-hidden="true" className="ic" />
+        <span>
+          <b>{t("secretsTitre")}</b> {t("secretsAide")}
+        </span>
+      </p>
     </main>
   );
 }

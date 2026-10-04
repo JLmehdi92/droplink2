@@ -56,6 +56,14 @@ const EXCEPTIONS = new Map([
   //    Un test unitaire n'a pas de requête. Chacune de ces routes est atteinte de
   //    bout en bout par la fumée — relevé le 23/09/2026 en croisant les
   //    appelants de `src/app` avec les chemins que `scripts/fumee.mjs` demande.
+  // `src/lib/format/formateur.ts` a QUITTÉ cette liste le 03/10/2026 : l'aperçu de « Ma
+  // marque » (`libelles-apercu.ts`) l'appelle avec une langue explicite, et un test le
+  // traverse désormais. C'est l'inventaire qui l'a dit, en échouant dans l'autre sens.
+  [
+    "src/lib/format/formateur-client.ts",
+    "Un hook React (`useFormatter`, `useLocale`) : il n'existe que dans un rendu. Même logique, " +
+      "même test que `formateur.ts` ; seul appelant : le dialogue de contestation de l'administration.",
+  ],
   [
     "src/lib/comptes/apres-session.ts",
     "Redirections `next/navigation` après ouverture de session. Atteinte par la fumée " +

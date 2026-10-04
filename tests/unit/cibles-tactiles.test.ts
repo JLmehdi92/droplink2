@@ -13,7 +13,7 @@ import { join, relative, sep } from "node:path";
  *
  * ⚠️ IL Y A TROIS PIEDS DE PAGE DISTINCTS, ET C'EST LE PIÈGE QUI A FAILLI ME
  * FAIRE N'EN CORRIGER QU'UN. `app/[locale]/page.tsx` (la landing),
- * `components/coque-publique.tsx` (conditions, confidentialité, signalement,
+ * `components/public/coque-site.tsx` (conditions, confidentialité, signalement,
  * blog, connexion, inscription…) et `components/publique/page-client.tsx` (la page
  * client, sortie de `app/p/[token]/page.tsx` le 26/09/2026 pour servir aussi l'aperçu).
  * Ils ne partagent pas leur dessin — c'est délibéré, la planche fait foi pour
@@ -45,7 +45,8 @@ const CLASSE_MINIMALE = "min-h-11";
 const CLASSE_COMPENSATION = /-my-(?:\d+(?:\.\d+)?|\[[^\]]+\])/;
 
 /** Ce qui compte comme cible tactile dans un pied. */
-const OUVERTURE_CIBLE = /<(?:Link|a|button)\b/g;
+// `LienEcran` est un `<a>` : le 02/10/2026 un lien de pied écrit avec lui échappait au motif.
+const OUVERTURE_CIBLE = /<(?:Link|LienEcran|a|button)\b/g;
 
 function fichiersSource(racine: string): string[] {
   const trouves: string[] = [];
@@ -213,9 +214,62 @@ const EN_FLUX: ReadonlyArray<{
 }> = [
 ];
 
-/** Les cibles d'un pied qui ne sont PAS exemptées comme liens de prose. */
+/**
+ * LES CIBLES DONT LA FEUILLE DE LA REFONTE PORTE LES 44 PX (02/10/2026).
+ *
+ * Les pieds des blocs de « Paramètres » (`.bloc-r__pied`) sont des `<footer>` : la
+ * maquette y dessine des boutons de 34 px au bureau, portés à 44 au toucher par
+ * sa feuille, pas par une classe. L'exemption n'est valable que si la règle
+ * existe ENCORE dans la feuille — sans elle, la cible retombe sous le plancher.
+ */
+// Les feuilles de la refonte que les cibles des pieds peuvent invoquer : l'espace vendeur et la page client.
+const FEUILLE_REFONTE = ["app", "client"]
+  .map((f) => readFileSync(join(process.cwd(), "src", "styles", "refonte", f + ".css"), "utf8"))
+  .join("\n");
+const PORTEES_PAR_LA_FEUILLE: ReadonlyArray<{ readonly classe: string; readonly regle: string; readonly raison: string }> = [
+  {
+    classe: "cv-pied__lien",
+    regle: ".cv-pied a { display: inline-flex; align-items: center; min-height: 44px;",
+    raison: "Les trois liens du pied de la page client (v3) : 44 px au téléphone par `client.css` ; le bureau les rend à leur hauteur de texte.",
+  },
+  {
+    classe: "bouton-app",
+    regle: ".recherche, .bouton-app, .alertes__bouton { height: 44px; }",
+    raison:
+      "Toute `.bouton-app` vaut 44 px au toucher, par la règle `@media (pointer: coarse)` de la feuille d'app — " +
+      "pieds de « Paramètres » et de « Passer au Pro » compris.",
+  },
+  {
+    classe: "bouton-outil",
+    regle: ".bouton-outil, .bouton-app--plein, .bouton-app--second, .bouton-texte, .vues-liste button, .puce, .adm-danger, .adm-confirmer, .adm-pastille-contest, .adm-lien { min-height: 44px; }",
+    raison:
+      "Toute `.bouton-outil` vaut 44 px au toucher (règle `pointer: coarse` de la feuille) : « Voir la " +
+      "suite » des listes d'administration et « Annuler » de ses dialogues compris.",
+  },
+  {
+    classe: "lien-r",
+    regle: "@media (pointer: coarse) { .lien-r { display: inline-flex; align-items: center; min-height: 44px; } }",
+    raison: "Les deux liens autonomes de « Paramètres » (portail de résiliation, « Ma marque »).",
+  },
+  {
+    classe: "notif-pied__lien",
+    regle: ".notif-pied__lien { display: inline-flex; align-items: center; min-height: 44px;",
+    raison: "Le lien « Comment fonctionne DropLink » du pied de la page de notification (refonte, 02/10/2026).",
+  },
+];
+
+describe("les cibles portées par la feuille de la refonte", () => {
+  test("chaque règle déclarée existe encore dans la feuille", () => {
+    const absentes = PORTEES_PAR_LA_FEUILLE.filter((p) => !FEUILLE_REFONTE.includes(p.regle)).map((p) => p.regle);
+    expect(absentes, "règle disparue : les cibles qu'elle portait retombent sous 44 px").toEqual([]);
+  });
+});
+
+/** Les cibles d'un pied qui ne sont PAS exemptées comme liens de prose, ni portées par la feuille. */
 const CIBLES_AUTONOMES_DES_PIEDS = CIBLES.filter(
-  (c) => !EN_FLUX.some((e) => c.fichier === e.fichier && c.balise.includes(e.repere)),
+  (c) =>
+    !EN_FLUX.some((e) => c.fichier === e.fichier && c.balise.includes(e.repere)) &&
+    !PORTEES_PAR_LA_FEUILLE.some((p) => c.classes.includes(p.classe) && FEUILLE_REFONTE.includes(p.regle)),
 );
 
 describe("les liens en flux de texte sont exemptés, et seulement eux", () => {
@@ -237,6 +291,29 @@ describe("les liens en flux de texte sont exemptés, et seulement eux", () => {
   });
 });
 
+/**
+ * LES PIEDS OÙ 44 PX EST LA HAUTEUR DESSINÉE, PAS UN AGRANDISSEMENT.
+ *
+ * La compensation (`-my-…`) existe pour qu'une cible portée à 44 px ne fasse pas
+ * grandir un pied dessiné plus serré. Le pied de la refonte (maquette du
+ * 01/10/2026, `.pied nav a { min-height: 44px }`) DESSINE ses liens à 44 px : il
+ * n'y a rien à compenser, et une marge négative ferait chevaucher les liens. Le
+ * plancher `min-h-11` reste exigé sur chacun (test précédent).
+ */
+const PIEDS_DESSINES_A_44: ReadonlyArray<{ readonly fichier: string; readonly raison: string }> = [
+  {
+    fichier: "src/components/public/pied-public.tsx",
+    raison: "Le pied des pages publiques de la refonte : liens dessinés à 44 px par la maquette.",
+  },
+];
+
+describe("les pieds dessinés à 44 px existent encore", () => {
+  test("chaque déclaration désigne un pied balayé", () => {
+    const morts = PIEDS_DESSINES_A_44.filter((p) => !CIBLES.some((c) => c.fichier === p.fichier)).map((p) => p.fichier);
+    expect(morts).toEqual([]);
+  });
+});
+
 describe("les cibles tactiles des pieds de page (suite)", () => {
   test("chaque cible d'un pied atteint les 44 points du brief §8", () => {
     const fautives = CIBLES_AUTONOMES_DES_PIEDS.filter(
@@ -251,7 +328,10 @@ describe("les cibles tactiles des pieds de page (suite)", () => {
 
   test("chaque cible agrandie compense sa hauteur pour ne pas gonfler le pied", () => {
     const sansCompensation = CIBLES.filter(
-      (c) => c.classes.includes(CLASSE_MINIMALE) && !CLASSE_COMPENSATION.test(c.classes),
+      (c) =>
+        c.classes.includes(CLASSE_MINIMALE) &&
+        !CLASSE_COMPENSATION.test(c.classes) &&
+        !PIEDS_DESSINES_A_44.some((p) => p.fichier === c.fichier),
     ).map((c) => c.libelle);
     expect(
       sansCompensation,
@@ -290,86 +370,79 @@ const AUTONOMES: ReadonlyArray<{
   readonly raison: string;
 }> = [
   {
-    fichier: "src/components/coque-publique.tsx",
-    repere: 'className="inline-flex min-h-11 items-center md:min-h-0"',
+    fichier: "src/components/public/entete-publique.tsx",
+    repere: 'className="logo min-h-11"',
     raison:
-      "Le logo d'en-tête du signalement et du blog, porté sur le design system le " +
-      "14/09/2026 : une IMAGE de 30 px, portée à 44 par son plancher au téléphone.",
+      "Le logo de l'en-tête des pages publiques (landing comprise), refonte du " +
+      "02/10/2026 : la classe `logo` pose 44 px, `min-h-11` les tient si l'image " +
+      "ne se charge pas.",
   },
   {
-    fichier: "src/app/[locale]/connexion/page.tsx",
-    repere: "LogoMarque hauteur={44}",
+    fichier: "src/components/acces/page-acces.tsx",
+    repere: 'className="logo acces__logo min-h-11"',
     raison:
-      "Le logo d'en-tête de la connexion, migré le 11/09/2026. Ce n'est plus " +
-      "du texte agrandi par un plancher mais une IMAGE de 44 px de haut : la " +
-      "cible vient de sa hauteur propre, donc `min-h-11` n'a plus rien à y " +
-      "imposer. Mesuré à 390 px, tactile émulé.",
-  },
-  {
-    fichier: "src/app/[locale]/inscription/page.tsx",
-    repere: "LogoMarque hauteur={52}",
-    raison:
-      "Le logo de l'inscription, migré le 11/09/2026. Ce n'est plus du texte " +
-      "agrandi par un plancher mais une IMAGE de 52 px : la cible vient de sa " +
-      "hauteur propre. `min-h-11` reste posé quand même — si l'image ne se " +
-      "charge pas, le lien s'effondrerait à la hauteur de son texte alternatif " +
-      "et la cible disparaîtrait avec elle.",
-  },
-  {
-    fichier: "src/components/acces/coque-acces-simple.tsx",
-    repere: 'className="inline-flex min-h-11 items-center"',
-    raison:
-      "Le logo d'en-tête du mot de passe oublié et du nouveau mot de passe : une " +
-      "IMAGE de 44 px au téléphone, et `min-h-11` reste posé si elle ne se charge pas.",
+      "Le logo de la connexion et de l'inscription, porté sur la refonte le " +
+      "02/10/2026 (il vivait dans chacune des deux pages). La classe `logo` de la " +
+      "maquette pose déjà 44 px ; `min-h-11` les tient même si l'image ne se " +
+      "charge pas et que le lien retombe à la hauteur de son texte.",
   },
   {
     fichier: "src/app/[locale]/mot-de-passe-oublie/page.tsx",
-    repere: "font-bold text-ds-texte-lien hover:underline lg:my-0 lg:min-h-0",
+    repere: 'className="lien-texte lien-retour min-h-11"',
     raison:
-      "« Revenir à la connexion » : SEUL dans son paragraphe, donc autonome et " +
-      "non un lien en flux de texte. Porté sur le design system le 14/09/2026 ; " +
-      "le logo d'en-tête, lui, vit désormais dans la coque partagée.",
+      "« Revenir à la connexion » : SEUL dans son paragraphe, donc autonome et non un " +
+      "lien en flux de texte (refonte du 02/10/2026, `.lien-retour` de la maquette).",
   },
   {
     fichier: "src/app/[locale]/blog/[slug]/page.tsx",
-    repere: "gap-2 text-[14px] font-semibold text-ds-texte-corps",
+    repere: 'className="art-retour min-h-11"',
     raison:
-      "« Le blog », le retour en tête de l'article. Les actions d'en-tête propres " +
-      "à chaque page (« Découvrir DropLink », « Le blog ») ont disparu le 14/09/2026 " +
-      "avec la coque de l'ancien canevas : l'en-tête est désormais partagé.",
-  },
-  {
-    fichier: "src/components/coque-publique.tsx",
-    repere: "text-[14.5px] font-medium text-ds-texte-corps",
-    raison:
-      "« Documentation » et « Accueil », l'en-tête partagé du signalement et du " +
-      "blog : 44 px au téléphone, la hauteur du texte au bureau, comme au kit.",
+      "« Tous les articles », le retour en tête de l'article (refonte du 02/10/2026, " +
+      "`.art-retour` de la maquette, qui pose déjà 44 px ; le plancher les tient).",
   },
   {
     fichier: "src/app/[locale]/blog/[slug]/page.tsx",
-    repere: "degrade-ds-marque inline-flex h-[52px]",
+    repere: 'className="bouton bouton--marque bouton--large min-h-11"',
     raison:
-      "« Créer ma première commande », l'appel de fin d'article : 52 px dessinés, " +
-      "et le plancher posé quand même pour qu'une retouche de hauteur ne passe pas sous 44.",
+      "« Créer mon compte », l'appel de fin d'article (refonte du 02/10/2026) : le " +
+      "plancher posé pour qu'une retouche de hauteur du bouton ne passe pas sous 44.",
   },
   {
     fichier: "src/components/page-legale.tsx",
-    repere: "text-[13.5px] font-semibold text-ds-texte-lien",
+    repere: 'className="lien-texte min-h-11"',
     raison:
-      "« Signaler un contenu », l'encart des pages légales, porté sur le kit " +
-      "`legal` le 13/09/2026. 18 px de texte, 44 par son plancher.",
+      "« Signaler un contenu », l'encart des pages légales (refonte du 02/10/2026, " +
+      "`.leg-encart` de la maquette qui le pose à 36 px) : 44 par son plancher.",
+  },
+  {
+    fichier: "src/app/[locale]/nouveau-mot-de-passe/page.tsx",
+    repere: 'className="lien-texte lien-retour min-h-11"',
+    raison: "« Revenir à la connexion » sous le nouveau mot de passe (refonte du 02/10/2026, maquette).",
+  },
+  {
+    fichier: "src/app/[locale]/tarifs/page.tsx",
+    repere: 'className="bouton bouton--second bouton--large min-h-11"',
+    raison: "« Créer un compte gratuit », la carte du plan gratuit (refonte du 02/10/2026).",
+  },
+  {
+    fichier: "src/app/[locale]/tarifs/page.tsx",
+    repere: 'className="bouton bouton--marque bouton--large min-h-11"',
+    raison: "« Commencer avec Pro », la seule action en dégradé de Tarifs (refonte du 02/10/2026).",
+  },
+  {
+    fichier: "src/app/[locale]/docs/page.tsx",
+    repere: 'className="bouton bouton--marque bouton--large min-h-11"',
+    raison: "« Créer mon compte », l'appel final de la documentation (refonte du 02/10/2026).",
   },
   {
     fichier: "src/components/formulaire-connexion.tsx",
-    repere: "text-ds-texte-lien underline after:absolute",
+    repere: 'className="lien-texte min-h-11"',
     raison:
-      "« Mot de passe oublié ? ». ⚠️ SEULE CIBLE POSÉE PAR UN PSEUDO-ÉLÉMENT, et " +
-      "ce n'est pas un caprice : son parent est en `items-baseline`, et un " +
-      "`inline-flex` de 44 px y porte sa baseline au centre de sa boîte — le lien " +
-      "descendait de 55 px et entraînait la page. Le pseudo-élément agrandit ce " +
-      "que le doigt touche sans exister dans le flux. Prouvé au navigateur par " +
-      "`elementFromPoint` : à 20 px au-dessus et en dessous c'est le lien qui " +
-      "répond, à 40 px c'est l'input.",
+      "« Mot de passe oublié ? », sur la ligne du libellé. Depuis la refonte du " +
+      "02/10/2026, ses 44 px viennent d'un `inline-flex` compensé par une marge " +
+      "de −12 px (`.champ-acces__ligne .lien-texte`, maquette) : la ligne du " +
+      "libellé est en `align-items: baseline`, et la marge ramène la boîte sans " +
+      "déplacer la ligne.",
   },
 ];
 
@@ -458,9 +531,9 @@ describe("les cibles tactiles autonomes hors des pieds", () => {
  * plancher retiré d'un de ces huit contrôles.
  *
  * ⚠️ DEUX EXCEPTIONS DÉCLARÉES, mesurées et écartées volontairement :
- *   - `formulaire-marque.tsx` porte un `<input type="file">` en `sr-only`,
- *     déclenché par un bouton visible qui, lui, dépasse 44 px. L'input n'est
- *     jamais visé par un doigt.
+ *   - `formulaire-marque.tsx` porte un `<input type="file">` visuellement caché
+ *     DANS la zone de dépôt (un `<label>` de 148 px) : c'est la zone qu'on
+ *     touche, jamais l'input.
  *   - le `<input type="color">` du même écran est en `sr-only` DANS un
  *     `<label>` de 46 × 46 qui est la pastille de couleur. C'est le label que
  *     l'on touche.
@@ -472,42 +545,25 @@ const AUTHENTIFIEES: ReadonlyArray<{
   readonly raison: string;
 }> = [
   {
-    fichier: "src/app/[locale]/(app)/layout.tsx",
-    repere: "focus:not-sr-only focus:absolute focus:top-4",
-    plancher: "focus:min-h-11",
+    /*
+     * ⚠️ DÉPLACÉ LE 02/10/2026 PAR LA REFONTE : le lien de l'espace vendeur
+     * porte désormais la classe `evitement` de la maquette, et son plancher vit
+     * dans la feuille de la refonte, pas dans des utilitaires. La garde suit le
+     * plancher là où il est écrit ; `codeSeul` retire aussi les commentaires CSS.
+     */
+    fichier: "src/styles/refonte/app.css",
+    repere: ".evitement {",
+    plancher: "min-height: 44px",
     raison:
       "« Aller au contenu » de l'espace vendeur. Positionné en absolu une fois " +
       "focalisé : l'agrandir ne déplace aucun pixel du flux.",
   },
   {
-    fichier: "src/app/[locale]/admin/layout.tsx",
-    repere: "focus:not-sr-only focus:absolute focus:top-4",
-    plancher: "focus:min-h-11",
-    raison: "« Aller au contenu » de l'administration.",
-  },
-  {
-    fichier: "src/components/admin/recherche-admin.tsx",
-    repere: "focus:not-sr-only focus:absolute focus:top-full",
-    plancher: "focus:min-h-11",
-    raison:
-      "Le bouton « Rechercher », révélé au clavier sur les écrans Comptes et " +
-      "Boutiques. 34 px mesurés une fois focalisé.",
-  },
-  {
-    fichier: "src/app/[locale]/admin/comptes/[id]/page.tsx",
-    repere: "flex h-11 w-11 shrink-0",
-    plancher: "before:-inset-[3px]",
-    raison:
-      "Le retour vers la liste des comptes. Il faisait 40 × 40 et gagnait ses " +
-      "44 px par un pseudo-élément transparent ; la migration du 12/09 l'a porté " +
-      "à 44 pour de bon — le kit dessine ses boutons d'action à 48. Le " +
-      "pseudo-élément reste : il donne 50 de zone au doigt là où le bouton en " +
-      "montre 44, et c'est gratuit.",
-  },
-  {
-    fichier: "src/components/marque/formulaire-marque.tsx",
-    repere: "inline-flex h-[27px] w-[46px]",
-    plancher: "before:h-11",
+    // La refonte (02/10/2026) dessine l'interrupteur dans sa feuille : la cible
+    // y est portée à 44 px de haut au toucher.
+    fichier: "src/styles/refonte/app.css",
+    repere: ".interrupteur { width: 52px",
+    plancher: "height: 44px",
     raison:
       "L'interrupteur de filigrane de « Ma marque ». ⚠️ C'est un <label>, et " +
       "c'est pour cela qu'il échappe au plancher de `globals.css`, qui ne vise " +
@@ -517,13 +573,20 @@ const AUTHENTIFIEES: ReadonlyArray<{
       "paramètres système, eux, sont des <button> et n'ont RIEN eu à changer.",
   },
   {
-    fichier: "src/components/admin/reglage-nombre.tsx",
-    repere: "w-[120px] rounded-ds-control",
-    plancher: "min-h-11",
+    fichier: "src/styles/refonte/app.css",
+    repere: ".adm-reglage__saisie input, .adm-filtres a, .adm-champ input {",
+    plancher: "height: 44px",
     raison:
-      "Les trois champs nombre des paramètres système, mesurés à 42 px. Le " +
-      "plancher est levé à partir de `md`, où la planche AdminParametres — qui " +
-      "n'a PAS de variante téléphone — redevient la référence.",
+      "Les champs nombre des paramètres système (36 px au bureau) et les pastilles de " +
+      "filtre de l'administration (30 px), portés à 44 au toucher par la feuille de la refonte.",
+  },
+  {
+    fichier: "src/styles/refonte/app.css",
+    repere: ".puce, .adm-danger, .adm-confirmer, .adm-pastille-contest, .adm-lien {",
+    plancher: "min-height: 44px",
+    raison:
+      "Les boutons des dialogues d'administration (confirmer, danger), la pastille " +
+      "« Contestation » et les liens « Tout le journal » — 24 à 36 px au bureau.",
   },
 ];
 
@@ -570,9 +633,15 @@ describe("les cibles tactiles des surfaces authentifiees", () => {
     expect(
       AUTHENTIFIEES.length,
       "inventaire vide : le contrôle ne garderait rien",
-    ).toBeGreaterThanOrEqual(6);
+    ).toBeGreaterThanOrEqual(4);
     const fichiers = [...new Set(AUTHENTIFIEES.map((c) => c.fichier))];
-    expect(fichiers.length, "un seul fichier gardé : le relevé en couvrait six").toBeGreaterThanOrEqual(6);
+    // Cinq et non plus six : la refonte (02/10/2026) a déplacé l'interrupteur de
+    // « Ma marque » dans la feuille où vivait déjà le lien d'évitement. Les
+    // entrées, elles, restent toutes là (test précédent).
+    // UN SEUL FICHIER depuis le portage de l'administration (02/10/2026) : chaque plancher
+    // relevé le 10/09 vit désormais dans la feuille de la refonte, à côté de la règle qui
+    // dessine sa cible — les utilitaires `min-h-11` des composants sont partis avec eux.
+    expect(fichiers, "le relevé ne lit plus la feuille de la refonte").toContain("src/styles/refonte/app.css");
   });
 
   /**

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Laptop, Lock, Monitor, MonitorSmartphone, Shield, Smartphone, Trash2, UserRound } from "lucide-react";
+import { Monitor, Smartphone } from "lucide-react";
+import { contientAdresse, sortieVersEnvoi, valeurEnvoyee } from "@/components/acces/validation-locale";
 import {
   changerAdresseCompte,
   changerMotDePasseCompte,
@@ -16,34 +17,21 @@ import {
   supprimerMonCompte,
   type EtatParametres,
 } from "@/app/[locale]/(app)/parametres/actions";
-import { CarteReglage, LigneAction } from "./carte-reglage";
-import {
-  CLASSE_AIDE,
-  CLASSE_BOUTON,
-  CLASSE_BOUTON_DANGER,
-  CLASSE_CHAMP,
-  CLASSE_CHAMP_ETIQUETE,
-  CLASSE_ENTREE,
-  CLASSE_LIBELLE,
-  CLASSE_SAISIE,
-} from "./classes";
 
 /**
- * LES CARTES INTERACTIVES DE L'ÉCRAN « PARAMÈTRES » — `SettingsView` du kit.
+ * LES RÉGLAGES INTERACTIFS DE « PARAMÈTRES » — maquette `parametres.html`, blocs
+ * `.bloc-r` : un titre, des champs, et un pied qui porte l'aide puis l'action.
  *
- * CLIENTES PARCE QU'ELLES DOIVENT DIRE CE QUI S'EST PASSÉ, et rien d'autre :
- * l'état vient de la Server Action, jamais d'une supposition locale. Le kit
- * affiche « Informations enregistrées » au clic ; ici le message n'arrive
- * qu'avec la réponse du serveur (principe XII).
+ * CLIENTS PARCE QU'ILS DOIVENT DIRE CE QUI S'EST PASSÉ, et rien d'autre : l'état
+ * vient de la Server Action, jamais d'une supposition locale — le pied ne dit
+ * « Enregistré » qu'avec la réponse du serveur (contrainte n° 8).
  *
- * ⚠️ LES CHAMPS DE MOT DE PASSE NE SONT JAMAIS PRÉREMPLIS NI RENVOYÉS. L'état
- * rendu par l'action ne porte qu'un statut et un motif : un mot de passe qui
- * repasserait par l'état React finirait dans la charge d'hydratation suivante.
+ * ⚠️ LES CHAMPS DE MOT DE PASSE NE SONT JAMAIS PRÉREMPLIS NI RENVOYÉS : l'état
+ * rendu par l'action ne porte qu'un statut et un motif.
  *
- * ⚠️ « MODIFIER » N'ÉCRIT RIEN. Le kit rend l'adresse éditable en place et le
- * mot de passe modifiable d'un clic. Ici chacun ouvre un formulaire qui exige le
- * mot de passe actuel : une session ne suffit pas à changer ce qui protège le
- * compte, un cookie volé en est une.
+ * ⚠️ TOUT CE QUI PROTÈGE LE COMPTE EXIGE LE MOT DE PASSE ACTUEL — adresse, mot de
+ * passe, double authentification, sessions, suppressions. Une session ne suffit
+ * pas, un cookie volé en est une. La maquette le montre ; le produit le tient.
  */
 
 const INITIAL: EtatParametres = { statut: "inactif" };
@@ -74,33 +62,165 @@ function useMessage(etat: EtatParametres, succes: string): Message | null {
   return { texte: t(cle), erreur: true };
 }
 
-function Annonce({ message }: { readonly message: Message | null }) {
-  if (message === null) return null;
+/**
+ * Le pied d'un bloc : l'aide au repos, le résultat de l'action quand il arrive.
+ *
+ * COMME LA MAQUETTE (`parametres.js`, `annoncer`) : la réponse REMPLACE l'aide, entre en
+ * fondu (160 ms), et l'aide revient à la saisie suivante dans le formulaire. L'aide reste
+ * dans le document, masquée (`hidden`) : un champ qui s'en sert (`aria-describedby`) la lit
+ * toujours. La région du message existe AVANT son texte — posée en même temps que lui,
+ * l'annonce se perd.
+ */
+function Pied({
+  aide,
+  message,
+  idAide,
+  relance = 0,
+  children,
+}: {
+  readonly aide: ReactNode;
+  readonly message: Message | null;
+  readonly idAide?: string;
+  /**
+   * Un refus LOCAL redit (sans envoi) : le même texte, calmé par la frappe, doit pouvoir
+   * se réafficher. Changer ce nombre lève le calme — sans remonter le pied, ce qui
+   * détruirait le bouton vers lequel le focus allait (relecture du 03/10/2026).
+   */
+  readonly relance?: number;
+  readonly children: ReactNode;
+}) {
+  const pied = useRef<HTMLElement>(null);
+  const zone = useRef<HTMLParagraphElement>(null);
+  const zoneErreur = useRef<HTMLParagraphElement>(null);
+  // Le texte du message que la saisie suivante a « calmé » : il reste masqué tant qu'aucun
+  // nouvel envoi n'a eu lieu (un même refus redit après un nouvel envoi se réaffiche).
+  const [calme, setCalme] = useState<string | null>(null);
+  const texte = message?.texte ?? null;
+  const affiche = texte !== null && texte !== calme;
+  const [relanceVue, setRelanceVue] = useState(relance);
+  if (relanceVue !== relance) {
+    setRelanceVue(relance);
+    setCalme(null);
+  }
+
+  useEffect(() => {
+    const formulaire = pied.current?.closest("form");
+    if (formulaire === null || formulaire === undefined) return;
+    const surSaisie = (): void => setCalme(texte);
+    const surEnvoi = (): void => setCalme(null);
+    formulaire.addEventListener("input", surSaisie);
+    formulaire.addEventListener("submit", surEnvoi);
+    return () => {
+      formulaire.removeEventListener("input", surSaisie);
+      formulaire.removeEventListener("submit", surEnvoi);
+    };
+  }, [texte]);
+
+  const enErreur = message?.erreur === true;
+  useEffect(() => {
+    const cible = enErreur ? zoneErreur.current : zone.current;
+    if (!affiche || cible === null || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    cible.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: "cubic-bezier(.23,1,.32,1)" });
+  }, [affiche, texte, enErreur]);
+
   return (
-    <p
-      role={message.erreur ? "alert" : "status"}
-      className={"text-[13px] leading-[1.5] " + (message.erreur ? "text-ds-erreur-encre" : "text-ds-succes-encre")}
-    >
-      {message.texte}
-    </p>
+    <footer className="bloc-r__pied" ref={pied}>
+      <div className="bloc-r__textes">
+        {aide === "" ? null : (
+          <p id={idAide} hidden={affiche}>
+            {aide}
+          </p>
+        )}
+        {/* DEUX RÉGIONS PERMANENTES, une par nature : un succès se dit (`status`), une
+            erreur s'impose (`alert`). Une région qui changerait de rôle en recevant son
+            texte ne serait pas annoncée de façon fiable (relecture du 02/10/2026). */}
+        <p ref={zone} className="bloc-r__message" role="status" data-ton={affiche && message?.erreur === false ? "ok" : undefined}>
+          {affiche && message?.erreur === false ? texte : ""}
+        </p>
+        <p ref={zoneErreur} className="bloc-r__message" role="alert" data-ton={affiche && message?.erreur === true ? "erreur" : undefined}>
+          {affiche && message?.erreur === true ? texte : ""}
+        </p>
+      </div>
+      <span className="bloc-r__actions">{children}</span>
+    </footer>
   );
 }
 
-function Soumettre({
-  libelle,
-  enCours,
-  pendant,
-  form,
-}: {
-  readonly libelle: string;
-  readonly enCours: string;
-  readonly pendant: boolean;
-  readonly form?: string;
-}) {
+function Tete({ titre, aide, id }: { readonly titre: string; readonly aide: string; readonly id?: string }) {
   return (
-    <button type="submit" form={form} disabled={pendant} className={CLASSE_BOUTON}>
-      {pendant ? enCours : libelle}
-    </button>
+    <div className="bloc-r__tete">
+      <h2 id={id}>{titre}</h2>
+      <p>{aide}</p>
+    </div>
+  );
+}
+
+/**
+ * CE QUI APPARAÎT SUR DEMANDE ENTRE (maquette, `parametres.js` : `devoiler`, 200 ms, 4 px
+ * vers le bas) : le mot de passe demandé quand l'adresse change, la confirmation d'une
+ * suppression, les étapes de la double authentification. Sous mouvement réduit, posé.
+ */
+function useDevoilement<T extends HTMLElement>(focaliser: boolean) {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    // Le focus va au premier champ révélé (maquette : `focus({ preventScroll: true })`) :
+    // celui qui vient de demander la confirmation n'a pas à aller la chercher. PAS pour le
+    // mot de passe qui apparaît pendant qu'on tape une adresse : il volerait la frappe
+    // (relecture du 02/10/2026 ; la maquette ne le focalise pas non plus).
+    if (focaliser) ref.current?.querySelector<HTMLElement>("input:not([type=hidden]), textarea, select")?.focus({ preventScroll: true });
+    if (ref.current === null || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    ref.current.animate(
+      [
+        { opacity: 0, transform: "translateY(-4px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 200, easing: "cubic-bezier(.23,1,.32,1)" },
+    );
+  }, [focaliser]);
+  return ref;
+}
+
+function Devoile({ className, id, children }: { readonly className?: string; readonly id?: string; readonly children: ReactNode }) {
+  const ref = useDevoilement<HTMLDivElement>(true);
+  return (
+    <div ref={ref} className={className} id={id}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * LE PANNEAU D'UN ONGLET ENTRE quand on change d'onglet (maquette : 180 ms, 4 px), et
+ * seulement alors — pas à l'arrivée sur l'écran, qui a déjà son entrée. Les onglets
+ * sont des liens (`?section=`) : `TransitionsEcran` marque un changement sur place.
+ */
+export function PanneauReglages({
+  id,
+  onglet,
+  children,
+}: {
+  readonly id: string;
+  /** L'identifiant de l'onglet qui le nomme (`VuesListe`, rangée en onglets). */
+  readonly onglet: string;
+  readonly children: ReactNode;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const surPlace = window.__changementSurPlace === true;
+    window.__changementSurPlace = false;
+    if (!surPlace || ref.current === null || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    ref.current.animate(
+      [
+        { opacity: 0, transform: "translateY(4px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 180, easing: "cubic-bezier(.23,1,.32,1)" },
+    );
+  }, []);
+  return (
+    <section ref={ref} id={id} className="reglages__panneau" role="tabpanel" aria-labelledby={onglet}>
+      {children}
+    </section>
   );
 }
 
@@ -108,247 +228,500 @@ function ChampMotDePasse({
   libelle,
   nom,
   nouveau = false,
-  aide,
-  classeLibelle = CLASSE_LIBELLE,
+  decritPar,
+  devoile = false,
+  surSaisie,
+  surSortie,
 }: {
   readonly libelle: string;
   readonly nom: string;
   readonly nouveau?: boolean;
-  readonly aide?: string;
-  /** Sur le fond rouge teinté d'une suppression, le gris de corps tombe à 4,30:1. */
-  readonly classeLibelle?: string;
+  readonly decritPar?: string;
+  /** Apparu sur demande : il entre (maquette, `devoiler`). */
+  readonly devoile?: boolean;
+  readonly surSaisie?: (valeur: string) => void;
+  /** La sortie du champ, avec l'élément qui prend le focus (`relatedTarget`). */
+  readonly surSortie?: (vers: EventTarget | null) => void;
 }) {
   const id = useId();
+  const ref = useDevoilement<HTMLDivElement>(false);
   return (
-    <div className={CLASSE_CHAMP_ETIQUETE}>
-      <label htmlFor={id} className={classeLibelle}>
-        {libelle}
-      </label>
-      <span className={CLASSE_CHAMP}>
-        <input
-          id={id}
-          name={nom}
-          type="password"
-          required
-          minLength={nouveau ? 12 : undefined}
-          maxLength={1024}
-          autoComplete={nouveau ? "new-password" : "current-password"}
-          aria-describedby={aide === undefined ? undefined : id + "-aide"}
-          className={CLASSE_ENTREE}
-        />
-      </span>
-      {aide === undefined ? null : (
-        <p id={id + "-aide"} className={CLASSE_AIDE}>
-          {aide}
-        </p>
-      )}
+    <div className="champ-r" ref={devoile ? ref : undefined}>
+      <label htmlFor={id}>{libelle}</label>
+      <input
+        id={id}
+        name={nom}
+        onChange={surSaisie === undefined ? undefined : (e) => surSaisie(e.target.value)}
+        onBlur={surSortie === undefined ? undefined : (e) => surSortie(e.relatedTarget)}
+        type="password"
+        required
+        minLength={nouveau ? 12 : undefined}
+        maxLength={1024}
+        autoComplete={nouveau ? "new-password" : "current-password"}
+        aria-describedby={decritPar}
+      />
     </div>
   );
 }
 
-function FormulaireAdresse({ locale }: { readonly locale: string }) {
+/* ---------- Compte ---------- */
+
+/** Les initiales d'un nom, comme le serveur les calcule (`parametres/page.tsx`). */
+function initialesDe(texte: string): string {
+  return texte
+    .split(/\s+/)
+    .filter((m) => m !== "")
+    .slice(0, 2)
+    .map((m) => m[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+export function BlocNom({
+  nomActuel,
+  initiales,
+  repli,
+}: {
+  readonly nomActuel: string | null;
+  readonly initiales: string;
+  /** Ce qui nomme le compte quand le nom est vide (la boutique, sinon l'adresse). */
+  readonly repli: string;
+}) {
+  const t = useTranslations("parametres.compte");
+  const [etat, action, pendant] = useActionState(enregistrerNom, INITIAL);
+  const id = useId();
+  // Le bouton n'agit qu'une fois le nom changé, et l'avatar suit la frappe (maquette).
+  const [saisie, setSaisie] = useState(nomActuel ?? "");
+  const [enregistre, setEnregistre] = useState(nomActuel ?? "");
+  // La valeur ENVOYÉE, pas celle du champ à la réponse : on peut taper pendant
+  // l'aller-retour, et ce qui est enregistré est ce qui est parti (contrainte n° 8).
+  const [envoye, setEnvoye] = useState(nomActuel ?? "");
+  const [vu, setVu] = useState(etat);
+  if (vu !== etat) {
+    setVu(etat);
+    if (etat.statut === "enregistre") setEnregistre(envoye);
+  }
+  const avatar = saisie.trim() === "" ? initialesDe(repli) : initialesDe(saisie.trim());
+  return (
+    <form action={action} className="bloc-r" noValidate onSubmit={() => setEnvoye(saisie)}>
+      <div className="bloc-r__corps">
+        <Tete titre={t("nom")} aide={t("nomAide")} />
+        <div className="nom-r">
+          <span className="nom-r__avatar" aria-hidden="true">
+            {avatar || initiales}
+          </span>
+          <div className="champ-r champ-r--large">
+            <label htmlFor={id} className="visuellement-cache">
+              {t("nom")}
+            </label>
+            <input
+              id={id}
+              name="nom"
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
+              maxLength={80}
+              autoComplete="name"
+            />
+          </div>
+        </div>
+      </div>
+      <Pied aide={t("nomMax")} message={useMessage(etat, t("enregistre"))}>
+        <button
+          type="submit"
+          className="bouton-app bouton-app--plein"
+          disabled={pendant || saisie.trim() === enregistre.trim()}
+        >
+          {pendant ? t("enregistrement") : t("enregistrer")}
+        </button>
+      </Pied>
+    </form>
+  );
+}
+
+export function BlocAdresse({
+  adresse,
+  locale,
+  adresseSuivie,
+}: {
+  readonly adresse: string;
+  readonly locale: string;
+  readonly adresseSuivie: boolean;
+}) {
   const t = useTranslations("parametres.compte");
   const [etat, action, pendant] = useActionState(changerAdresseCompte, INITIAL);
-  const idAdresse = useId();
-  const message = useMessage(etat, t("adresseEnvoyee"));
-
+  const [saisie, setSaisie] = useState(adresse);
+  const id = useId();
+  // Le mot de passe n'est demandé qu'une fois l'adresse changée (maquette) : un
+  // champ inutile au repos, mais l'action l'exige, quoi qu'affiche cet écran.
+  const modifiee = saisie.trim() !== "" && saisie.trim().toLowerCase() !== adresse.toLowerCase();
   return (
-    <form action={action} className="flex flex-col gap-4">
+    <form action={action} className="bloc-r" noValidate>
       <input type="hidden" name="locale" value={locale} />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className={CLASSE_CHAMP_ETIQUETE}>
-          <label htmlFor={idAdresse} className={CLASSE_LIBELLE}>
-            {t("nouvelleAdresse")}
-          </label>
-          <span className={CLASSE_CHAMP}>
+      <div className="bloc-r__corps">
+        <Tete titre={t("adresse")} aide={t("adresseAide")} />
+        <div className="grille-r">
+          <div className="champ-r">
+            <label htmlFor={id}>{t("nouvelleAdresse")}</label>
             <input
-              id={idAdresse}
+              id={id}
               name="adresse"
               type="email"
               required
               maxLength={254}
               autoComplete="email"
-              className={CLASSE_ENTREE}
+              spellCheck={false}
+              value={saisie}
+              onChange={(e) => setSaisie(e.target.value)}
             />
+          </div>
+          {modifiee ? <ChampMotDePasse libelle={t("actuel")} nom="actuel" devoile /> : null}
+        </div>
+        {adresseSuivie ? (
+          <p role="status" className="aide-r">
+            {t("adresseSuivie")}
+          </p>
+        ) : null}
+      </div>
+      <Pied aide={t("adresseNote")} message={useMessage(etat, t("adresseEnvoyee"))}>
+        <button type="submit" className="bouton-app bouton-app--plein" disabled={pendant || !modifiee}>
+          {pendant ? t("envoi") : t("envoyerLien")}
+        </button>
+      </Pied>
+    </form>
+  );
+}
+
+export function BlocMotDePasse({ adresse }: { readonly adresse: string }) {
+  const t = useTranslations("parametres.compte");
+  const te = useTranslations("parametres.erreurs");
+  const [etat, action, pendant] = useActionState(changerMotDePasseCompte, INITIAL);
+  // LE REFUS IMMÉDIAT DE L'ADRESSE RECOPIÉE (maquette `parametres.js:120`, contre-audit du
+  // 03/10/2026) : à la sortie du champ et à l'envoi, par la règle exacte du serveur, qui
+  // reste l'autorité. Chaque refus local remonte le pied (`key`) : un même texte, calmé par
+  // la frappe, doit pouvoir se redire.
+  const [refusLocal, setRefusLocal] = useState<{ readonly n: number; readonly dit: boolean }>({ n: 0, dit: false });
+  // La réponse du serveur en vigueur au moment du refus local : levé, le refus ne doit pas
+  // laisser revenir un ancien « mot de passe changé » que la frappe avait calmé.
+  const [etatAuRefus, setEtatAuRefus] = useState<EtatParametres | null>(null);
+  const refuser = (): void => {
+    setRefusLocal((r) => ({ n: r.n + 1, dit: true }));
+    setEtatAuRefus(etat);
+  };
+  const messageServeur = useMessage(etat, t("motDePasseChange"));
+  const idAide = useId();
+  // Désactivé tant que les deux champs ne sont pas remplis (maquette).
+  const [actuel, setActuel] = useState("");
+  const [nouveau, setNouveau] = useState("");
+  // React vide les champs après une action réussie : l'état qui garde le bouton aussi.
+  const [vu, setVu] = useState(etat);
+  if (vu !== etat) {
+    setVu(etat);
+    if (etat.statut === "enregistre") {
+      setActuel("");
+      setNouveau("");
+    }
+  }
+  return (
+    <form
+      action={action}
+      className="bloc-r"
+      noValidate
+      onSubmit={(e) => {
+        if (!contientAdresse(valeurEnvoyee(e.currentTarget, "nouveau"), adresse)) return;
+        e.preventDefault();
+        refuser();
+        // Le champ fautif reprend le focus, comme `/nouveau-mot-de-passe`.
+        e.currentTarget.querySelector<HTMLInputElement>('input[name="nouveau"]')?.focus();
+      }}
+    >
+      <div className="bloc-r__corps">
+        <Tete titre={t("motDePasse")} aide={t("motDePasseAide")} />
+        <div className="grille-r">
+          <ChampMotDePasse libelle={t("actuel")} nom="actuel" surSaisie={setActuel} />
+          <ChampMotDePasse
+            libelle={t("nouveau")}
+            nom="nouveau"
+            nouveau
+            decritPar={idAide}
+            surSaisie={(v) => {
+              setNouveau(v);
+              if (refusLocal.dit && !contientAdresse(v, adresse)) setRefusLocal((r) => ({ ...r, dit: false }));
+            }}
+            surSortie={(vers) => {
+              // Vers le bouton d'envoi, l'envoi dira le refus lui-même : le dire ici
+              // ferait bouger le pied sous le geste.
+              if (!sortieVersEnvoi(vers) && contientAdresse(nouveau, adresse)) refuser();
+            }}
+          />
+        </div>
+        <p className="aide-r aide-r--note">{t("sansMotDePasse")}</p>
+      </div>
+      <Pied
+        relance={refusLocal.n}
+        aide={t("nouveauAide")}
+        idAide={idAide}
+        message={
+          refusLocal.dit
+            ? { texte: te("mdpContientEmail"), erreur: true }
+            : etatAuRefus !== null && etat === etatAuRefus
+              ? null
+              : messageServeur
+        }
+      >
+        <button type="submit" className="bouton-app bouton-app--plein" disabled={pendant || actuel === "" || nouveau === ""}>
+          {pendant ? t("changement") : t("changerMotDePasse")}
+        </button>
+      </Pied>
+    </form>
+  );
+}
+
+/**
+ * UNE SUPPRESSION — en deux gestes. Le premier « Supprimer » ouvre la
+ * confirmation, le second supprime.
+ *
+ * ⚠️ LE COLLAGE EST BLOQUÉ DANS LE CHAMP DE RECOPIE (décision 12) : la recopie
+ * existe pour forcer à LIRE quel compte on efface. Le mot de passe, lui, reste
+ * collable : le bloquer gênerait les gestionnaires sans rien apprendre.
+ */
+export function BlocSuppression({
+  variante,
+  adresse,
+  locale,
+}: {
+  readonly variante: "compte" | "donnees";
+  readonly adresse: string;
+  readonly locale: string;
+}) {
+  const t = useTranslations("parametres");
+  const [etat, action, pendant] = useActionState(
+    variante === "compte" ? supprimerMonCompte : supprimerMesDonnees,
+    INITIAL,
+  );
+  const [ouvert, setOuvert] = useState(false);
+  const id = useId();
+  const message = useMessage(etat, t("suppression.donnees.ok"));
+  // UN SUCCÈS REPLIE LA CONFIRMATION (maquette `parametres.js`, `replier()`), puis le pied
+  // le dit : mot de passe, « Annuler » et bouton final n'ont plus rien à faire à l'écran.
+  const [etatVu, setEtatVu] = useState(etat);
+  const [replie, setReplie] = useState(false);
+  if (etatVu !== etat) {
+    setEtatVu(etat);
+    if (etat.statut === "enregistre") {
+      setOuvert(false);
+      setReplie(true);
+    }
+  }
+  // Le bouton qui avait le focus vient de disparaître avec la confirmation : le focus va à
+  // celui qui rouvre le bloc, à sa place, plutôt que de retomber sur `<body>`.
+  const focusApresRepli = useCallback(
+    (bouton: HTMLButtonElement | null) => {
+      if (replie) bouton?.focus({ preventScroll: true });
+    },
+    [replie],
+  );
+  return (
+    <form action={action} className="bloc-r bloc-r--danger" noValidate>
+      <input type="hidden" name="locale" value={locale} />
+      <div className="bloc-r__corps">
+        <Tete titre={t(`suppression.${variante}.titre`)} aide={t(`suppression.${variante}.avertissement`)} />
+        {ouvert ? (
+          <Devoile className="grille-r confirmation-r">
+            <div className="champ-r">
+              <label htmlFor={id}>{t("suppression.recopier", { adresse })}</label>
+              <input
+                id={id}
+                name="confirmation"
+                type="email"
+                required
+                maxLength={254}
+                autoComplete="off"
+                spellCheck={false}
+                onPaste={(e) => e.preventDefault()}
+                onDrop={(e) => e.preventDefault()}
+              />
+            </div>
+            <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
+          </Devoile>
+        ) : null}
+        {/* LE SEUL ENDROIT OÙ RÉSILIER : le produit n'a pas de clé d'API chez le
+            fournisseur, il ne peut qu'indiquer son portail (206). */}
+        {etat.statut === "erreur" && etat.motif === "abonnement_en_cours" ? (
+          etat.portail !== null ? (
+            <a href={etat.portail} target="_blank" rel="noopener noreferrer" className="lien-r">
+              {t("suppression.compte.portail")}
+            </a>
+          ) : (
+            <p className="aide-r">{t("suppression.compte.portailAbsent")}</p>
+          )
+        ) : null}
+      </div>
+      <Pied
+        aide={variante === "compte" ? t("suppression.compte.conservation") : t("suppression.donnees.aide")}
+        message={message}
+      >
+        {ouvert ? (
+          <>
+            <button type="button" className="bouton-app bouton-app--second" onClick={() => setOuvert(false)}>
+              {t("suppression.annuler")}
+            </button>
+            <button type="submit" className="bouton-app bouton-app--danger" disabled={pendant}>
+              {pendant ? t(`suppression.${variante}.enCours`) : t(`suppression.${variante}.soumettre`)}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="bouton-app bouton-app--danger" ref={focusApresRepli}
+            onClick={() => {
+              setReplie(false);
+              setOuvert(true);
+            }}>
+            {t(`suppression.${variante}.bouton`)}
+          </button>
+        )}
+      </Pied>
+    </form>
+  );
+}
+
+/* ---------- Sécurité ---------- */
+
+/** La clé en groupes de quatre : on la recopie à la main. */
+function cleLisible(cle: string): string {
+  return (cle.match(/.{1,4}/g) ?? [cle]).join(" ");
+}
+
+/**
+ * LA DOUBLE AUTHENTIFICATION. PAS D'INTERRUPTEUR : activer exige le mot de passe,
+ * un QR code et un premier code juste ; une bascule qui se remettrait seule à
+ * « éteint » mentirait sur l'état du compte.
+ *
+ * LE PANNEAU GARDE LE MODE DANS LEQUEL IL A ÉTÉ OUVERT : après un code juste, la
+ * page est relue et `active` passe à vrai — piloté par cette propriété, le panneau
+ * basculait sur la désactivation et démontait le message de succès (13/09/2026).
+ */
+export function BlocDeuxEtapes({ active }: { readonly active: boolean | null }) {
+  const t = useTranslations("parametres");
+  const [mode, setMode] = useState<"activer" | "desactiver" | null>(null);
+  const idPanneau = useId();
+  const termine = (mode === "activer" && active === true) || (mode === "desactiver" && active === false);
+  return (
+    <section className="bloc-r" aria-labelledby="r-deux">
+      <div className="bloc-r__corps">
+        <div className="bloc-r__tete bloc-r__tete--ligne">
+          <div>
+            <h2 id="r-deux">{t("securite.deuxEtapes.titre")}</h2>
+            <p>{t("securite.deuxEtapes.aide")}</p>
+          </div>
+          <span className="bloc-r__actions">
+            {/* Illisible, l'état ne se devine pas (contrainte n° 8) : l'écran le dit. */}
+            {active === null ? (
+              <span className="aide-r" role="status">{t("securite.deuxEtapes.lectureImpossible")}</span>
+            ) : (
+              <span className="etat-r" data-actif={String(active)}>
+                <i aria-hidden="true" />
+                <span>{active ? t("securite.deuxEtapes.activee") : t("securite.deuxEtapes.desactivee")}</span>
+              </span>
+            )}
+            <button
+              type="button"
+              // Plein quand la double authentification est à ACTIVER (maquette : `bouton-app--plein`) :
+              // c'est l'action recommandée de l'écran ; « Désactiver » et « Annuler » restent seconds.
+              className={"bouton-app " + (mode === null && active === false ? "bouton-app--plein" : "bouton-app--second")}
+              aria-expanded={mode !== null}
+              aria-controls={mode !== null ? idPanneau : undefined}
+              onClick={() => setMode((m) => (m !== null ? null : active === true ? "desactiver" : "activer"))}
+            >
+              {mode !== null
+                ? termine
+                  ? t("securite.deuxEtapes.fermer")
+                  : t("securite.deuxEtapes.annuler")
+                : active === true
+                  ? t("securite.deuxEtapes.desactiver")
+                  : t("securite.deuxEtapes.activer")}
+            </button>
           </span>
         </div>
-        <ChampMotDePasse libelle={t("actuel")} nom="actuel" />
       </div>
-      <div>
-        <Soumettre libelle={t("envoyerLien")} enCours={t("envoi")} pendant={pendant} />
-      </div>
-      <Annonce message={message} />
-    </form>
+      {mode === null ? null : (
+        <Devoile id={idPanneau}>{mode === "desactiver" ? <DesactivationDeuxEtapes /> : <ActivationDeuxEtapes />}</Devoile>
+      )}
+    </section>
   );
 }
 
-function FormulaireMotDePasse() {
-  const t = useTranslations("parametres.compte");
-  const [etat, action, pendant] = useActionState(changerMotDePasseCompte, INITIAL);
-  const message = useMessage(etat, t("motDePasseChange"));
+function ActivationDeuxEtapes() {
+  const t = useTranslations("parametres");
+  const [etatDebut, commencer, enPreparation] = useActionState(commencerActivation, INITIAL);
+  const [etatFin, confirmer, enConfirmation] = useActionState(confirmerActivation, INITIAL);
+  const idCode = useId();
+  const messageDebut = useMessage(etatDebut, "");
+  const messageFin = useMessage(etatFin, t("securite.deuxEtapes.activeeOk"));
 
+  if (etatDebut.statut !== "enrole") {
+    return (
+      <form action={commencer} noValidate>
+        <div className="bloc-r__corps etape-r etape-r--bloc">
+          <p className="aide-r">{t("securite.deuxEtapes.motDePasseAide")}</p>
+          <div className="grille-r">
+            <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
+          </div>
+        </div>
+        <Pied aide="" message={messageDebut}>
+          <button type="submit" className="bouton-app bouton-app--plein" disabled={enPreparation}>
+            {enPreparation ? t("securite.deuxEtapes.continuation") : t("securite.deuxEtapes.continuer")}
+          </button>
+        </Pied>
+      </form>
+    );
+  }
   return (
-    <form action={action} className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <ChampMotDePasse libelle={t("actuel")} nom="actuel" />
-        <ChampMotDePasse libelle={t("nouveau")} nom="nouveau" nouveau aide={t("nouveauAide")} />
-      </div>
-      <div>
-        <Soumettre libelle={t("changerMotDePasse")} enCours={t("changement")} pendant={pendant} />
-      </div>
-      <Annonce message={message} />
-      <p className={CLASSE_AIDE}>{t("sansMotDePasse")}</p>
-    </form>
-  );
-}
-
-/** Le bouton « Modifier » posé DANS le champ, comme le `trailing` du kit. */
-function ChampProtege({
-  libelle,
-  valeur,
-  masque = false,
-  ouvert,
-  controle,
-  basculer,
-}: {
-  readonly libelle: string;
-  readonly valeur: string;
-  readonly masque?: boolean;
-  readonly ouvert: boolean;
-  readonly controle: string;
-  readonly basculer: () => void;
-}) {
-  const t = useTranslations("parametres.compte");
-  return (
-    <div className={CLASSE_CHAMP_ETIQUETE}>
-      <span className={CLASSE_LIBELLE}>{libelle}</span>
-      <span className={CLASSE_CHAMP + " pr-1.5"}>
-        <span
-          className={CLASSE_SAISIE + " truncate" + (masque ? " tracking-[0.12em]" : "")}
-          aria-hidden={masque ? true : undefined}
-        >
-          {valeur}
-        </span>
-        <button
-          type="button"
-          onClick={basculer}
-          aria-expanded={ouvert}
-          aria-controls={controle}
-          aria-label={`${ouvert ? t("annuler") : t("modifier")} — ${libelle}`}
-          className={CLASSE_BOUTON}
-        >
-          {ouvert ? t("annuler") : t("modifier")}
+    <form action={confirmer} noValidate>
+      <input type="hidden" name="facteur" value={etatDebut.facteur} />
+      <Devoile className="bloc-r__corps etape-r etape-r--bloc">
+        <p className="aide-r">{t("securite.deuxEtapes.scanner")}</p>
+        <div className="qr-r">
+          {/* LE QR CODE EST UN SVG RENDU PAR SUPABASE, en `data:` : dans un `<img>`,
+              un SVG n'exécute rien. */}
+          <span className="qr-r__code">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={etatDebut.qr} alt={t("securite.deuxEtapes.qrAlt")} width={164} height={164} />
+          </span>
+          <div className="qr-r__cle">
+            <span className="qr-r__libelle">{t("securite.deuxEtapes.cle")}</span>
+            <span className="cle-r">{cleLisible(etatDebut.cle)}</span>
+            <span className="aide-r">{t("securite.deuxEtapes.cleAide")}</span>
+          </div>
+        </div>
+        <div className="champ-r champ-r--code">
+          <label htmlFor={idCode}>{t("securite.deuxEtapes.code")}</label>
+          <input id={idCode} name="code" required inputMode="numeric" autoComplete="one-time-code" maxLength={7} placeholder="123456" />
+        </div>
+      </Devoile>
+      <Pied aide="" message={messageFin}>
+        <button type="submit" className="bouton-app bouton-app--plein" disabled={enConfirmation}>
+          {enConfirmation ? t("securite.deuxEtapes.confirmation") : t("securite.deuxEtapes.confirmer")}
         </button>
-      </span>
-    </div>
+      </Pied>
+    </form>
   );
 }
 
-export function CarteCompte({
-  nomActuel,
-  adresse,
-  initiales,
-  locale,
-  adresseSuivie,
-}: {
-  readonly nomActuel: string | null;
-  readonly adresse: string;
-  readonly initiales: string;
-  readonly locale: string;
-  readonly adresseSuivie: boolean;
-}) {
-  const t = useTranslations("parametres.compte");
-  const [etat, action, pendant] = useActionState(enregistrerNom, INITIAL);
-  const [ouvert, setOuvert] = useState<"adresse" | "motDePasse" | null>(null);
-  const idFormulaire = useId();
-  const idNom = useId();
-  const idPanneau = useId();
-  const message = useMessage(etat, t("enregistre"));
-
-  const basculer = (quoi: "adresse" | "motDePasse") => () =>
-    setOuvert((actuel) => (actuel === quoi ? null : quoi));
-
+function DesactivationDeuxEtapes() {
+  const t = useTranslations("parametres");
+  const [etat, action, pendant] = useActionState(desactiverDeuxEtapes, INITIAL);
   return (
-    <CarteReglage
-      icone={UserRound}
-      titre={t("titre")}
-      sousTitre={t("aide")}
-      action={
-        /* Au téléphone le bouton descend sous les champs (voir plus bas) : l'en-tête
-           passait à la ligne et « Enregistrer » tombait seul avant les champs qu'il
-           enregistre. Planche `SettingsView`, `.set-save-bottom`. */
-        <div className="hidden md:block">
-          <Soumettre libelle={t("enregistrer")} enCours={t("enregistrement")} pendant={pendant} form={idFormulaire} />
-        </div>
-      }
-    >
-      {/* LE FORMULAIRE DU NOM EST VIDE ET SES CHAMPS L'ATTEIGNENT PAR `form`. Le
-          bouton du kit vit dans l'en-tête de la carte, hors du formulaire, et les
-          deux autres formulaires de la carte ne peuvent pas y être imbriqués. */}
-      <form id={idFormulaire} action={action} />
-
-      <div className="grid grid-cols-1 items-start gap-[22px] sm:grid-cols-[auto_minmax(0,1fr)]">
-        <span
-          aria-hidden="true"
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-ds-pill bg-ds-accent text-[22px] font-bold text-ds-texte-sur-marque md:h-24 md:w-24 md:text-[30px]"
-        >
-          {initiales}
-        </span>
-
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className={CLASSE_CHAMP_ETIQUETE}>
-              <label htmlFor={idNom} className={CLASSE_LIBELLE}>
-                {t("nom")}
-              </label>
-              <span className={CLASSE_CHAMP}>
-                <input
-                  id={idNom}
-                  form={idFormulaire}
-                  name="nom"
-                  defaultValue={nomActuel ?? ""}
-                  maxLength={80}
-                  autoComplete="name"
-                  className={CLASSE_ENTREE}
-                />
-              </span>
-            </div>
-            <ChampProtege
-              libelle={t("adresse")}
-              valeur={adresse}
-              ouvert={ouvert === "adresse"}
-              controle={idPanneau}
-              basculer={basculer("adresse")}
-            />
-            <ChampProtege
-              libelle={t("motDePasse")}
-              valeur="••••••••••"
-              masque
-              ouvert={ouvert === "motDePasse"}
-              controle={idPanneau}
-              basculer={basculer("motDePasse")}
-            />
-          </div>
-          <Annonce message={message} />
-          <div className="md:hidden [&>button]:w-full">
-            <Soumettre libelle={t("enregistrer")} enCours={t("enregistrement")} pendant={pendant} form={idFormulaire} />
-          </div>
-          {adresseSuivie ? (
-            <p role="status" className="text-[13px] leading-[1.5] text-ds-texte-corps">
-              {t("adresseSuivie")}
-            </p>
-          ) : null}
+    <form action={action} noValidate>
+      <div className="bloc-r__corps etape-r etape-r--bloc">
+        <p className="aide-r">{t("securite.deuxEtapes.desactiverAide")}</p>
+        <div className="grille-r">
+          <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
         </div>
       </div>
-
-      <div id={idPanneau} hidden={ouvert === null}>
-        {ouvert === null ? null : (
-          <div className="mt-5 rounded-ds-card border border-ds-filet bg-ds-surface-creux p-4">
-            {ouvert === "adresse" ? <FormulaireAdresse locale={locale} /> : <FormulaireMotDePasse />}
-          </div>
-        )}
-      </div>
-    </CarteReglage>
+      <Pied aide="" message={useMessage(etat, t("securite.deuxEtapes.desactiveeOk"))}>
+        <button type="submit" className="bouton-app bouton-app--plein" disabled={pendant}>
+          {pendant ? t("securite.deuxEtapes.desactivation") : t("securite.deuxEtapes.desactiverBouton")}
+        </button>
+      </Pied>
+    </form>
   );
 }
 
@@ -367,477 +740,184 @@ export type AppareilFiableAffiche = {
   readonly actifJusqu: string;
 };
 
+/** Les sessions : la liste, puis « déconnecter les autres », confirmé par le mot de passe. */
+export function BlocSessions({ sessions }: { readonly sessions: readonly SessionAffichee[] | null }) {
+  const t = useTranslations("parametres");
+  const [etat, action, pendant] = useActionState(fermerAutresSessions, INITIAL);
+  const [ouvert, setOuvert] = useState(false);
+  // UN SUCCÈS REPLIE LA CONFIRMATION (maquette `parametres.js`, `replier()`), puis le pied
+  // le dit : mot de passe, « Annuler » et bouton final n'ont plus rien à faire à l'écran.
+  const [etatVu, setEtatVu] = useState(etat);
+  const [replie, setReplie] = useState(false);
+  if (etatVu !== etat) {
+    setEtatVu(etat);
+    if (etat.statut === "enregistre") {
+      setOuvert(false);
+      setReplie(true);
+    }
+  }
+  // Le bouton qui avait le focus vient de disparaître avec la confirmation : le focus va à
+  // celui qui rouvre le bloc, à sa place, plutôt que de retomber sur `<body>`.
+  const focusApresRepli = useCallback(
+    (bouton: HTMLButtonElement | null) => {
+      if (replie) bouton?.focus({ preventScroll: true });
+    },
+    [replie],
+  );
+  /*
+   * LES AUTRES APPAREILS S'EN VONT (maquette, `parametres.js` : 180 ms, 6 px vers la
+   * droite) — APRÈS la confirmation du serveur, jamais avant (contrainte n° 8). La
+   * liste n'est pas relue : seules les sessions fermées par CE geste disparaissent.
+   */
+  const liste = useRef<HTMLUListElement>(null);
+  const [fermees, setFermees] = useState(false);
+  useEffect(() => {
+    if (etat.statut !== "enregistre") return;
+    const partants = [...(liste.current?.querySelectorAll<HTMLElement>("li[data-autre]") ?? [])];
+    const fin = () => setFermees(true);
+    if (partants.length === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      queueMicrotask(fin);
+      return;
+    }
+    let annule = false;
+    void Promise.all(
+      partants.map(
+        (li) =>
+          li.animate(
+            [
+              { opacity: 1, transform: "none" },
+              { opacity: 0, transform: "translateX(6px)" },
+            ],
+            { duration: 180, easing: "cubic-bezier(.23,1,.32,1)", fill: "forwards" },
+          ).finished,
+      ),
+    ).then(
+      () => {
+        if (!annule) fin();
+      },
+      () => {
+        // Animation interrompue (écran quitté) : rien à faire disparaître.
+      },
+    );
+    return () => {
+      annule = true;
+    };
+  }, [etat]);
+  return (
+    <form action={action} className="bloc-r" noValidate>
+      <div className="bloc-r__corps">
+        <Tete titre={t("securite.sessions")} aide={t("securite.sessionsAide")} />
+        {sessions === null ? (
+          <p role="alert" className="aide-r" data-ton="erreur">
+            {t("securite.lectureImpossible")}
+          </p>
+        ) : (
+          <ul className="appareils-r" ref={liste}>
+            {sessions.filter((s) => !fermees || s.cetAppareil).map((s) => {
+              const Icone = s.mobile ? Smartphone : Monitor;
+              return (
+                <li key={s.id} data-autre={s.cetAppareil ? undefined : ""}>
+                  <span className="appareils-r__ic">
+                    <Icone aria-hidden="true" className="ic" />
+                  </span>
+                  <span>
+                    <b>{s.libelle ?? t("securite.appareilInconnu")}</b>
+                    <small>{t("securite.activeLe", { date: s.activeLe })}</small>
+                  </span>
+                  {s.cetAppareil ? <span className="etiquette-r">{t("securite.cetAppareil")}</span> : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {ouvert ? (
+          <Devoile className="grille-r confirmation-r">
+            <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
+          </Devoile>
+        ) : null}
+      </div>
+      <Pied aide={t("securite.fermerAide")} message={useMessage(etat, t("securite.ferme"))}>
+        {ouvert ? (
+          <>
+            <button type="button" className="bouton-app bouton-app--second" onClick={() => setOuvert(false)}>
+              {t("compte.annuler")}
+            </button>
+            <button type="submit" className="bouton-app bouton-app--second" disabled={pendant}>
+              {pendant ? t("securite.fermeture") : t("securite.fermer")}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="bouton-app bouton-app--second" ref={focusApresRepli}
+            onClick={() => {
+              setReplie(false);
+              setOuvert(true);
+            }}>
+            {t("securite.fermer")}
+          </button>
+        )}
+      </Pied>
+    </form>
+  );
+}
+
 /**
- * RÉVOQUER UN APPAREIL FIABLE (203) — un bouton, pas de mot de passe : révoquer
- * ne fait que retirer une confiance (voir l'action). La liste est relue par le
- * serveur, donc l'appareil disparaît de lui-même au succès.
+ * LES APPAREILS FIABLES (203) N'EXISTENT QU'AVEC LA 2FA : un appareil ne devient
+ * fiable qu'après un vrai second facteur. Révoquer ne fait que retirer une
+ * confiance : un bouton, sans mot de passe.
  */
-function BoutonRevocationAppareil({ id, libelle }: { readonly id: string; readonly libelle: string | null }) {
+export function BlocAppareilsFiables({ appareils }: { readonly appareils: readonly AppareilFiableAffiche[] | null }) {
+  const t = useTranslations("parametres.securite");
+  return (
+    <section className="bloc-r" aria-labelledby="r-fiables">
+      <div className="bloc-r__corps">
+        <Tete id="r-fiables" titre={t("appareilsFiables.titre")} aide={t("appareilsFiables.aide")} />
+        {appareils === null ? (
+          <p role="alert" className="aide-r" data-ton="erreur">
+            {t("lectureImpossible")}
+          </p>
+        ) : appareils.length === 0 ? (
+          <p className="vide-r">{t("appareilsFiables.aucun")}</p>
+        ) : (
+          <ul className="appareils-r">
+            {appareils.map((a) => {
+              const Icone = a.mobile ? Smartphone : Monitor;
+              return (
+                <li key={a.id}>
+                  <span className="appareils-r__ic">
+                    <Icone aria-hidden="true" className="ic" />
+                  </span>
+                  <span>
+                    <b>{a.libelle ?? t("appareilInconnu")}</b>
+                    <small>{t("appareilsFiables.actifJusqu", { date: a.actifJusqu })}</small>
+                  </span>
+                  <RevocationAppareil id={a.id} libelle={a.libelle} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function RevocationAppareil({ id, libelle }: { readonly id: string; readonly libelle: string | null }) {
   const t = useTranslations("parametres.securite");
   const [etat, action, pendant] = useActionState(revoquerAppareilFiable, INITIAL);
-  // Un échec de révocation DOIT se voir : sans message, le bouton redevient
-  // cliquable et l'appareil reste, sans que rien ne le dise (contrainte n° 8).
+  // Un échec DOIT se voir : sans message, l'appareil resterait sans que rien ne le dise.
   const message = useMessage(etat, "");
   const nom = libelle ?? t("appareilInconnu");
   return (
-    <form action={action} className="flex flex-col items-end gap-1.5">
+    <form action={action} className="revocation-r">
       <input type="hidden" name="id" value={id} />
-      <button type="submit" disabled={pendant} aria-label={`${t("appareilsFiables.revoquer")} — ${nom}`} className={CLASSE_BOUTON_DANGER}>
+      <button type="submit" className="bouton-texte-r" disabled={pendant} aria-label={`${t("appareilsFiables.revoquer")} — ${nom}`}>
         {pendant ? t("appareilsFiables.revocation") : t("appareilsFiables.revoquer")}
       </button>
-      <Annonce message={message} />
-    </form>
-  );
-}
-
-function FormulaireSessions() {
-  const t = useTranslations("parametres");
-  const [etat, action, pendant] = useActionState(fermerAutresSessions, INITIAL);
-  const message = useMessage(etat, t("securite.ferme"));
-
-  return (
-    <form action={action} className="flex flex-col gap-4">
-      <p className={CLASSE_AIDE}>{t("securite.fermerAide")}</p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
-      </div>
-      <div>
-        <Soumettre libelle={t("securite.fermer")} enCours={t("securite.fermeture")} pendant={pendant} />
-      </div>
-      <Annonce message={message} />
-    </form>
-  );
-}
-
-
-/** La clé en groupes de quatre : on la recopie à la main, et 32 caractères d'un bloc se lisent mal. */
-function cleLisible(cle: string): string {
-  return (cle.match(/.{1,4}/g) ?? [cle]).join(" ");
-}
-
-function ActivationDeuxEtapes() {
-  const t = useTranslations("parametres");
-  const [etatDebut, commencer, enPreparation] = useActionState(commencerActivation, INITIAL);
-  const [etatFin, confirmer, enConfirmation] = useActionState(confirmerActivation, INITIAL);
-  const idCode = useId();
-  const messageDebut = useMessage(etatDebut, "");
-  const messageFin = useMessage(etatFin, t("securite.deuxEtapes.activeeOk"));
-
-  if (etatDebut.statut !== "enrole") {
-    return (
-      <form action={commencer} className="flex flex-col gap-4">
-        <p className={CLASSE_AIDE}>{t("securite.deuxEtapes.motDePasseAide")}</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
-        </div>
-        <div>
-          <Soumettre
-            libelle={t("securite.deuxEtapes.continuer")}
-            enCours={t("securite.deuxEtapes.continuation")}
-            pendant={enPreparation}
-          />
-        </div>
-        <Annonce message={messageDebut} />
-      </form>
-    );
-  }
-
-  return (
-    <form action={confirmer} className="flex flex-col gap-4">
-      <input type="hidden" name="facteur" value={etatDebut.facteur} />
-      <p className={CLASSE_AIDE}>{t("securite.deuxEtapes.scanner")}</p>
-      <div className="flex flex-wrap items-center gap-[18px]">
-        {/* LE QR CODE EST UN SVG RENDU PAR SUPABASE, en `data:`. Dans un `<img>`,
-            un SVG n'exécute rien ; et `next/image` n'a rien à optimiser dans une
-            image vectorielle servie depuis la page elle-même. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={etatDebut.qr}
-          alt={t("securite.deuxEtapes.qrAlt")}
-          width={164}
-          height={164}
-          className="h-[164px] w-[164px] shrink-0 rounded-ds-control border border-ds-filet bg-ds-surface-carte p-2"
-        />
-        <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-2">
-          <span className={CLASSE_LIBELLE}>{t("securite.deuxEtapes.cle")}</span>
-          <span className="flex min-h-12 items-center rounded-ds-control border border-ds-filet-appuye bg-ds-surface-carte px-3.5 py-2 font-mono text-[13.5px] tracking-[0.06em] break-all text-ds-texte-fort select-all">
-            {cleLisible(etatDebut.cle)}
-          </span>
-          <span className={CLASSE_AIDE}>{t("securite.deuxEtapes.cleAide")}</span>
-        </div>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className={CLASSE_CHAMP_ETIQUETE}>
-          <label htmlFor={idCode} className={CLASSE_LIBELLE}>
-            {t("securite.deuxEtapes.code")}
-          </label>
-          <span className={CLASSE_CHAMP}>
-            <input
-              id={idCode}
-              name="code"
-              required
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={7}
-              placeholder="123456"
-              className={CLASSE_ENTREE}
-            />
-          </span>
-        </div>
-      </div>
-      <div>
-        <Soumettre
-          libelle={t("securite.deuxEtapes.confirmer")}
-          enCours={t("securite.deuxEtapes.confirmation")}
-          pendant={enConfirmation}
-        />
-      </div>
-      <Annonce message={messageFin} />
-    </form>
-  );
-}
-
-function DesactivationDeuxEtapes() {
-  const t = useTranslations("parametres");
-  const [etat, action, pendant] = useActionState(desactiverDeuxEtapes, INITIAL);
-  const message = useMessage(etat, t("securite.deuxEtapes.desactiveeOk"));
-
-  return (
-    <form action={action} className="flex flex-col gap-4">
-      <p className={CLASSE_AIDE}>{t("securite.deuxEtapes.desactiverAide")}</p>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" />
-      </div>
-      <div>
-        <Soumettre
-          libelle={t("securite.deuxEtapes.desactiverBouton")}
-          enCours={t("securite.deuxEtapes.desactivation")}
-          pendant={pendant}
-        />
-      </div>
-      <Annonce message={message} />
-    </form>
-  );
-}
-
-/**
- * LA CONFIRMATION D'UNE SUPPRESSION — `ConfirmDialog` du kit, sur place.
- *
- * ⚠️ LE COLLAGE EST BLOQUÉ DANS LE CHAMP DE RECOPIE, et c'est la règle de la
- * décision 12 : la recopie n'existe pas pour refuser une faute de frappe, mais
- * pour forcer à LIRE quel compte on efface. Coller l'adresse depuis la ligne
- * au-dessus ferait passer le geste sans l'avoir lu. Le mot de passe, lui, reste
- * collable : le bloquer n'apprendrait rien et gênerait les gestionnaires.
- */
-function FormulaireSuppression({
-  variante,
-  adresse,
-  locale,
-}: {
-  readonly variante: "compte" | "donnees";
-  readonly adresse: string;
-  readonly locale: string;
-}) {
-  const t = useTranslations("parametres");
-  const [etat, action, pendant] = useActionState(
-    variante === "compte" ? supprimerMonCompte : supprimerMesDonnees,
-    INITIAL,
-  );
-  const idConfirmation = useId();
-  const message = useMessage(etat, t("suppression.donnees.ok"));
-  /* ⚠️ SUR LE FOND ROUGE TEINTÉ, LE GRIS DE CORPS NE SE LIT PAS : mesuré le
-     15/09/2026, 4,30:1 pour l'avertissement et les libellés, 2,76:1 pour la note
-     de conservation en sourdine. L'encre ink-600 tient 7,12:1 — le remède des
-     alertes du panneau d'administration. Planche `SettingsView`, `DangerPanel`. */
-  const libelle = "text-[13px] leading-[normal] font-medium text-ds-ink-600";
-
-  return (
-    <form action={action} className="flex flex-col gap-4">
-      <input type="hidden" name="locale" value={locale} />
-      <div className="flex flex-col gap-1.5">
-        <p className="text-[14.5px] leading-[normal] font-bold text-ds-erreur-encre">
-          {t(`suppression.${variante}.question`)}
-        </p>
-        <p className="text-[13.5px] leading-[1.55] text-ds-ink-600">{t(`suppression.${variante}.avertissement`)}</p>
-        {variante === "compte" ? (
-          <p className="text-[12.5px] leading-[1.5] text-ds-ink-600">{t("suppression.compte.conservation")}</p>
-        ) : null}
-      </div>
-      {/* Alignés sur le bas : le libellé de recopie porte l'adresse et passe sur
-          deux lignes, et les deux champs se décalaient de 16 px. */}
-      <div className="grid items-end gap-4 sm:grid-cols-2">
-        <div className={CLASSE_CHAMP_ETIQUETE}>
-          <label htmlFor={idConfirmation} className={libelle}>
-            {t("suppression.recopier", { adresse })}
-          </label>
-          <span className={CLASSE_CHAMP}>
-            <input
-              id={idConfirmation}
-              name="confirmation"
-              type="email"
-              required
-              maxLength={254}
-              autoComplete="off"
-              spellCheck={false}
-              onPaste={(e) => e.preventDefault()}
-              onDrop={(e) => e.preventDefault()}
-              className={CLASSE_ENTREE}
-            />
-          </span>
-        </div>
-        <ChampMotDePasse libelle={t("compte.actuel")} nom="actuel" classeLibelle={libelle} />
-      </div>
-      <div>
-        <button type="submit" disabled={pendant} className={CLASSE_BOUTON_DANGER}>
-          {pendant ? t(`suppression.${variante}.enCours`) : t(`suppression.${variante}.soumettre`)}
-        </button>
-      </div>
-      <Annonce message={message} />
-      {/* LE SEUL ENDROIT OÙ RÉSILIER. Le produit n'a pas de clé d'API chez le
-          fournisseur : il ne peut qu'indiquer son portail, où le vendeur se
-          connecte avec son e-mail (206). */}
-      {etat.statut === "erreur" && etat.motif === "abonnement_en_cours" ? (
-        etat.portail !== null ? (
-          <a
-            href={etat.portail}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center self-start text-[13.5px] font-semibold text-ds-erreur-encre underline underline-offset-2"
-          >
-            {t("suppression.compte.portail")}
-          </a>
-        ) : (
-          // SANS ADRESSE DE PORTAIL (audit ECC du 29/09/2026), le vendeur restait bloqué
-          // sans savoir où résilier : on lui dit où la trouver, et qui écrire à défaut.
-          <p className="text-[13.5px] text-ds-erreur-encre">{t("suppression.compte.portailAbsent")}</p>
-        )
+      {message !== null && message.erreur ? (
+        <small role="alert" data-ton="erreur">
+          {message.texte}
+        </small>
       ) : null}
     </form>
-  );
-}
-
-/** Une ligne « danger » et son panneau de confirmation. */
-export function LigneSuppression({
-  variante,
-  adresse,
-  locale,
-  premiere = false,
-}: {
-  readonly variante: "compte" | "donnees";
-  readonly adresse: string;
-  readonly locale: string;
-  readonly premiere?: boolean;
-}) {
-  const t = useTranslations("parametres.suppression");
-  const [ouvert, setOuvert] = useState(false);
-  const idPanneau = useId();
-
-  return (
-    <>
-      <LigneAction premiere={premiere} danger icone={Trash2} titre={t(`${variante}.titre`)} sousTitre={t(`${variante}.aide`)}>
-        <button
-          type="button"
-          onClick={() => setOuvert((v) => !v)}
-          aria-expanded={ouvert}
-          aria-controls={idPanneau}
-          className={ouvert ? CLASSE_BOUTON : CLASSE_BOUTON_DANGER}
-        >
-          {ouvert ? t("annuler") : t(`${variante}.bouton`)}
-        </button>
-      </LigneAction>
-      <div id={idPanneau} hidden={!ouvert}>
-        {ouvert ? (
-          <div className="mb-1.5 rounded-ds-card border border-ds-erreur bg-ds-erreur-fond p-4">
-            <FormulaireSuppression variante={variante} adresse={adresse} locale={locale} />
-          </div>
-        ) : null}
-      </div>
-    </>
-  );
-}
-
-export function CarteSecurite({
-  sessions,
-  appareilsFiables,
-  deuxEtapesActive,
-  adresse,
-  locale,
-}: {
-  readonly sessions: readonly SessionAffichee[] | null;
-  readonly appareilsFiables: readonly AppareilFiableAffiche[] | null;
-  readonly deuxEtapesActive: boolean;
-  readonly adresse: string;
-  readonly locale: string;
-}) {
-  const t = useTranslations("parametres.securite");
-  const [ouvert, setOuvert] = useState(false);
-  const [fiablesOuvert, setFiablesOuvert] = useState(false);
-  const idFiables = useId();
-  /*
-   * LE PANNEAU GARDE LE MODE DANS LEQUEL IL A ÉTÉ OUVERT. Après un code juste,
-   * l'action relit la page : `deuxEtapesActive` passe à vrai, et un panneau
-   * piloté par cette propriété basculait aussitôt sur le formulaire de
-   * DÉSACTIVATION — démontant le message de succès avant qu'il soit lu. Mesuré
-   * le 13/09/2026 en pilotant l'activation : badge « Activée », aucun message.
-   */
-  const [mode, setMode] = useState<"activer" | "desactiver" | null>(null);
-  const termine = (mode === "activer" && deuxEtapesActive) || (mode === "desactiver" && !deuxEtapesActive);
-  const idPanneau = useId();
-  const idDeuxEtapes = useId();
-
-  return (
-    <CarteReglage icone={Lock} titre={t("titre")} sousTitre={t("aide")}>
-      {/* PAS D'INTERRUPTEUR, À LA DIFFÉRENCE DU KIT. Une bascule promet un effet
-          immédiat ; activer exige ici le mot de passe, un QR code et un premier
-          code juste. Un interrupteur qui se remettrait tout seul à « éteint »
-          mentirait sur l'état du compte (principe XII). */}
-      <LigneAction premiere icone={Shield} titre={t("deuxEtapes.titre")} sousTitre={t("deuxEtapes.aide")}>
-        {deuxEtapesActive ? (
-          <span className="inline-flex rounded-ds-pill bg-ds-succes-fond px-[11px] py-[5px] text-[11.5px] leading-[normal] font-bold text-ds-succes-encre lg:text-[11px]">
-            {t("deuxEtapes.activee")}
-          </span>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => setMode((m) => (m !== null ? null : deuxEtapesActive ? "desactiver" : "activer"))}
-          aria-expanded={mode !== null}
-          aria-controls={idDeuxEtapes}
-          className={CLASSE_BOUTON}
-        >
-          {mode !== null
-            ? termine
-              ? t("deuxEtapes.fermer")
-              : t("deuxEtapes.annuler")
-            : deuxEtapesActive
-              ? t("deuxEtapes.desactiver")
-              : t("deuxEtapes.activer")}
-        </button>
-      </LigneAction>
-
-      <div id={idDeuxEtapes} hidden={mode === null}>
-        {mode !== null ? (
-          <div className="mb-1.5 rounded-ds-card border border-ds-filet bg-ds-surface-creux p-4">
-            {mode === "desactiver" ? <DesactivationDeuxEtapes /> : <ActivationDeuxEtapes />}
-          </div>
-        ) : null}
-      </div>
-
-      <LigneAction icone={MonitorSmartphone} titre={t("sessions")} sousTitre={t("sessionsAide")}>
-        <button
-          type="button"
-          onClick={() => setOuvert((v) => !v)}
-          aria-expanded={ouvert}
-          aria-controls={idPanneau}
-          className={CLASSE_BOUTON}
-        >
-          {ouvert ? t("masquer") : t("voir")}
-        </button>
-      </LigneAction>
-
-      <div id={idPanneau} hidden={!ouvert}>
-        {ouvert ? (
-          <div className="mt-1 flex flex-col gap-5 rounded-ds-card border border-ds-filet bg-ds-surface-creux p-4">
-            {sessions === null ? (
-              <p role="alert" className="text-[13px] leading-[1.5] text-ds-erreur-encre">
-                {t("lectureImpossible")}
-              </p>
-            ) : (
-              <ul className="flex flex-col">
-                {sessions.map((s, i) => {
-                  const Icone = s.mobile ? Smartphone : Monitor;
-                  return (
-                    <li
-                      key={s.id}
-                      className={"flex flex-wrap items-center gap-3 py-3" + (i === 0 ? "" : " border-t border-ds-filet")}
-                    >
-                      <Icone aria-hidden="true" size={17} strokeWidth={1.9} className="shrink-0 text-ds-texte-sourdine" />
-                      <span className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
-                        <span className="text-[14px] leading-[normal] font-semibold text-ds-texte-fort">
-                          {s.libelle ?? t("appareilInconnu")}
-                        </span>
-                        <span className="text-[12.5px] leading-[normal] text-ds-texte-sourdine">
-                          {t("activeLe", { date: s.activeLe })}
-                        </span>
-                      </span>
-                      {s.cetAppareil ? (
-                        <span className="inline-flex rounded-ds-pill bg-ds-violet-100 px-[11px] py-[5px] text-[11.5px] leading-[normal] font-bold text-ds-accent-encre lg:text-[11px]">
-                          {t("cetAppareil")}
-                        </span>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <FormulaireSessions />
-          </div>
-        ) : null}
-      </div>
-
-      {/* LES APPAREILS FIABLES (203) N'EXISTENT QU'AVEC LA 2FA : un appareil ne
-          devient fiable qu'après un vrai second facteur. Sans 2FA, la ligne
-          n'aurait rien à montrer et laisserait croire à une option absente. */}
-      {deuxEtapesActive ? (
-        <>
-          <LigneAction icone={Laptop} titre={t("appareilsFiables.titre")} sousTitre={t("appareilsFiables.aide")}>
-            <button
-              type="button"
-              onClick={() => setFiablesOuvert((v) => !v)}
-              aria-expanded={fiablesOuvert}
-              aria-controls={idFiables}
-              className={CLASSE_BOUTON}
-            >
-              {fiablesOuvert ? t("appareilsFiables.masquer") : t("appareilsFiables.voir")}
-            </button>
-          </LigneAction>
-
-          <div id={idFiables} hidden={!fiablesOuvert}>
-            {fiablesOuvert ? (
-              <div className="mt-1 flex flex-col gap-1 rounded-ds-card border border-ds-filet bg-ds-surface-creux p-4">
-                {appareilsFiables === null ? (
-                  <p role="alert" className="text-[13px] leading-[1.5] text-ds-erreur-encre">
-                    {t("lectureImpossible")}
-                  </p>
-                ) : appareilsFiables.length === 0 ? (
-                  <p className="text-[13px] leading-[1.5] text-ds-texte-sourdine">{t("appareilsFiables.aucun")}</p>
-                ) : (
-                  <ul className="flex flex-col">
-                    {appareilsFiables.map((a, i) => {
-                      const Icone = a.mobile ? Smartphone : Monitor;
-                      return (
-                        <li
-                          key={a.id}
-                          className={
-                            "flex flex-wrap items-center gap-3 py-3" + (i === 0 ? "" : " border-t border-ds-filet")
-                          }
-                        >
-                          <Icone
-                            aria-hidden="true"
-                            size={17}
-                            strokeWidth={1.9}
-                            className="shrink-0 text-ds-texte-sourdine"
-                          />
-                          <span className="flex min-w-0 flex-[1_1_180px] flex-col gap-0.5">
-                            <span className="text-[14px] leading-[normal] font-semibold text-ds-texte-fort">
-                              {a.libelle ?? t("appareilInconnu")}
-                            </span>
-                            <span className="text-[12.5px] leading-[normal] text-ds-texte-sourdine">
-                              {t("appareilsFiables.actifJusqu", { date: a.actifJusqu })}
-                            </span>
-                          </span>
-                          <BoutonRevocationAppareil id={a.id} libelle={a.libelle} />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            ) : null}
-          </div>
-        </>
-      ) : null}
-
-      <LigneSuppression variante="compte" adresse={adresse} locale={locale} />
-    </CarteReglage>
   );
 }

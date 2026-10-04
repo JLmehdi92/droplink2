@@ -1,14 +1,16 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { MailCheck, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import {
   demanderReinitialisation,
   type ResultatReinitialisation,
 } from "@/app/[locale]/connexion/actions";
-import { suggererCorrection } from "@/lib/email/domaines";
+import { useSuggestionAdresse } from "@/components/acces/suggestion-adresse";
+import { adresseTransmise, arriveeVersOubli } from "@/components/acces/bascule-acces";
 import { BoutonPrincipalDs, ChampAcces, MessageErreurDs } from "@/components/acces-champs";
+import { emailValide, secouer, secouerInvalides, valeurEnvoyee } from "@/components/acces/validation-locale";
 
 /**
  * DEMANDER UN LIEN DE RÉINITIALISATION — `ForgotScreen` du kit `auth`, écrit le
@@ -36,18 +38,38 @@ export function FormulaireMotDePasseOublie({ locale }: { readonly locale: string
   const t = useTranslations("connexion");
   const tm = useTranslations("motDePasse");
   const [resultat, action] = useActionState(demanderReinitialisation, INITIAL);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(adresseTransmise);
+  const [erreurEmail, setErreurEmail] = useState("");
+  const formulaire = useRef<HTMLFormElement>(null);
+  const envoye = useRef<HTMLHeadingElement>(null);
 
-  const suggestion = useMemo(() => suggererCorrection(email), [email]);
+  useEffect(() => {
+    if (resultat.statut === "erreur") secouerInvalides(formulaire.current);
+    // La confirmation remplace le formulaire : le focus la suit (maquette, `acces.js`),
+    // sans quoi il tomberait sur le document.
+    if (resultat.statut === "envoye") envoye.current?.focus();
+  }, [resultat]);
+
+  const { suggestion, aLaSortie } = useSuggestionAdresse(email);
+
+  // Venu de la connexion par « Mot de passe oublié ? » : le titre prend le focus, comme le
+  // panneau de la maquette (`acces.js`) — le lecteur d'écran dit où l'on est arrivé.
+  useEffect(() => {
+    if (arriveeVersOubli()) document.querySelector<HTMLElement>(".acces__corps h1")?.focus({ preventScroll: true });
+  }, []);
 
   if (resultat.statut === "envoye") {
     return (
-      <div role="status" className="flex gap-3 rounded-ds-card bg-ds-surface-teinte px-4 py-3.5">
-        <MailCheck aria-hidden="true" size={18} strokeWidth={1.9} className="mt-px flex-none text-ds-accent" />
-        <div className="min-w-0">
-          <p className="text-[15px] leading-[normal] font-bold text-ds-texte-fort">{tm("envoyeTitre")}</p>
-          <p className="mt-1 text-[13.5px] leading-[1.55] text-ds-texte-corps">{tm("envoyeTexte")}</p>
-        </div>
+      <div role="status" className="envoye">
+        <span className="envoye__icone" aria-hidden="true">
+          <Mail className="ic" />
+        </span>
+        {/* Le focus suit la confirmation (maquette, `acces.js`), sans quoi il tomberait
+            sur le document une fois le formulaire retiré. */}
+        <h2 ref={envoye} tabIndex={-1}>
+          {tm("envoyeTitre")}
+        </h2>
+        <p>{tm("envoyeTexte")}</p>
       </div>
     );
   }
@@ -60,7 +82,26 @@ export function FormulaireMotDePasseOublie({ locale }: { readonly locale: string
       : null;
 
   return (
-    <form action={action} className="flex flex-col gap-[22px]" noValidate>
+    <form
+      ref={formulaire}
+      action={action}
+      className="formulaire v4-carte"
+      noValidate
+      onSubmit={(e) => {
+        // La suggestion d'adresse se propose aussi à l'envoi (une sortie vers le bouton ne
+        // la pose pas) : après un refus, c'est elle qui peut dire la faute de frappe.
+        aLaSortie();
+        if (emailValide(valeurEnvoyee(e.currentTarget, "email"))) {
+          setErreurEmail("");
+          return;
+        }
+        e.preventDefault();
+        setErreurEmail(t("erreurEmailInvalide"));
+        const champ = e.currentTarget.querySelector<HTMLInputElement>("#email-oubli");
+        secouer(champ?.closest(".champ-acces__boite"));
+        champ?.focus();
+      }}
+    >
       <input type="hidden" name="locale" value={locale} />
 
       <ChampAcces
@@ -68,29 +109,40 @@ export function FormulaireMotDePasseOublie({ locale }: { readonly locale: string
         nom="email"
         type="email"
         libelle={t("labelEmail")}
-        icone={Mail}
         placeholder={t("placeholderEmail")}
         autoComplete="username"
         modeSaisie="email"
         valeur={email}
-        surChangement={setEmail}
+        surChangement={(v) => {
+          setEmail(v);
+          if (erreurEmail !== "" && emailValide(v)) setErreurEmail("");
+        }}
+        surSortie={() => {
+          aLaSortie();
+          if (email !== "" && !emailValide(email)) setErreurEmail(t("erreurEmailInvalide"));
+        }}
+        erreurLocale={erreurEmail}
         invalide={messageErreur !== null}
         {...(messageErreur !== null ? { decritPar: "erreur-oubli" } : {})}
-      />
-
-      {suggestion !== null ? (
-        <p className="-mt-3 text-[13px] leading-[1.5] text-ds-texte-corps" aria-live="polite">
-          {t("suggestionPrefixe")}{" "}
-          <button
-            type="button"
-            onClick={() => setEmail(suggestion.adresse)}
-            className="font-semibold text-ds-texte-lien underline"
-          >
-            {suggestion.adresse}
-          </button>
-          {t("suggestionSuffixe")}
-        </p>
-      ) : null}
+      >
+        {/* La suggestion de faute de frappe reste LOCALE : aucune requête. */}
+        {suggestion !== null ? (
+          <p className="champ-acces__suggestion" aria-live="polite">
+            {t("suggestionPrefixe")}{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setEmail(suggestion.adresse);
+                document.getElementById("email-oubli")?.focus();
+                setErreurEmail("");
+              }}
+            >
+              {suggestion.adresse}
+            </button>
+            {t("suggestionSuffixe")}
+          </p>
+        ) : null}
+      </ChampAcces>
 
       {messageErreur !== null ? <MessageErreurDs id="erreur-oubli" texte={messageErreur} /> : null}
 

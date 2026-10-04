@@ -185,7 +185,16 @@ describe("Les surfaces peintes du dégradé de marque", () => {
     expect(
       vues,
       "aucune surface `degrade-ds-marque` trouvée : le balayage ne mesure plus rien",
-    ).toBeGreaterThan(8);
+      // 6 au 02/10/2026 : la refonte peint ses actions de marque par ses feuilles
+      // (`.bouton--marque`, `.ed-voir`), plus par la classe Tailwind. 4 le même
+      // jour, après le retrait des orphelins `coque-acces` et `maquette-application` ;
+      // 1 après l'administration, dont la vue courante des statistiques était peinte du
+      // dégradé calme (les filtres de la refonte sont neutres).
+    ).toBeGreaterThanOrEqual(0);
+    // ⚠️ 0 APRÈS LES ÉCRANS D'ÉTAT (même jour) : la dernière surface Tailwind au dégradé
+    // était l'action des erreurs publiques, devenue `.bouton--marque` (feuille). Ce
+    // balayage n'a donc plus rien à mesurer côté utilitaires ; la règle qui exige une
+    // `color` pour chaque `var(--degrade)` DES FEUILLES (plus bas) prend le relais.
 
     expect(
       restants,
@@ -214,7 +223,9 @@ describe("Les pilules et tuiles colorées", () => {
     expect(
       resolues.length,
       "le balayage ne trouve plus une seule paire fond + texte résolue : un ensemble vide passe tout",
-    ).toBeGreaterThan(30);
+      // 20 après le portage de l'administration (02/10/2026) : ses pilules sont des `.adm-badge`.
+      // 14 après les écrans d'état.
+    ).toBeGreaterThan(10);
 
     const illisibles = resolues
       .filter((p) => jetons.get(p.fond) === jetons.get(p.texte))
@@ -227,5 +238,33 @@ describe("Les pilules et tuiles colorées", () => {
         "ou une paire dont le contraste a été mesuré :\n" +
         illisibles.join("\n"),
     ).toEqual([]);
+  });
+});
+
+/*
+ * LA REFONTE (02/10/2026) PEINT SES ACTIONS DE MARQUE PAR SES FEUILLES (`.bouton--marque`,
+ * `.bouton-app--marque`, `.ed-voir`…), que le balayage des classes ne lit pas : une règle
+ * en dégradé sans couleur d'écriture y passerait inaperçue (L-025). Chaque règle des
+ * feuilles de la refonte qui pose `var(--degrade)` en fond doit déclarer sa `color`.
+ */
+describe("Les règles en dégradé des feuilles de la refonte", () => {
+  const FEUILLES = ["socle", "app", "client"].map((f) => ({
+    nom: f,
+    css: readFileSync(join(process.cwd(), "src", "styles", "refonte", f + ".css"), "utf8"),
+  }));
+  const regles = FEUILLES.flatMap(({ nom, css }) =>
+    [...css.matchAll(/([^{}]+)\{([^{}]*background(?:-image)?:\s*var\(--degrade\)[^{}]*)\}/g)].map((m) => ({
+      ou: `refonte/${nom}.css — ${(m[1] ?? "").trim().slice(0, 60)}`,
+      corps: m[2] ?? "",
+    })),
+  );
+
+  test("CONTRE-TEST : le balayage voit des règles en dégradé", () => {
+    expect(regles.length, "aucune règle `var(--degrade)` trouvée : le balayage ne mesure plus rien").toBeGreaterThanOrEqual(3);
+  });
+
+  test("chacune déclare la couleur de son texte", () => {
+    const sansCouleur = regles.filter((r) => !/(?<![-\w])color:/.test(r.corps)).map((r) => r.ou);
+    expect(sansCouleur).toEqual([]);
   });
 });

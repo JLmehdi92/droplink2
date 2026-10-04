@@ -60,9 +60,16 @@ const SANS_IDEOGRAMME: ReadonlyMap<string, string> = new Map([
      catalogues (18/09/2026). */
   ["landing.kit.langues.fr", "Le nom du français en français : un sélecteur nomme chaque langue en elle-même."],
   ["landing.kit.langues.en", "Le nom de l'anglais en anglais : un sélecteur nomme chaque langue en elle-même."],
-  /* Vide, et c'est la planche : sa phrase chinoise 三步生成客户物流链接 n'a pas de
-     mot final à mettre en dégradé. Même exception dans `i18n-parite`. */
-  ["landing.kit.howHl", "Vide : la planche ne met aucun mot en dégradé dans ce titre chinois."],
+  /* La landing de la refonte (02/10/2026) : des noms propres et des adresses
+     d'exemple de sa démonstration, qui s'écrivent en lettres latines partout. */
+  ["accueil.heros.pastillePro", "Le nom du plan, « Pro », identique dans les trois langues."],
+  ["accueil.heros.pastilleUrl", "Une adresse d'exemple : une URL s'écrit en lettres latines."],
+  ["accueil.scene.boutique", "Le nom de la boutique de démonstration, un nom propre."],
+  ["accueil.client.h1lieu", "Un nom de ville, Wissous : un nom propre."],
+  ["acces.film.absence.n2lieu", "Le même nom de ville, dans le film de la connexion."],
+  ["accueil.tarifs.pro", "Le nom du plan, « Pro », identique dans les trois langues."],
+  ["accueil.tarifs.lienUrl", "Une adresse d'exemple : une URL s'écrit en lettres latines."],
+  ["accueil.final.slugs", "Des noms de lien d'exemple, en lettres latines comme toute adresse."],
   /* Deux gabarits de l'éditeur, composés d'une variable ou d'un signe seul.
      « à 09:15 » n'a pas d'équivalent chinois : l'heure s'écrit nue à côté de sa
      date, et ajouter un idéogramme pour satisfaire ce garde mettrait un mot
@@ -72,11 +79,22 @@ const SANS_IDEOGRAMME: ReadonlyMap<string, string> = new Map([
   /* Le commentaire du client sous son arbitrage (18/09/2026) : SA phrase, entre
      les guillemets du chinois simplifié. Le gabarit n'a rien d'autre à dire. */
   ["editeur.historique.commentaire", "Les guillemets chinois “ ” autour du texte du client, seuls."],
-  ["editeur.tuileVide", "Le tiret d'une valeur absente, identique dans les trois langues."],
+  ["accueil.pied.droits", "« © 2026 DropLink » : la mention courte de la landing, un symbole, une année et la marque, identique dans les trois langues."],
+  ["admin.dateHeure", "Le jour puis l'heure : le chinois les juxtapose sans mot de liaison (« 9月30日 11:42 »)."],
+  ["page-publique.trajetLu.etape", "La ponctuation chinoise « ： » entre l'étape et son état, seule : les deux sont déjà traduits."],
+  ["page-publique.trajetLu.enCoursAvec", "La virgule chinoise « ， » entre « en cours » et le lieu, seule : le lieu vient du transporteur."],
   /* La documentation emploie trois mots qui ne se traduisent pas : « Logo » est
      international, et les unités de stockage s'écrivent en lettres latines en
      chinois comme ailleurs. */
   ["docs.regLogo", "« Logo » s'écrit ainsi en chinois."],
+  /* Relecture du chinois, 03/10/2026 : un seul mot pour « logo » (« Logo », le terme
+     dominant, au lieu de 标志 ici), l'unité de stockage en lettres latines comme partout,
+     une adresse d'exemple valable (un nom de lien n'accepte que des lettres latines), et
+     l'objet du signalement rendu à ses deux variables, comme en français. */
+  ["onboarding.logoTitre", "« Logo » s'écrit ainsi en chinois, comme dans la documentation."],
+  ["admin.parametres.unite.megaoctets", "L'unité « MB » s'écrit en lettres latines en chinois."],
+  ["passerPro.tableau.adressePro", "Une adresse d'exemple : un nom de lien ne s'écrit qu'en lettres latines."],
+  ["legal.signalement.sujet", "Deux variables et la ponctuation chinoise « ： », seules : le titre et la catégorie sont déjà traduits."],
   // ⚠️ `docs.plStockageG` et `docs.plStockageP` étaient déclarées ici. Les clés
   // ont été SUPPRIMÉES le 20/09/2026 : le tableau tarifaire promettait « 1 Go »
   // et « 50 Go » alors qu'AUCUN plafond de stockage n'existe dans le produit —
@@ -97,7 +115,7 @@ const SANS_IDEOGRAMME: ReadonlyMap<string, string> = new Map([
   ["admin.boutiques.part", "Le même gabarit, sur l'anneau des boutiques."],
   ["admin.statistiques.tauxValeur", "Une variable et le signe pour cent, collés comme en chinois."],
   ["admin.statistiques.part", "Le même gabarit, sur la légende des types de compte et des transporteurs."],
-  ["admin.statistiques.nombreEntreParentheses", "Une variable entre parenthèses pleine chasse."],
+  ["admin.infoValeur", "Deux variables séparées par un deux-points pleine chasse : l’info-bulle des graphiques."],
   ["admin.statistiques.ecartHausse", "Un signe, une variable et le signe pour cent."],
   ["admin.statistiques.ecartBaisse", "Un signe moins, une variable et le signe pour cent."],
   ["admin.commandes.colonnes.reference", "Le dièse de la colonne des références, comme le kit l'écrit dans les trois langues."],
@@ -133,11 +151,9 @@ const SANS_IDEOGRAMME: ReadonlyMap<string, string> = new Map([
      nom du plan, et l'exemple de lien doit montrer la FORME attendue — un
      segment d'URL en lettres latines, parce que c'est ce qu'une adresse
      accepte. */
-  ["marque.lienPro", "Le nom du plan, entre parenthèses pleine largeur."],
   ["marque.lienProBadge", "Le nom du plan, seul."],
   ["admin.plan.plans.pro", "Le nom du plan, seul, comme le badge de « Ma marque »."],
   ["marque.lienPlaceholder", "Un exemple de segment d'URL : il doit ressembler à une adresse."],
-  ["admin.comptes.colisSurSeuil", "Deux variables et une barre oblique."],
   ["admin.fiche.surPlafond", "Deux variables et une barre oblique."],
   ["admin.panneau.stockageValeur", "Une valeur et son unité, toutes deux injectées."],
   ["admin.boutiques.taille", "Une valeur et son unité, toutes deux injectées."],
@@ -182,6 +198,9 @@ const NOMS_PROPRES_LEGAUX: ReadonlyMap<string, string> = new Map([
   ["17TRACK", "Prestataire, nom propre."],
   ["Google", "Prestataire, nom propre."],
   ["Lemon Squeezy", "Prestataire, nom propre."],
+  /* Passe de finition du 03/10/2026 : le chinois disait ce que dit le français, ni plus ni moins. */
+  ["Mahfoud SEDDIKI。", "Nom propre de l'éditeur, seul, comme en français (« Mahfoud SEDDIKI. ») ; l'ajout « 即网站发布方本人 » est retiré."],
+  ["Pro", "Le nom du plan, « Pro », qui ne se traduit pas : l'interface le dit ainsi, et le texte légal aussi désormais."],
   ["NEXT_LOCALE", "Nom technique d'un cookie : c'est lui qu'on lit dans le navigateur."],
   ["dl_appareil", "Nom technique d'un cookie : c'est lui qu'on lit dans le navigateur."],
   ["Railway Corporation", "Raison sociale de l'hébergeur, telle qu'immatriculée."],

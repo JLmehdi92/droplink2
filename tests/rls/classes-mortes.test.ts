@@ -193,7 +193,18 @@ describe("Classes de style", () => {
      * où le défaut revient. Toute entrée ici doit porter sa raison et être
      * signalée dès qu'elle cesse d'avoir lieu d'être.
      */
-    const SANS_REGLE_ADMISES = new Map<string, string>([]);
+    const SANS_REGLE_ADMISES = new Map<string, string>([
+      [
+        "graphe__aire",
+        "Repère du JavaScript, pas du style : `graphe-tableau.tsx` le cherche (`querySelector`) pour " +
+          "faire entrer l'aire du graphe en fondu. La forme est peinte par ses attributs SVG.",
+      ],
+      [
+        "cv-pied__lien",
+        "Repère du test des cibles tactiles (`cibles-tactiles.test.ts`), qui le relie à la règle " +
+          "`.cv-pied a` de `client.css` : c'est elle qui donne aux trois liens leurs 44 px.",
+      ],
+    ]);
 
     const mortes: string[] = [];
     for (const [classe, fichiersConcernes] of classesEcrites()) {

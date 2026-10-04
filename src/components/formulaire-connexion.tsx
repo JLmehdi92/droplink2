@@ -1,16 +1,17 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { adresseTransmise, transmettreAdresse } from "@/components/acces/bascule-acces";
 import { seConnecter, type ResultatConnexion } from "@/app/[locale]/connexion/actions";
-import { suggererCorrection } from "@/lib/email/domaines";
-import { Lock, Mail } from "lucide-react";
+import { useSuggestionAdresse } from "@/components/acces/suggestion-adresse";
 import {
   BoutonPrincipalDs,
   ChampAcces,
   MessageErreurDs,
 } from "@/components/acces-champs";
+import { emailValide, secouer, secouerInvalides, valeurEnvoyee } from "@/components/acces/validation-locale";
 
 /**
  * SE CONNECTER — adresse et mot de passe.
@@ -39,9 +40,20 @@ const INITIAL: ResultatConnexion = { statut: "inactif" };
 export function FormulaireConnexion({ locale }: { readonly locale: string }) {
   const t = useTranslations("connexion");
   const [resultat, action] = useActionState(seConnecter, INITIAL);
-  const [email, setEmail] = useState("");
+  // L'adresse tapée sur l'autre page d'accès suit la bascule (maquette, `acces.js`).
+  const [email, setEmail] = useState(adresseTransmise);
+  const [motDePasse, setMotDePasse] = useState("");
+  // Les refus de la saisie (maquette, `acces.js`) : un confort, le serveur décide.
+  const [erreurEmail, setErreurEmail] = useState("");
+  const [erreurMdp, setErreurMdp] = useState("");
+  const formulaire = useRef<HTMLFormElement>(null);
 
-  const suggestion = useMemo(() => suggererCorrection(email), [email]);
+  // Un refus du SERVEUR secoue aussi les champs qu'il désigne : même geste, même sens.
+  useEffect(() => {
+    if (resultat.statut === "erreur") secouerInvalides(formulaire.current);
+  }, [resultat]);
+
+  const { suggestion, aLaSortie } = useSuggestionAdresse(email);
 
   const messageErreur =
     resultat.statut === "erreur"
@@ -55,7 +67,32 @@ export function FormulaireConnexion({ locale }: { readonly locale: string }) {
       : null;
 
   return (
-    <form action={action} className="flex flex-col gap-[22px]" noValidate>
+    <form
+      ref={formulaire}
+      action={action}
+      className="formulaire v4-carte"
+      noValidate
+      onSubmit={(e) => {
+        // La suggestion d'adresse se propose aussi à l'envoi (une sortie vers le bouton ne
+        // la pose pas) : après un refus, c'est elle qui peut dire la faute de frappe.
+        aLaSortie();
+        // Ce qui est refusé ici ne part pas : la secousse, le message sous le champ,
+        // et le focus sur le premier champ fautif (maquette, `acces.js`).
+        // On valide ce qui PART, pas l'état React (un remplissage automatique peut le taire).
+        const f = e.currentTarget;
+        const eEmail = emailValide(valeurEnvoyee(f, "email")) ? "" : t("erreurEmailInvalide");
+        const eMdp = valeurEnvoyee(f, "motDePasse") === "" ? t("erreurMdpVide") : "";
+        setErreurEmail(eEmail);
+        setErreurMdp(eMdp);
+        if (eEmail === "" && eMdp === "") return;
+        e.preventDefault();
+        const fautifs = [eEmail !== "" ? "email" : null, eMdp !== "" ? "motDePasse" : null].filter(
+          (x): x is string => x !== null,
+        );
+        fautifs.forEach((id) => secouer(f.querySelector(`#${id}`)?.closest(".champ-acces__boite")));
+        f.querySelector<HTMLInputElement>(`#${fautifs[0] ?? "email"}`)?.focus();
+      }}
+    >
       <input type="hidden" name="locale" value={locale} />
 
       <ChampAcces
@@ -63,76 +100,76 @@ export function FormulaireConnexion({ locale }: { readonly locale: string }) {
         nom="email"
         type="email"
         libelle={t("labelEmail")}
-        icone={Mail}
         placeholder={t("placeholderEmail")}
         autoComplete="username"
         modeSaisie="email"
         valeur={email}
-        surChangement={setEmail}
+        surChangement={(v) => {
+          setEmail(v);
+          if (erreurEmail !== "" && emailValide(v)) setErreurEmail("");
+        }}
+        surSortie={() => {
+          aLaSortie();
+          if (email !== "" && !emailValide(email)) setErreurEmail(t("erreurEmailInvalide"));
+        }}
+        erreurLocale={erreurEmail}
         invalide={messageErreur !== null}
         {...(messageErreur !== null ? { decritPar: "erreur-connexion" } : {})}
-      />
+      >
+        {/* La suggestion de faute de frappe reste LOCALE : aucune requête, donc
+            rien à apprendre sur nos comptes en observant le réseau. */}
+        {suggestion !== null ? (
+          <p className="champ-acces__suggestion" aria-live="polite">
+            {t("suggestionPrefixe")}{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setEmail(suggestion.adresse);
+                document.getElementById("email")?.focus();
+                setErreurEmail("");
+              }}
+            >
+              {suggestion.adresse}
+            </button>
+            {t("suggestionSuffixe")}
+          </p>
+        ) : null}
+      </ChampAcces>
 
-      {/* LE LIEN D'OUBLI EST SUR LA LIGNE DU LIBELLÉ, comme la référence le
-          dessine. Sous le champ, il se lirait comme une aide à la saisie ; ici,
-          il se lit comme l'autre chose qu'on peut faire de son mot de passe.
-
-          ⚠️ SA ZONE TACTILE PASSE PAR UN PSEUDO-ÉLÉMENT, ET C'EST LA SEULE DU
-          PRODUIT DANS CE CAS. Le brief §8 exige 44 points ; ce lien en mesure
-          16. La recette employée partout ailleurs — un plancher `min-h-11` plus
-          une marge négative qui le compense — casse ICI : le conteneur est en
-          `items-baseline`, et un `inline-flex` de 44 px porte sa baseline au
-          CENTRE de sa boîte. La marge compense bien la hauteur, jamais la
-          baseline : mesuré, le lien descendait de 55 px et entraînait toute la
-          page avec lui.
-
-          Un pseudo-élément en position absolue agrandit ce que le doigt touche
-          sans rien peser dans le flux ni déplacer une baseline. Et il se prouve
-          par `elementFromPoint`, jamais par une mesure de boîte — un
-          pseudo-élément n'apparaît dans le rectangle d'aucun élément. */}
+      {/* LE LIEN D'OUBLI EST SUR LA LIGNE DU LIBELLÉ : il se lit comme l'autre
+          chose qu'on peut faire de son mot de passe. Il mène à la ROUTE
+          `/mot-de-passe-oublie` (des liens existants y pointent) plutôt qu'au
+          panneau de la maquette : même action `demanderReinitialisation`. Sa
+          cible fait 44 px par `.champ-acces__ligne .lien-texte` (marge négative
+          qui ne déplace aucune ligne). */}
       <ChampAcces
         id="motDePasse"
         nom="motDePasse"
         type="password"
         libelle={t("labelMotDePasse")}
-        icone={Lock}
         placeholder={t("placeholderMotDePasse")}
-        // `current-password` et non `new-password` : c'est ce qui fait proposer
-        // au gestionnaire de mots de passe celui qui est enregistré, au lieu
-        // d'en suggérer un nouveau sur un écran de connexion.
         autoComplete="current-password"
+        valeur={motDePasse}
+        surChangement={(v) => {
+          setMotDePasse(v);
+          if (v !== "") setErreurMdp("");
+        }}
+        erreurLocale={erreurMdp}
+        libellesOeil={{ afficher: t("afficherMotDePasse"), masquer: t("masquerMotDePasse") }}
         invalide={messageErreur !== null}
         {...(messageErreur !== null ? { decritPar: "erreur-connexion" } : {})}
         action={
-          <Link
-            href={`/${locale}/mot-de-passe-oublie`}
-            className="relative text-[13px] font-medium text-ds-texte-lien underline after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-[''] hover:text-ds-texte-lien-survol"
-          >
+          <Link href={`/${locale}/mot-de-passe-oublie`} className="lien-texte min-h-11" onClick={() =>
+              // Le CHAMP, pas l'état React : un remplissage automatique d'avant l'hydratation
+              // ne passe pas par `onChange` (même règle que `valeurEnvoyee`).
+              transmettreAdresse(document.querySelector<HTMLInputElement>("#email")?.value ?? email)
+            }>
             {t("motDePasseOublie")}
           </Link>
         }
       />
 
-      {suggestion !== null ? (
-        // On SUGGÈRE, on ne corrige jamais d'office : réécrire une adresse rare
-        // mais légitime ferait tenter la connexion au compte de quelqu'un
-        // d'autre, et le compteur d'échecs serait consommé sur SA boîte.
-        <p className="text-[14px] text-ds-texte-corps" aria-live="polite">
-          {t("suggestionPrefixe")}{" "}
-          <button
-            type="button"
-            onClick={() => setEmail(suggestion.adresse)}
-            className="font-semibold text-ds-texte-lien underline"
-          >
-            {suggestion.adresse}
-          </button>
-          {t("suggestionSuffixe")}
-        </p>
-      ) : null}
-
-      {messageErreur !== null ? (
-        <MessageErreurDs id="erreur-connexion" texte={messageErreur} />
-      ) : null}
+      {messageErreur !== null ? <MessageErreurDs id="erreur-connexion" texte={messageErreur} /> : null}
 
       <BoutonPrincipalDs libelle={t("bouton")} libelleEnCours={t("boutonEnCours")} />
     </form>
